@@ -60,16 +60,22 @@ Alternatively, launch manual instances:
 
 *Note: Make sure to sign in/authenticate Google OAuth on the canvas page.*
 
-### 2. Install Dependencies & Setup
+### 2. Install & Setup (Seamless Installers)
 
-1. Install npm packages:
-   ```bash
-   npm install
-   ```
-2. Run the automated setup script to automatically configure **Claude Desktop** and output custom configuration snippets for **Cursor** and **Windsurf**:
-   ```bash
-   npm run setup
-   ```
+We provide pre-built install scripts that automatically check for Node.js (offering to install it if missing), install all package dependencies, write the Claude Desktop configuration, and offer to launch debugging:
+
+* **Windows**: Open PowerShell in this folder and run:
+  ```powershell
+  Set-ExecutionPolicy Bypass -Scope Process -Force; .\setup.ps1
+  ```
+* **macOS & Linux (Ubuntu)**: Open Terminal in this folder and run:
+  ```bash
+  chmod +x ./setup.sh && ./setup.sh
+  ```
+
+*Alternatively, perform manual installation:*
+1. Run `npm install`.
+2. Run `npm run setup`.
 
 ### 3. Run the Example
 
