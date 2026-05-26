@@ -8,12 +8,31 @@ import puppeteer from "puppeteer-core";
 
 const SERVER_NAME = "boarderless-mcp-bridge";
 const SERVER_VERSION = "1.0.0";
-const DEFAULT_APP_URL = "http://127.0.0.1:5174/canvas";
+const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
-const APP_URL = process.env.BOARDERLESS_MCP_APP_URL || DEFAULT_APP_URL;
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
 
+async function detectAppUrl() {
+  if (process.env.BOARDERLESS_MCP_APP_URL) {
+    return process.env.BOARDERLESS_MCP_APP_URL;
+  }
+  // Try to detect if local development server is running on port 5174
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 100);
+    const res = await fetch("http://127.0.0.1:5174/canvas", { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      return "http://127.0.0.1:5174/canvas";
+    }
+  } catch (e) {
+    // Local server is not running
+  }
+  return DEFAULT_APP_URL;
+}
+
 async function run() {
+  const APP_URL = await detectAppUrl();
   // Connect to a user-launched Chrome/Edge instance with --remote-debugging-port=9222.
   const browser = await puppeteer.connect({ browserURL: BROWSER_URL });
   const pages = await browser.pages();

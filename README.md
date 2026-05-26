@@ -42,30 +42,38 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 
 ### 1. Launch Browser with Remote Debugging Enabled
 
-To allow the MCP server to attach to the browser tab, you must start Chrome or Edge with debugging port `9222` active.
+To allow the MCP server to attach to your browser tab, you must start Chrome or Edge with debugging port `9222` active. We provide pre-built launchers for convenience:
 
+* **Windows**: Double-click `./launch-chrome-debugging.bat` (or run it via cmd/PowerShell).
+* **macOS/Linux**: Run `chmod +x ./launch-chrome-debugging.sh && ./launch-chrome-debugging.sh`.
+
+Alternatively, launch manual instances:
 **Windows (PowerShell)**:
 ```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\boarderless-mcp-profile" http://127.0.0.1:5174/canvas
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\boarderless-mcp-profile" https://boarderless.app/canvas
 ```
 
 **macOS (Terminal)**:
 ```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir="/tmp/boarderless-mcp-profile" http://127.0.0.1:5174/canvas
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir="/tmp/boarderless-mcp-profile" https://boarderless.app/canvas
 ```
 
 *Note: Make sure to sign in/authenticate Google OAuth on the canvas page.*
 
-### 2. Install Dependencies
+### 2. Install Dependencies & Setup
 
-Clone this repository and install npm packages:
-```bash
-npm install
-```
+1. Install npm packages:
+   ```bash
+   npm install
+   ```
+2. Run the automated setup script to automatically configure **Claude Desktop** and output custom configuration snippets for **Cursor** and **Windsurf**:
+   ```bash
+   npm run setup
+   ```
 
 ### 3. Run the Example
 
-Start the local boilerplate client script to verify the bridge. It connects to the server, queries the canvas ledger, and shifts the first object by 50px:
+Verify your connection by running the test client, which queries the canvas state and moves the first element:
 ```bash
 npm run example
 ```
@@ -161,7 +169,7 @@ Calculates the collective mathematical boundary coordinates of all active object
 ## Connecting to AI Clients
 
 ### Claude Desktop Configuration
-Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS). Running `npm run setup` will do this automatically!
 
 ```json
 {
@@ -170,7 +178,7 @@ Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Wind
       "command": "node",
       "args": ["E:\\boarderless.app_MCP\\mcp-stdio-server.js"],
       "env": {
-        "BOARDERLESS_MCP_APP_URL": "http://127.0.0.1:5174/canvas",
+        "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
         "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
       }
     }
