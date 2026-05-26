@@ -8,6 +8,33 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 
 ---
 
+## ⚡ Quick Start (TL;DR)
+
+**Step 1: Launch your browser in Debugging Mode**
+*   **Windows**: Double-click `launch-chrome-debugging.bat`
+*   **Mac / Linux**: Run `./launch-chrome-debugging.sh`
+
+**Step 2: Run the Installer (Configures Claude Desktop automatically)**
+*   **Windows (PowerShell)**:
+    ```powershell
+    Set-ExecutionPolicy Bypass -Scope Process -Force; .\setup.ps1
+    ```
+*   **Mac / Linux (Terminal)**:
+    ```bash
+    chmod +x ./setup.sh && ./setup.sh
+    ```
+
+**Step 3: Connect Cursor / Windsurf (Optional)**
+Add a new MCP server in settings:
+*   **Type**: `stdio`
+*   **Name**: `boarderless`
+*   **Command**: `node "E:\boarderless.app_MCP\mcp-stdio-server.js"` (Use your absolute path)
+*   **Env variables**:
+    *   `BOARDERLESS_MCP_APP_URL` = `https://boarderless.app/canvas`
+    *   `BOARDERLESS_MCP_BROWSER_URL` = `http://127.0.0.1:9222`
+
+---
+
 ## Architecture Overview
 
 ```
