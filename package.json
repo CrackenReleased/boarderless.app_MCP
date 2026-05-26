@@ -1,0 +1,28 @@
+{
+  "name": "@boarderless/mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for Boarderless, allowing AI agents to read the canvas state, mutate elements, and calculate export bounds.",
+  "type": "module",
+  "main": "mcp-stdio-server.js",
+  "bin": {
+    "boarderless-mcp-server": "./mcp-stdio-server.js"
+  },
+  "scripts": {
+    "start": "node mcp-stdio-server.js",
+    "example": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "puppeteer-core": "^22.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "boarderless",
+    "spatial-canvas",
+    "puppeteer",
+    "agentic-ui"
+  ],
+  "author": "CrackenReleased",
+  "license": "Apache-2.0"
+}
