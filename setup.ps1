@@ -1,11 +1,7 @@
 # setup.ps1
 # Boarderless MCP Setup Utility for Windows
 
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "   Boarderless MCP Installer & Configurator   " -ForegroundColor Cyan
-Write-Host "==========================================`n"
-
-# 1. Check for Node.js
+# Check for Node.js
 $nodeInstalled = Get-Command node -ErrorAction SilentlyContinue
 if (-not $nodeInstalled) {
     Write-Host "[!] Node.js was not found on your system." -ForegroundColor Yellow
@@ -22,20 +18,5 @@ if (-not $nodeInstalled) {
     }
 }
 
-# 2. Install dependencies
-Write-Host "[*] Installing Node.js dependencies..." -ForegroundColor Cyan
-npm install
-
-# 3. Configure Claude Desktop and print Cursor info
-Write-Host "`n[*] Configuring developer clients..." -ForegroundColor Cyan
+# Run the interactive Node-based configurator
 node setup.js
-
-# 4. Optional Launch
-Write-Host "------------------------------------------"
-$launchNow = Read-Host "Would you like to launch Chrome in Remote Debugging mode now? (Y/N)"
-if ($launchNow -eq "Y" -or $launchNow -eq "y") {
-    Write-Host "Launching Google Chrome on port 9222..." -ForegroundColor Green
-    Start-Process -FilePath ".\launch-chrome-debugging.bat"
-}
-
-Write-Host "`n✓ Setup completed successfully! You can now use Boarderless with your AI clients." -ForegroundColor Green

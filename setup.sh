@@ -9,10 +9,6 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-echo -e "${CYAN}==========================================${NC}"
-echo -e "${CYAN}   Boarderless MCP Installer & Configurator   ${NC}"
-echo -e "${CYAN}==========================================${NC}\n"
-
 # 1. Check for Node.js
 if ! command -v node &> /dev/null; then
     echo -e "${YELLOW}[!] Node.js was not found on your system.${NC}"
@@ -46,23 +42,8 @@ if ! command -v node &> /dev/null; then
     fi
 fi
 
-# 2. Install dependencies
-echo -e "${CYAN}[*] Installing Node.js dependencies...${NC}"
-npm install
-
-# 3. Configure Claude Desktop and print Cursor info
-echo -e "\n${CYAN}[*] Configuring developer clients...${NC}"
-node setup.js
-
 # Ensure launch scripts are executable
-chmod +x ./launch-chrome-debugging.sh
+chmod +x ./launch-chrome-debugging.sh 2>/dev/null || true
 
-# 4. Optional Launch
-echo "------------------------------------------"
-read -p "Would you like to launch Chrome in Remote Debugging mode now? (y/n): " launch_now
-if [[ $launch_now =~ ^[Yy]$ ]]; then
-    echo -e "${GREEN}Launching Google Chrome on port 9222...${NC}"
-    ./launch-chrome-debugging.sh &
-fi
-
-echo -e "\n${GREEN}✓ Setup completed successfully! You can now use Boarderless with your AI clients.${NC}"
+# Run the interactive Node-based configurator
+node setup.js

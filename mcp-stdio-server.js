@@ -5,36 +5,118 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import puppeteer from "puppeteer-core";
-import { exec } from "child_process";
+import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import net from "net";
+import fs from "fs";
+import os from "os";
+
+import { performRenaming } from "./helpers/rename_photos.js";
+import { standardize } from "./helpers/standardize_images.js";
 
 const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.3";
+const SERVER_VERSION = "0.1.4";
 const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-function runPythonHelper(scriptName, argsArray) {
-  return new Promise((resolve, reject) => {
-    // We run it using the user's system Python 3.10 executable since it has Pillow and pillow-heif installed.
-    const pythonPath = "C:\\Users\\Beast\\AppData\\Local\\Programs\\Python\\Python310\\python.exe";
-    const scriptPath = path.join(__dirname, "python_helpers", scriptName);
-    
-    const argsStr = argsArray.map(arg => `"${arg.replace(/"/g, '\\"')}"`).join(" ");
-    const command = `"${pythonPath}" "${scriptPath}" ${argsStr}`;
-    
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(`Execution error: ${error.message}\nStderr: ${stderr}`));
-        return;
-      }
-      resolve(stdout);
+function isPortOpen(port) {
+  return new Promise((resolve) => {
+    const client = new net.Socket();
+    client.setTimeout(150);
+    client.once('connect', () => {
+      client.destroy();
+      resolve(true);
     });
+    client.once('timeout', () => {
+      client.destroy();
+      resolve(false);
+    });
+    client.once('error', () => {
+      client.destroy();
+      resolve(false);
+    });
+    client.connect(port, '127.0.0.1');
   });
+}
+
+function findChromeOrEdge() {
+  const platform = os.platform();
+  const paths = [];
+
+  if (platform === 'win32') {
+    paths.push(
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
+      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    );
+  } else if (platform === 'darwin') {
+    paths.push(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    );
+  } else {
+    // Linux
+    paths.push(
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser'
+    );
+  }
+
+  for (const p of paths) {
+    if (p && fs.existsSync(p)) {
+      return p;
+    }
+  }
+  return null;
+}
+
+async function ensureBrowserRunning() {
+  // If BROWSER_URL is pointing to localhost:9222, we check if it is open
+  const urlObj = new URL(BROWSER_URL);
+  if (urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
+    const port = parseInt(urlObj.port || '9222', 10);
+    const isOpen = await isPortOpen(port);
+    if (!isOpen) {
+      console.error(`[Boarderless] Remote debugging port ${port} is closed. Attempting to launch browser...`);
+      const exePath = findChromeOrEdge();
+      if (exePath) {
+        console.error(`[Boarderless] Launching browser: ${exePath}`);
+        const args = [
+          `--remote-debugging-port=${port}`,
+          '--no-first-run',
+          '--no-default-browser-check',
+          'about:blank'
+        ];
+        
+        // Spawn browser and detach so it keeps running when this server restarts
+        const child = spawn(exePath, args, {
+          detached: true,
+          stdio: 'ignore'
+        });
+        child.unref();
+
+        // Wait up to 5 seconds for port to open
+        for (let i = 0; i < 25; i++) {
+          await new Promise(r => setTimeout(r, 200));
+          if (await isPortOpen(port)) {
+            console.error(`[Boarderless] Browser connected successfully on port ${port}.`);
+            return;
+          }
+        }
+        console.error(`[Boarderless] Warning: Launched browser but port ${port} did not open in time.`);
+      } else {
+        console.error(`[Boarderless] Error: Could not automatically locate Google Chrome or Microsoft Edge.`);
+        console.error(`Please launch your browser manually with command:`);
+        console.error(`chrome.exe --remote-debugging-port=9222`);
+      }
+    }
+  }
 }
 
 async function detectAppUrl() {
@@ -58,7 +140,11 @@ async function detectAppUrl() {
 
 async function run() {
   const APP_URL = await detectAppUrl();
-  // Connect to a user-launched Chrome/Edge instance with --remote-debugging-port=9222.
+  
+  // Make sure remote debugging browser is open
+  await ensureBrowserRunning();
+
+  // Connect to the browser
   const browser = await puppeteer.connect({ browserURL: BROWSER_URL });
   const pages = await browser.pages();
   const appOrigin = new URL(APP_URL).origin;
@@ -135,7 +221,7 @@ async function run() {
     
     if (name === "graduation_rename_photos") {
       try {
-        const result = await runPythonHelper("rename_photos.py", ["--dir", args.seniorsDir, "--mode", args.mode]);
+        const result = await performRenaming(args.seniorsDir, args.mode);
         return { content: [{ type: "text", text: result }] };
       } catch (err) {
         return { content: [{ type: "text", text: err.message }], isError: true };
@@ -144,7 +230,7 @@ async function run() {
     
     if (name === "graduation_standardize_images") {
       try {
-        const result = await runPythonHelper("standardize_images.py", ["--dir", args.seniorsDir]);
+        const result = await standardize(args.seniorsDir);
         return { content: [{ type: "text", text: result }] };
       } catch (err) {
         return { content: [{ type: "text", text: err.message }], isError: true };

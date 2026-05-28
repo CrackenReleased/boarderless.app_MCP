@@ -10,11 +10,8 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 
 ## ⚡ Quick Start (TL;DR)
 
-**Step 1: Launch your browser in Debugging Mode**
-*   **Windows**: Double-click `launch-chrome-debugging.bat`
-*   **Mac / Linux**: Run `./launch-chrome-debugging.sh`
-
-**Step 2: Run the Installer (Configures Claude Desktop automatically)**
+**Step 1: Start the Interactive Configurator (Windows, Mac, or Linux)**
+Run the installer to configure your environment and client settings:
 *   **Windows (PowerShell)**:
     ```powershell
     Set-ExecutionPolicy Bypass -Scope Process -Force; .\setup.ps1
@@ -24,14 +21,12 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
     chmod +x ./setup.sh && ./setup.sh
     ```
 
-**Step 3: Connect Cursor / Windsurf (Optional)**
-Add a new MCP server in settings:
-*   **Type**: `stdio`
-*   **Name**: `boarderless`
-*   **Command**: `node "E:\boarderless.app_MCP\mcp-stdio-server.js"` (Use your absolute path)
-*   **Env variables**:
-    *   `BOARDERLESS_MCP_APP_URL` = `https://boarderless.app/canvas`
-    *   `BOARDERLESS_MCP_BROWSER_URL` = `http://127.0.0.1:9222`
+**Step 2: Choose Option 1 (Standard Auto-Setup)**
+The interactive installer will:
+1. Explains permissions (browser connection, file access).
+2. Install pure JavaScript dependencies automatically.
+3. Register the MCP server in your Claude Desktop configuration.
+4. Provide immediate copy-paste instructions for Cursor or Windsurf.
 
 ---
 
@@ -52,7 +47,7 @@ Add a new MCP server in settings:
 ```
 
 1. **Boarderless Web App**: Exposes `window.boarderlessMcp` containing typed tool execution methods over Zustand state.
-2. **MCP Server (`mcp-stdio-server.js`)**: Connects to the browser via Chrome DevTools Protocol (CDP), maps incoming stdio messages to the browser runtime, and checks authentication.
+2. **MCP Server (`mcp-stdio-server.js`)**: Connects to the browser via Chrome DevTools Protocol (CDP), maps incoming stdio messages to the browser runtime, and checks authentication. If the remote debugging port (9222) is closed, the server automatically scans and launches Chrome or Edge in remote-debugging mode.
 3. **AI Agent**: Connects as a client to the MCP server's stdio transport.
 
 ---
@@ -63,14 +58,18 @@ Add a new MCP server in settings:
 2. **Chromium-based Browser** (Google Chrome or Microsoft Edge)
 3. **Boarderless Web App**: Running locally (typically at `http://127.0.0.1:5174/canvas`) or via production web portal.
 
+*No Python, pip, or native build tools are required. All image standardizing tools run on pure JavaScript.*
+
 ---
 
 ## Getting Started
 
 ### 1. Launch Browser with Remote Debugging Enabled
 
-To allow the MCP server to attach to your browser tab, you must start Chrome or Edge with debugging port `9222` active. We provide pre-built launchers for convenience:
+To allow the MCP server to attach to your browser tab, you must start Chrome or Edge with debugging port `9222` active.
+*The MCP server will automatically try to find and launch Chrome/Edge on port 9222 if it is not already running.*
 
+If you want to launch it manually, we provide pre-built launchers:
 * **Windows**: Double-click `./launch-chrome-debugging.bat` (or run it via cmd/PowerShell).
 * **macOS/Linux**: Run `chmod +x ./launch-chrome-debugging.sh && ./launch-chrome-debugging.sh`.
 
