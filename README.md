@@ -197,6 +197,17 @@ Calculates the collective mathematical boundary coordinates of all active object
   }
   ```
 
+### 4. `graduation_rename_photos`
+Renames and numbers photo files inside a directory to a standard sequential format (`seniorname_01.jpg`, etc.) or fills existing gaps within the directory.
+- **Input**:
+  - `seniorsDir` (string, required): Absolute path to the folder.
+  - `mode` (string, required): `"sequential"` or `"gap_fill"`.
+
+### 5. `graduation_standardize_images`
+Scans and converts progressive JPEGs and HEIC files inside subdirectories into baseline RGB JPEGs.
+- **Input**:
+  - `seniorsDir` (string, required): Absolute path to the folder.
+
 ---
 
 ## Connecting to AI Clients
