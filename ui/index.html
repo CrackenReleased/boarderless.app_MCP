@@ -228,6 +228,167 @@
         box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
       }
     }
+    /* Wizard Styles */
+    .wizard-card {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .wizard-card.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .wizard-selection-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .wizard-select-item {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1.5px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wizard-select-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(124, 77, 255, 0.3);
+    }
+
+    .wizard-select-item.selected {
+      background: rgba(124, 77, 255, 0.1);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);
+    }
+
+    .wizard-select-item svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .wizard-profile-option {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1.5px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+    }
+
+    .wizard-profile-option:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(124, 77, 255, 0.3);
+    }
+
+    .wizard-profile-option.selected {
+      background: rgba(124, 77, 255, 0.08);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 16px rgba(124, 77, 255, 0.25);
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 12px;
+    }
+
+    .step-number {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      background: rgba(124, 77, 255, 0.15);
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step-instruction-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .instruction-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .instruction-step:last-child {
+      margin-bottom: 0;
+    }
+
+    .instruction-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .instruction-icon.completed {
+      background: #22c55e;
+      color: #fff;
+    }
+
+    .instruction-icon.active {
+      background: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .instruction-text {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .instruction-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+      color: #fff;
+    }
+
+    .instruction-desc {
+      color: var(--text-sub);
+    }
+
+    .warning-banner {
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      color: #fbbf24;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -284,94 +445,198 @@ Env Variables:
     </div>
   </div>
 
-  <!-- Browser Profile Mode Modal -->
+  <!-- Browser Profile Mode Modal (Walkthrough Wizard) -->
   <div id="profile-modal" style="
     display: none;
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(10, 8, 20, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 8, 20, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     align-items: center;
     justify-content: center;
     opacity: 0;
     transition: opacity 0.3s ease;
   ">
     <div style="
-      width: 480px;
+      width: 520px;
       max-width: 90%;
-      background: rgba(20, 15, 38, 0.95);
+      background: rgba(20, 15, 38, 0.96);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 24px;
       padding: 30px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
       transform: translateY(20px);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     " id="profile-modal-content">
-      <h2 style="
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        font-size: 1.4rem;
-        margin-bottom: 10px;
-        background: linear-gradient(90deg, #fff 0%, #a09cb0 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      ">Select Browser Profile Mode</h2>
-      <p style="
-        color: var(--text-sub);
-        font-size: 0.85rem;
-        line-height: 1.5;
-        margin-bottom: 24px;
-      ">To connect the canvas, we need to open a browser window with remote debugging enabled. Select your profile option below:</p>
       
-      <!-- Option A -->
-      <div style="
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      " onclick="selectProfile('personal')" onmouseover="this.style.borderColor='rgba(124, 77, 255, 0.5)'; this.style.background='rgba(255, 255, 255, 0.05)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.06)'; this.style.background='rgba(255, 255, 255, 0.03)';">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">👤 Personal Profile (Recommended)</h3>
-          <span style="font-size: 0.7rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Full Sync</span>
+      <!-- STEP 1: Select Browser & Profile Mode -->
+      <div id="wizard-step-1" class="wizard-card active">
+        <div class="step-header">
+          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Setup Browser & Profile
+          </h2>
+          <span class="step-number">Step 1 of 2</span>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.4;">Loads your normal Chrome/Edge browser. You'll keep your active logins, history, and Google Drive sync.</p>
-        <div style="margin-top: 10px; font-size: 0.75rem; color: #fbbf24; display: flex; align-items: flex-start; gap: 6px; background: rgba(251, 191, 36, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15);">
-          <span style="margin-top: 1px;">⚠️</span>
-          <span><strong>Close Chrome First:</strong> You must save your work and completely close all active Chrome/Edge windows so the debugger can launch with your profile.</span>
+
+        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+          Configure which browser and profile context to use for Boarderless.app automation:
+        </p>
+
+        <!-- Browser Selection -->
+        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 10px;">
+          1. Select Browser
+        </h4>
+        <div class="wizard-selection-group">
+          <!-- Chrome Item -->
+          <div id="browser-chrome" class="wizard-select-item selected" onclick="setBrowser('chrome')">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8C14.2091 8 16 9.79086 16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8Z" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8L5.5 15.5" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 12H22" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 16L17 21" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">Google Chrome</div>
+          </div>
+          <!-- Edge Item -->
+          <div id="browser-edge" class="wizard-select-item" onclick="setBrowser('edge')">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18C15.3137 18 18 15.3137 18 12" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M18 12C18 9.5 16 8 14 8C12 8 10.5 9 10.5 11C10.5 13 13.5 12.5 13.5 14.5C13.5 16 12 16.5 10.5 16.5" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub);">Microsoft Edge</div>
+          </div>
+        </div>
+
+        <!-- Profile Selection -->
+        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 10px;">
+          2. Choose Profile Type
+        </h4>
+        
+        <!-- Isolated Option -->
+        <div id="option-isolated" class="wizard-profile-option selected" onclick="setProfileMode('isolated')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">🛡️ Isolated Profile (Highly Recommended)</h3>
+            <span style="font-size: 0.7rem; background: rgba(124, 77, 255, 0.15); color: #9d6fff; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Secure Login</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.45;">
+            Creates a dedicated Boarderless browser profile. Safe, fast, and does not require closing your personal browser windows. Supports multi-account selection.
+          </p>
+        </div>
+
+        <!-- Personal Option -->
+        <div id="option-personal" class="wizard-profile-option" onclick="setProfileMode('personal')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">👤 Personal Profile</h3>
+            <span style="font-size: 0.7rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Share Sessions</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.45;">
+            Launches your default, everyday personal Chrome/Edge window. You'll keep active sessions, history, and extensions, but you must completely close Chrome/Edge first.
+          </p>
+        </div>
+
+        <!-- Navigation -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button class="btn" onclick="closeProfileModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="goToStep(2)">Continue</button>
         </div>
       </div>
 
-      <!-- Option B -->
-      <div style="
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 24px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      " onclick="selectProfile('isolated')" onmouseover="this.style.borderColor='rgba(124, 77, 255, 0.5)'; this.style.background='rgba(255, 255, 255, 0.05)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.06)'; this.style.background='rgba(255, 255, 255, 0.03)';">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">🛡️ Isolated Profile</h3>
-          <span style="font-size: 0.7rem; background: rgba(255, 255, 255, 0.08); color: #a09cb0; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Sandbox</span>
+      <!-- STEP 2A: Isolated Profile Authentication Wizard -->
+      <div id="wizard-step-2-isolated" class="wizard-card">
+        <div class="step-header">
+          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Login & Connect AI
+          </h2>
+          <span class="step-number">Step 2 of 2</span>
         </div>
-        <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.4;">Launches a clean temporary window with a separate profile. Fast and safe, but requires logging in again to save to Google Drive.</p>
+
+        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+          Follow these two steps to connect your Google account without triggering automated safety blocks:
+        </p>
+
+        <div class="step-instruction-box">
+          <!-- Sub-step 1 -->
+          <div class="instruction-step">
+            <div id="icon-substep-1" class="instruction-icon active">1</div>
+            <div class="instruction-text">
+              <div class="instruction-title">Google Account Sign-In</div>
+              <div class="instruction-desc" id="substep-1-desc">
+                Launch a standard window, log in with your Google Account, and close it when done.
+              </div>
+              <button id="btn-substep-1" class="btn btn-primary" style="margin-top: 10px; font-size: 0.8rem; padding: 8px 14px;" onclick="startIsolatedLogin()">
+                Open Sign-In Window
+              </button>
+            </div>
+          </div>
+
+          <!-- Sub-step 2 -->
+          <div class="instruction-step" style="opacity: 0.5; transition: opacity 0.3s ease;" id="container-substep-2">
+            <div id="icon-substep-2" class="instruction-icon">2</div>
+            <div class="instruction-text">
+              <div class="instruction-title">Relaunch in AI Debug Mode</div>
+              <div class="instruction-desc">
+                Once signed in, click here to close the login session and establish the AI debugger bridge.
+              </div>
+              <button id="btn-substep-2" class="btn btn-primary" style="margin-top: 10px; font-size: 0.8rem; padding: 8px 14px;" onclick="startIsolatedDebug()" disabled>
+                Enable AI Control
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button class="btn" onclick="goToStep(1)">Back</button>
+          <button class="btn" onclick="closeProfileModal()">Cancel</button>
+        </div>
       </div>
 
-      <!-- Footer Buttons -->
-      <div style="display: flex; justify-content: flex-end; gap: 12px;">
-        <button class="btn" style="padding: 10px 18px; font-size: 0.85rem;" onclick="closeProfileModal()">Cancel</button>
+      <!-- STEP 2B: Personal Profile Verification Wizard -->
+      <div id="wizard-step-2-personal" class="wizard-card">
+        <div class="step-header">
+          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Launch Personal Debugger
+          </h2>
+          <span class="step-number">Step 2 of 2</span>
+        </div>
+
+        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
+          This will open your existing browser profile so you don't need to log in again.
+        </p>
+
+        <div class="warning-banner">
+          <span style="font-size: 1.1rem; margin-top: -2px;">⚠️</span>
+          <div>
+            <strong>Close all active browser windows first:</strong> You must completely shut down all running instances of Google Chrome / Microsoft Edge before launching. The AI debugger cannot hook into an already open session.
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+          <button class="btn" onclick="goToStep(1)">Back</button>
+          <div>
+            <button class="btn" style="margin-right: 8px;" onclick="closeProfileModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="launchPersonalDebug()">Launch Debug Browser</button>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 
   <script>
     const { invoke } = window.__TAURI__.core;
+
+    let selectedBrowser = 'chrome';
+    let profileMode = 'isolated';
+    let activeStep = 1;
+    let loginLaunched = false;
 
     function openProfileModal() {
       const modal = document.getElementById('profile-modal');
@@ -390,15 +655,135 @@ Env Variables:
       content.style.transform = 'translateY(20px)';
       setTimeout(() => {
         modal.style.display = 'none';
+        if (loginLaunched) {
+          invoke('kill_active_browser');
+          loginLaunched = false;
+        }
+        goToStep(1);
+        resetIsolatedWizard();
       }, 300);
     }
 
-    async function selectProfile(mode) {
+    function setBrowser(browser) {
+      selectedBrowser = browser;
+      document.getElementById('browser-chrome').classList.remove('selected');
+      document.getElementById('browser-edge').classList.remove('selected');
+      
+      const selectedEl = document.getElementById('browser-' + browser);
+      selectedEl.classList.add('selected');
+      
+      const chromeText = document.querySelector('#browser-chrome div');
+      const edgeText = document.querySelector('#browser-edge div');
+      if (browser === 'chrome') {
+        chromeText.style.color = '#fff';
+        edgeText.style.color = 'var(--text-sub)';
+        document.querySelector('#browser-chrome svg path').setAttribute('stroke', '#7c4dff');
+        document.querySelector('#browser-edge svg path').setAttribute('stroke', '#a09cb0');
+      } else {
+        chromeText.style.color = 'var(--text-sub)';
+        edgeText.style.color = '#fff';
+        document.querySelector('#browser-chrome svg path').setAttribute('stroke', '#a09cb0');
+        document.querySelector('#browser-edge svg path').setAttribute('stroke', '#7c4dff');
+      }
+    }
+
+    function setProfileMode(mode) {
+      profileMode = mode;
+      document.getElementById('option-isolated').classList.remove('selected');
+      document.getElementById('option-personal').classList.remove('selected');
+      document.getElementById('option-' + mode).classList.add('selected');
+    }
+
+    function goToStep(step) {
+      activeStep = step;
+      document.getElementById('wizard-step-1').classList.remove('active');
+      document.getElementById('wizard-step-2-isolated').classList.remove('active');
+      document.getElementById('wizard-step-2-personal').classList.remove('active');
+
+      if (step === 1) {
+        document.getElementById('wizard-step-1').classList.add('active');
+        if (loginLaunched) {
+          invoke('kill_active_browser');
+          loginLaunched = false;
+          resetIsolatedWizard();
+        }
+      } else if (step === 2) {
+        if (profileMode === 'isolated') {
+          document.getElementById('wizard-step-2-isolated').classList.add('active');
+        } else {
+          document.getElementById('wizard-step-2-personal').classList.add('active');
+        }
+      }
+    }
+
+    function resetIsolatedWizard() {
+      const containerSub2 = document.getElementById('container-substep-2');
+      containerSub2.style.opacity = '0.5';
+      const btn2 = document.getElementById('btn-substep-2');
+      btn2.disabled = true;
+      const icon1 = document.getElementById('icon-substep-1');
+      icon1.className = 'instruction-icon active';
+      icon1.textContent = '1';
+      const icon2 = document.getElementById('icon-substep-2');
+      icon2.className = 'instruction-icon';
+      const btn1 = document.getElementById('btn-substep-1');
+      btn1.textContent = 'Open Sign-In Window';
+      document.getElementById('substep-1-desc').textContent = 'Launch a standard window, log in with your Google Account, and close it when done.';
+    }
+
+    async function startIsolatedLogin() {
+      loginLaunched = true;
+      const btn1 = document.getElementById('btn-substep-1');
+      btn1.textContent = 'Sign-In Window Active';
+      document.getElementById('substep-1-desc').textContent = 'Please log into Google inside the opened browser. Once signed in, keep the window open (or close it) and proceed to Step 2.';
+      
+      const icon1 = document.getElementById('icon-substep-1');
+      icon1.className = 'instruction-icon completed';
+      icon1.textContent = '✓';
+
+      const icon2 = document.getElementById('icon-substep-2');
+      icon2.className = 'instruction-icon active';
+      
+      const containerSub2 = document.getElementById('container-substep-2');
+      containerSub2.style.opacity = '1';
+      
+      const btn2 = document.getElementById('btn-substep-2');
+      btn2.disabled = false;
+
+      try {
+        await invoke('launch_browser', { 
+          profileType: 'isolated', 
+          mode: 'login', 
+          browserName: selectedBrowser 
+        });
+      } catch (e) {
+        console.error("Failed to launch login browser:", e);
+      }
+    }
+
+    async function startIsolatedDebug() {
       closeProfileModal();
       try {
-        await invoke('launch_browser', { profileType: mode });
+        await invoke('launch_browser', { 
+          profileType: 'isolated', 
+          mode: 'debug', 
+          browserName: selectedBrowser 
+        });
       } catch (e) {
-        console.error("Failed to launch browser:", e);
+        console.error("Failed to launch debug browser:", e);
+      }
+    }
+
+    async function launchPersonalDebug() {
+      closeProfileModal();
+      try {
+        await invoke('launch_browser', { 
+          profileType: 'personal', 
+          mode: 'debug', 
+          browserName: selectedBrowser 
+        });
+      } catch (e) {
+        console.error("Failed to launch personal debug browser:", e);
       }
     }
 
@@ -421,3 +806,4 @@ Env Variables:
   </script>
 </body>
 </html>
+

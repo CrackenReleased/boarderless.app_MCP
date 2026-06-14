@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "boarderless-mcp",
-  "version": "0.1.4",
-  "identifier": "com.tauri.dev",
+  "version": "0.1.7",
+  "identifier": "app.boarderless.mcp",
   "build": {
     "frontendDist": "../ui",
     "devUrl": "http://localhost:1420",
