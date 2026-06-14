@@ -245,7 +245,7 @@
           <div class="status-desc">MCP Server active on standard stdio port.</div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="launchBrowser()">
+      <button class="btn btn-primary" onclick="openProfileModal()">
         Launch Debug Browser
       </button>
     </div>
@@ -284,12 +284,119 @@ Env Variables:
     </div>
   </div>
 
+  <!-- Browser Profile Mode Modal -->
+  <div id="profile-modal" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(10, 8, 20, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  ">
+    <div style="
+      width: 480px;
+      max-width: 90%;
+      background: rgba(20, 15, 38, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    " id="profile-modal-content">
+      <h2 style="
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #fff 0%, #a09cb0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      ">Select Browser Profile Mode</h2>
+      <p style="
+        color: var(--text-sub);
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 24px;
+      ">To connect the canvas, we need to open a browser window with remote debugging enabled. Select your profile option below:</p>
+      
+      <!-- Option A -->
+      <div style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      " onclick="selectProfile('personal')" onmouseover="this.style.borderColor='rgba(124, 77, 255, 0.5)'; this.style.background='rgba(255, 255, 255, 0.05)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.06)'; this.style.background='rgba(255, 255, 255, 0.03)';">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">👤 Personal Profile (Recommended)</h3>
+          <span style="font-size: 0.7rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Full Sync</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.4;">Loads your normal Chrome/Edge browser. You'll keep your active logins, history, and Google Drive sync.</p>
+        <div style="margin-top: 10px; font-size: 0.75rem; color: #fbbf24; display: flex; align-items: flex-start; gap: 6px; background: rgba(251, 191, 36, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15);">
+          <span style="margin-top: 1px;">⚠️</span>
+          <span><strong>Close Chrome First:</strong> You must save your work and completely close all active Chrome/Edge windows so the debugger can launch with your profile.</span>
+        </div>
+      </div>
+
+      <!-- Option B -->
+      <div style="
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 24px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      " onclick="selectProfile('isolated')" onmouseover="this.style.borderColor='rgba(124, 77, 255, 0.5)'; this.style.background='rgba(255, 255, 255, 0.05)';" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.06)'; this.style.background='rgba(255, 255, 255, 0.03)';">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">🛡️ Isolated Profile</h3>
+          <span style="font-size: 0.7rem; background: rgba(255, 255, 255, 0.08); color: #a09cb0; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Sandbox</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.4;">Launches a clean temporary window with a separate profile. Fast and safe, but requires logging in again to save to Google Drive.</p>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn" style="padding: 10px 18px; font-size: 0.85rem;" onclick="closeProfileModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const { invoke } = window.__TAURI__.core;
 
-    async function launchBrowser() {
+    function openProfileModal() {
+      const modal = document.getElementById('profile-modal');
+      const content = document.getElementById('profile-modal-content');
+      modal.style.display = 'flex';
+      // Force reflow
+      modal.offsetHeight;
+      modal.style.opacity = '1';
+      content.style.transform = 'translateY(0)';
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profile-modal');
+      const content = document.getElementById('profile-modal-content');
+      modal.style.opacity = '0';
+      content.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    }
+
+    async function selectProfile(mode) {
+      closeProfileModal();
       try {
-        await invoke('launch_browser');
+        await invoke('launch_browser', { profileType: mode });
       } catch (e) {
         console.error("Failed to launch browser:", e);
       }

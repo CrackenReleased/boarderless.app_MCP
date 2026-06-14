@@ -1,6 +1,6 @@
 {
   "name": "@boarderless/mcp-server",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Model Context Protocol (MCP) server for Boarderless, allowing AI agents to read the canvas state, mutate elements, and calculate export bounds.",
   "type": "module",
   "main": "mcp-stdio-server.js",

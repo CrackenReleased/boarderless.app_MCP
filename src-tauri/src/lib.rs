@@ -16,8 +16,7 @@ fn get_server_path(state: State<'_, AppState>) -> String {
     state.server_path.to_string_lossy().to_string()
 }
 
-#[tauri::command]
-fn launch_browser() {
+fn launch_browser_impl(profile_type: &str) {
     let exe_path = if cfg!(target_os = "windows") {
         let paths = vec![
             "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -32,30 +31,60 @@ fn launch_browser() {
         "google-chrome"
     };
 
+    let is_edge = exe_path.to_lowercase().contains("edge") || exe_path.to_lowercase().contains("msedge");
     let mut cmd = Command::new(exe_path);
     cmd.arg("--remote-debugging-port=9222")
        .arg("--no-first-run")
        .arg("--no-default-browser-check");
 
-    if cfg!(target_os = "windows") {
-        if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
-            let profile_path = std::path::Path::new(&local_app_data).join("boarderless-mcp-profile");
-            cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
-        }
-    } else if cfg!(target_os = "macos") {
-        if let Ok(home) = std::env::var("HOME") {
-            let profile_path = std::path::Path::new(&home).join("Library/Application Support/boarderless-mcp-profile");
-            cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+    if profile_type == "personal" {
+        // Use default Chrome/Edge profile directory
+        if cfg!(target_os = "windows") {
+            if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
+                let sub_dir = if is_edge { "Microsoft\\Edge\\User Data" } else { "Google\\Chrome\\User Data" };
+                let profile_path = std::path::Path::new(&local_app_data).join(sub_dir);
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
+        } else if cfg!(target_os = "macos") {
+            if let Ok(home) = std::env::var("HOME") {
+                let sub_dir = if is_edge { "Library/Application Support/Microsoft Edge" } else { "Library/Application Support/Google/Chrome" };
+                let profile_path = std::path::Path::new(&home).join(sub_dir);
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
+        } else {
+            if let Ok(home) = std::env::var("HOME") {
+                let sub_dir = if is_edge { ".config/microsoft-edge" } else { ".config/google-chrome" };
+                let profile_path = std::path::Path::new(&home).join(sub_dir);
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
         }
     } else {
-        if let Ok(home) = std::env::var("HOME") {
-            let profile_path = std::path::Path::new(&home).join(".boarderless-mcp-profile");
-            cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+        // Isolated profile directory
+        if cfg!(target_os = "windows") {
+            if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
+                let profile_path = std::path::Path::new(&local_app_data).join("boarderless-mcp-profile");
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
+        } else if cfg!(target_os = "macos") {
+            if let Ok(home) = std::env::var("HOME") {
+                let profile_path = std::path::Path::new(&home).join("Library/Application Support/boarderless-mcp-profile");
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
+        } else {
+            if let Ok(home) = std::env::var("HOME") {
+                let profile_path = std::path::Path::new(&home).join(".boarderless-mcp-profile");
+                cmd.arg(format!("--user-data-dir={}", profile_path.to_string_lossy()));
+            }
         }
     }
 
     cmd.arg("https://boarderless.app/canvas");
     let _ = cmd.spawn();
+}
+
+#[tauri::command]
+fn launch_browser(profile_type: String) {
+    launch_browser_impl(&profile_type);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -101,7 +130,7 @@ pub fn run() {
                         app.exit(0);
                     }
                     "launch" => {
-                        launch_browser();
+                        launch_browser_impl("personal");
                     }
                     "open" => {
                         if let Some(window) = app.get_webview_window("main") {
