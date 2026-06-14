@@ -18,7 +18,7 @@ const rl = readline.createInterface({
 function showHeader() {
   console.clear();
   console.log("\x1b[36m=================================================================\x1b[0m");
-  console.log("\x1b[36m         Boarderless MCP Setup & Configurator (v0.1.4)           \x1b[0m");
+  console.log("\x1b[36m         Boarderless MCP Setup & Configurator (v0.1.5)           \x1b[0m");
   console.log("\x1b[36m=================================================================\x1b[0m\n");
 }
 
@@ -122,9 +122,19 @@ function findChromeOrEdge() {
 function launchBrowser() {
   const exePath = findChromeOrEdge();
   if (exePath) {
-    console.log(`\n[*] Launching browser at: ${exePath}`);
+    let profilePath = "";
+    if (os.platform() === 'win32') {
+      profilePath = path.join(process.env.LOCALAPPDATA || '', 'boarderless-mcp-profile');
+    } else if (os.platform() === 'darwin') {
+      profilePath = path.join(os.homedir(), 'Library', 'Application Support', 'boarderless-mcp-profile');
+    } else {
+      profilePath = path.join(os.homedir(), '.boarderless-mcp-profile');
+    }
+
+    console.log(`\n[*] Launching browser at: ${exePath} with profile: ${profilePath}`);
     const args = [
       '--remote-debugging-port=9222',
+      `--user-data-dir=${profilePath}`,
       '--no-first-run',
       '--no-default-browser-check',
       'https://boarderless.app/canvas'

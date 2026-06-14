@@ -16,7 +16,7 @@ import { performRenaming } from "./helpers/rename_photos.js";
 import { standardize } from "./helpers/standardize_images.js";
 
 const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.4";
+const SERVER_VERSION = "0.1.5";
 const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
@@ -76,7 +76,7 @@ function findChromeOrEdge() {
   return null;
 }
 
-async function ensureBrowserRunning() {
+async function ensureBrowserRunning(appUrl) {
   // If BROWSER_URL is pointing to localhost:9222, we check if it is open
   const urlObj = new URL(BROWSER_URL);
   if (urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
@@ -86,12 +86,22 @@ async function ensureBrowserRunning() {
       console.error(`[Boarderless] Remote debugging port ${port} is closed. Attempting to launch browser...`);
       const exePath = findChromeOrEdge();
       if (exePath) {
-        console.error(`[Boarderless] Launching browser: ${exePath}`);
+        let profilePath = "";
+        if (os.platform() === 'win32') {
+          profilePath = path.join(process.env.LOCALAPPDATA || '', 'boarderless-mcp-profile');
+        } else if (os.platform() === 'darwin') {
+          profilePath = path.join(os.homedir(), 'Library', 'Application Support', 'boarderless-mcp-profile');
+        } else {
+          profilePath = path.join(os.homedir(), '.boarderless-mcp-profile');
+        }
+
+        console.error(`[Boarderless] Launching browser: ${exePath} with profile ${profilePath}`);
         const args = [
           `--remote-debugging-port=${port}`,
+          `--user-data-dir=${profilePath}`,
           '--no-first-run',
           '--no-default-browser-check',
-          'about:blank'
+          appUrl
         ];
         
         // Spawn browser and detach so it keeps running when this server restarts
@@ -142,7 +152,7 @@ async function run() {
   const APP_URL = await detectAppUrl();
   
   // Make sure remote debugging browser is open
-  await ensureBrowserRunning();
+  await ensureBrowserRunning(APP_URL);
 
   // Connect to the browser
   const browser = await puppeteer.connect({ browserURL: BROWSER_URL });

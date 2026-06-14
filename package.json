@@ -1,6 +1,6 @@
 {
   "name": "@boarderless/mcp-server",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Model Context Protocol (MCP) server for Boarderless, allowing AI agents to read the canvas state, mutate elements, and calculate export bounds.",
   "type": "module",
   "main": "mcp-stdio-server.js",
@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node mcp-stdio-server.js",
     "example": "node index.js",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
@@ -27,5 +28,8 @@
     "agentic-ui"
   ],
   "author": "CrackenReleased",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.2"
+  }
 }

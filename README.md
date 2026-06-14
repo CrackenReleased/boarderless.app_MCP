@@ -76,12 +76,12 @@ If you want to launch it manually, we provide pre-built launchers:
 Alternatively, launch manual instances:
 **Windows (PowerShell)**:
 ```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\boarderless-mcp-profile" https://boarderless.app/canvas
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:LOCALAPPDATA\boarderless-mcp-profile" https://boarderless.app/canvas
 ```
 
 **macOS (Terminal)**:
 ```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir="/tmp/boarderless-mcp-profile" https://boarderless.app/canvas
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir="$HOME/Library/Application Support/boarderless-mcp-profile" https://boarderless.app/canvas
 ```
 
 *Note: Make sure to sign in/authenticate Google OAuth on the canvas page.*
