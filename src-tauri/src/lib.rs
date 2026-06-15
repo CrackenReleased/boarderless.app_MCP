@@ -346,7 +346,7 @@ pub fn run() {
             let resource_dir = app.path().resource_dir().unwrap_or_default();
             let mut server_path = resource_dir.join("mcp-stdio-server.js");
             if !server_path.exists() {
-                server_path = std::env::current_dir().unwrap_or_default().join("mcp-stdio-server.js");
+                server_path = std::env::current_dir().unwrap_or_default().join("src/mcp-stdio-server.js");
             }
 
             // Spawn the node MCP server in background

@@ -17,11 +17,11 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 Run the installer to configure your environment and client settings:
 *   **Windows (PowerShell)**:
     ```powershell
-    Set-ExecutionPolicy Bypass -Scope Process -Force; .\setup.ps1
+    Set-ExecutionPolicy Bypass -Scope Process -Force; .\src\setup.ps1
     ```
 *   **Mac / Linux (Terminal)**:
     ```bash
-    chmod +x ./setup.sh && ./setup.sh
+    chmod +x ./src/setup.sh && ./src/setup.sh
     ```
 
 **Step 2: Choose Option 1 (Standard Auto-Setup)**
@@ -95,11 +95,11 @@ We provide pre-built install scripts that automatically check for Node.js (offer
 
 * **Windows**: Open PowerShell in this folder and run:
   ```powershell
-  Set-ExecutionPolicy Bypass -Scope Process -Force; .\setup.ps1
+  Set-ExecutionPolicy Bypass -Scope Process -Force; .\src\setup.ps1
   ```
 * **macOS & Linux (Ubuntu)**: Open Terminal in this folder and run:
   ```bash
-  chmod +x ./setup.sh && ./setup.sh
+  chmod +x ./src/setup.sh && ./src/setup.sh
   ```
 
 *Alternatively, perform manual installation:*
@@ -222,7 +222,7 @@ Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Wind
   "mcpServers": {
     "boarderless": {
       "command": "node",
-      "args": ["E:\\boarderless.app_MCP\\mcp-stdio-server.js"],
+      "args": ["E:\\boarderless.app_MCP\\src\\mcp-stdio-server.js"],
       "env": {
         "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
         "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
