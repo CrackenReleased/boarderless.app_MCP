@@ -1,7 +1,7 @@
 # Boarderless Model Context Protocol (MCP) Server
 
 > [!IMPORTANT]
-> **Operating System & Browser Support**: This Model Context Protocol (MCP) server and launcher tool are designed and optimized **specifically for Windows and Google Chrome**. Other configurations (such as macOS, Linux, or other browsers) are not fully supported.
+> **Operating System & Browser Support**: This Model Context Protocol (MCP) server and launcher tool are designed and optimized **specifically for Windows and Google Chrome**. Chromium-based browsers (including Microsoft Edge, Brave Browser, and Opera) are also supported on Windows. Other platforms (such as macOS or Linux) are supported as fallbacks but are not the primary target.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 

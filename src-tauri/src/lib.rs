@@ -220,6 +220,9 @@ fn launch_browser_impl(profile_type: &str, mode: &str, browser_name: &str) -> Op
     if mode == "debug" {
         cmd.arg("--remote-debugging-port=9222");
     }
+    if std::env::var("BOARDERLESS_MCP_HEADLESS").unwrap_or_default() == "true" {
+        cmd.arg("--headless=new");
+    }
     cmd.arg("--no-first-run")
        .arg("--no-default-browser-check");
 

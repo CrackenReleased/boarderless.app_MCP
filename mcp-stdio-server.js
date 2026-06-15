@@ -100,9 +100,12 @@ async function ensureBrowserRunning(appUrl) {
           `--remote-debugging-port=${port}`,
           `--user-data-dir=${profilePath}`,
           '--no-first-run',
-          '--no-default-browser-check',
-          appUrl
+          '--no-default-browser-check'
         ];
+        if (process.env.BOARDERLESS_MCP_HEADLESS === 'true') {
+          args.push('--headless=new');
+        }
+        args.push(appUrl);
         
         // Spawn browser and detach so it keeps running when this server restarts
         const child = spawn(exePath, args, {
@@ -155,11 +158,18 @@ async function run() {
   await ensureBrowserRunning(APP_URL);
 
   // Connect to the browser
-  const browser = await puppeteer.connect({ browserURL: BROWSER_URL });
+  const browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
   const pages = await browser.pages();
   const appOrigin = new URL(APP_URL).origin;
   const page = pages.find(p => p.url().startsWith(appOrigin)) || await browser.newPage();
   if (!page.url().startsWith(appOrigin)) await page.goto(APP_URL, { waitUntil: "domcontentloaded" });
+
+  try {
+    const client = await page.createCDPSession();
+    await client.send('Emulation.clearDeviceMetricsOverride');
+  } catch (e) {
+    // Ignore
+  }
 
   await page.waitForFunction(() => Boolean(window.boarderlessMcp), { timeout: 15000 });
 
@@ -220,6 +230,20 @@ async function run() {
             required: ["seniorsDir"],
             additionalProperties: false
           }
+        },
+        {
+          name: "export_board",
+          description: "Trigger a canvas or selection export inside the browser to download the board as PNG, PDF, or SVG.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              format: { type: "string", enum: ["png", "pdf", "svg"], description: "The export file format: png, pdf, or svg." },
+              mode: { type: "string", enum: ["canvas", "selection"], description: "The export mode: canvas (entire composition) or selection (only currently highlighted items). Defaults to canvas." },
+              filename: { type: "string", description: "Optional custom name for the exported file." }
+            },
+            required: ["format"],
+            additionalProperties: false
+          }
         }
       ]
     };
@@ -242,6 +266,41 @@ async function run() {
       try {
         const result = await standardize(args.seniorsDir);
         return { content: [{ type: "text", text: result }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: err.message }], isError: true };
+      }
+    }
+
+    if (name === "export_board") {
+      try {
+        const format = args.format;
+        const mode = args.mode || "canvas";
+        const filename = args.filename || "";
+        const result = await page.evaluate(async (fmt, md, fn) => {
+          try {
+            if (fmt === "png") {
+              if (typeof window.runReactExport !== "function") throw new Error("runReactExport not bound on page window");
+              await window.runReactExport(md, fn);
+            } else if (fmt === "pdf") {
+              if (typeof window.runReactPdfExport !== "function") throw new Error("runReactPdfExport not bound on page window");
+              await window.runReactPdfExport(md, fn);
+            } else if (fmt === "svg") {
+              if (typeof window.runReactSvgExport !== "function") throw new Error("runReactSvgExport not bound on page window");
+              await window.runReactSvgExport(md, fn);
+            } else {
+              throw new Error(`Unsupported export format: ${fmt}`);
+            }
+            return { success: true };
+          } catch (e) {
+            return { success: false, error: e.message };
+          }
+        }, format, mode, filename);
+
+        if (result.success) {
+          return { content: [{ type: "text", text: `[+] Exported board successfully as ${format.toUpperCase()} (${mode} mode) in the browser window.` }] };
+        } else {
+          return { content: [{ type: "text", text: `[-] Failed to export: ${result.error}` }], isError: true };
+        }
       } catch (err) {
         return { content: [{ type: "text", text: err.message }], isError: true };
       }
