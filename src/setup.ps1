@@ -19,4 +19,23 @@ if (-not $nodeInstalled) {
 }
 
 # Run the interactive Node-based configurator
-node setup.js
+node "$PSScriptRoot\setup.js"
+
+# Create/Update setup.lnk shortcut in the root directory
+$targetExe = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\src-tauri\target\release\app.exe"))
+$workingDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\src-tauri\target\release"))
+$iconPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "logo.ico"))
+$shortcutPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\setup.lnk"))
+
+try {
+    $WshShell = New-Object -ComObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut($shortcutPath)
+    $Shortcut.TargetPath = $targetExe
+    $Shortcut.WorkingDirectory = $workingDir
+    $Shortcut.IconLocation = $iconPath
+    $Shortcut.Save()
+    Write-Host "[✓] Shortcut setup.lnk updated in the root directory." -ForegroundColor Green
+} catch {
+    Write-Host "[!] Failed to update setup.lnk shortcut: $_" -ForegroundColor Yellow
+}
+
