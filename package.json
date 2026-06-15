@@ -11,7 +11,8 @@
     "start": "node src/mcp-stdio-server.js",
     "example": "node src/index.js",
     "setup": "node src/setup.js",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test": "node src/verify_shortcut.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
