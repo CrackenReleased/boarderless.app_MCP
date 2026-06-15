@@ -2,6 +2,9 @@
 # setup.sh
 # Boarderless MCP Setup Utility for macOS and Linux (Ubuntu)
 
+# Resolve the directory this script lives in so it works from any CWD
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Text colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -43,7 +46,7 @@ if ! command -v node &> /dev/null; then
 fi
 
 # Ensure launch scripts are executable
-chmod +x ./launch-chrome-debugging.sh 2>/dev/null || true
+chmod +x "$SCRIPT_DIR/launch-chrome-debugging.sh" 2>/dev/null || true
 
 # Run the interactive Node-based configurator
-node setup.js
+node "$SCRIPT_DIR/setup.js"

@@ -58,10 +58,10 @@ The interactive installer will:
 ## Prerequisites
 
 1. **Node.js** (v18 or higher)
-2. **Supported OS & Browser**: Windows 10/11 with Google Chrome (fully supported and optimized). Microsoft Edge is supported as a fallback.
-3. **Boarderless Web App**: Running locally (typically at `http://127.0.0.1:5174/canvas`) or via production web portal.
+2. **Supported OS & Browser**: Windows 10/11 with a Chromium-based browser — Google Chrome, Brave Browser, Opera, or Microsoft Edge (all fully detected and supported). macOS and Linux are supported as community fallbacks.
+3. **Boarderless Web App**: Access via production at `https://boarderless.app/canvas` (default) or your local dev server if running one.
 
-*Note: This Model Context Protocol server is optimized specifically for Windows and Google Chrome. Other operating systems and browsers (like macOS, Linux, or Edge) are supported as fallbacks, but Windows/Chrome is the primary target.*
+*Note: This Model Context Protocol server is optimized specifically for Windows. Google Chrome, Brave Browser, Opera, and Microsoft Edge are all fully supported. macOS and Linux are supported as community fallbacks.*
 
 ---
 
@@ -222,7 +222,7 @@ Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Wind
   "mcpServers": {
     "boarderless": {
       "command": "node",
-      "args": ["E:\\boarderless.app_MCP\\src\\mcp-stdio-server.js"],
+      "args": ["C:\\path\\to\\boarderless.app_MCP\\src\\mcp-stdio-server.js"],
       "env": {
         "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
         "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"

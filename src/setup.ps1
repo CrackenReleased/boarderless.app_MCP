@@ -18,24 +18,42 @@ if (-not $nodeInstalled) {
     }
 }
 
+# Check for WebView2 Runtime (required by the Boarderless MCP GUI)
+$webview2Key = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+$webview2Key2 = "HKCU:\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+$webview2Installed = (Test-Path $webview2Key) -or (Test-Path $webview2Key2)
+if (-not $webview2Installed) {
+    Write-Host "" 
+    Write-Host "[!] Microsoft WebView2 Runtime was not detected on your system." -ForegroundColor Yellow
+    Write-Host "    The Boarderless MCP launcher requires WebView2 to display its interface."
+    Write-Host "    Download it free from: https://developer.microsoft.com/microsoft-edge/webview2/" -ForegroundColor Cyan
+    $openBrowser = Read-Host "Would you like to open that page now? (Y/N)"
+    if ($openBrowser -eq "Y" -or $openBrowser -eq "y") {
+        Start-Process "https://developer.microsoft.com/microsoft-edge/webview2/"
+        Write-Host "Please install WebView2, then re-run this setup." -ForegroundColor Green
+        Exit
+    }
+    Write-Host "[*] Continuing setup — the launcher window may appear blank without WebView2." -ForegroundColor Yellow
+    Write-Host ""
+}
+
 # Run the interactive Node-based configurator
 node "$PSScriptRoot\setup.js"
 
-# Create/Update setup.lnk shortcut in the root directory
+# Copy/Update the launcher in the root directory
 $targetExe = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\src-tauri\target\release\app.exe"))
-$workingDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\src-tauri\target\release"))
-$iconPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "logo.ico"))
-$shortcutPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\setup.lnk"))
+$destExe   = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\Boarderless MCP.exe"))
 
 try {
-    $WshShell = New-Object -ComObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut($shortcutPath)
-    $Shortcut.TargetPath = $targetExe
-    $Shortcut.WorkingDirectory = $workingDir
-    $Shortcut.IconLocation = $iconPath
-    $Shortcut.Save()
-    Write-Host "[✓] Shortcut setup.lnk updated in the root directory." -ForegroundColor Green
+    if (Test-Path $targetExe) {
+        Copy-Item $targetExe $destExe -Force
+        Write-Host "[✓] Boarderless MCP.exe updated in the root directory." -ForegroundColor Green
+    } else {
+        Write-Host "[!] Compiled binary app.exe not found. Run 'npm run tauri build' to compile the GUI client." -ForegroundColor Yellow
+    }
 } catch {
-    Write-Host "[!] Failed to update setup.lnk shortcut: $_" -ForegroundColor Yellow
+    Write-Host "[!] Failed to copy Boarderless MCP.exe to root directory: $_" -ForegroundColor Yellow
 }
+
+
 

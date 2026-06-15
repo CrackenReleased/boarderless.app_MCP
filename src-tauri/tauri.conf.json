@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "boarderless-mcp",
-  "version": "0.1.11",
+  "productName": "Boarderless MCP",
+  "version": "0.1.12",
   "identifier": "app.boarderless.mcp",
   "build": {
     "frontendDist": "../ui",
@@ -10,9 +10,10 @@
     "beforeBuildCommand": ""
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Boarderless MCP Control",
+        "title": "Boarderless MCP",
         "width": 800,
         "height": 600,
         "resizable": true,

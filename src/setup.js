@@ -18,7 +18,7 @@ const rl = readline.createInterface({
 function showHeader() {
   console.clear();
   console.log("\x1b[36m=================================================================\x1b[0m");
-  console.log("\x1b[36m         Boarderless MCP Setup & Configurator (v0.1.5)           \x1b[0m");
+  console.log("\x1b[36m         Boarderless MCP Setup & Configurator (v0.1.12)          \x1b[0m");
   console.log("\x1b[36m=================================================================\x1b[0m\n");
 }
 

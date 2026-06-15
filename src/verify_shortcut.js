@@ -31,45 +31,26 @@ function testLogoIcoHeader() {
   console.log(`[✓] Valid ICO header verified.`);
 }
 
-function testShortcutProperties() {
-  const shortcutPath = path.join(rootDir, 'setup.lnk');
-  console.log(`[Test] Verifying shortcut at: ${shortcutPath}`);
+function testSetupExecutable() {
+  const exePath = path.join(rootDir, 'setup.exe');
+  console.log(`[Test] Verifying setup.exe executable at: ${exePath}`);
   
-  if (!fs.existsSync(shortcutPath)) {
-    throw new Error(`Regression test failed: setup.lnk does not exist in root!`);
+  if (!fs.existsSync(exePath)) {
+    throw new Error(`Regression test failed: setup.exe does not exist in root!`);
   }
   
-  if (process.platform === 'win32') {
-    // Query shortcut properties using PowerShell
-    const escapedPath = shortcutPath.replace(/'/g, "''");
-    const cmd = `$sh = New-Object -ComObject WScript.Shell; $lnk = $sh.CreateShortcut('${escapedPath}'); Write-Output "Target:$($lnk.TargetPath)|Icon:$($lnk.IconLocation)"`;
-    
-    try {
-      const output = execSync(cmd, { shell: 'powershell', encoding: 'utf8' }).trim();
-      console.log(`[Test] Query output: ${output}`);
-      
-      const parts = output.split('|');
-      const targetPart = parts.find(p => p.startsWith('Target:'))?.replace('Target:', '') || '';
-      const iconPart = parts.find(p => p.startsWith('Icon:'))?.replace('Icon:', '') || '';
-      
-      if (!iconPart.includes('src\\logo.ico')) {
-        throw new Error(`Regression test failed: IconLocation is not configured with 'src\\logo.ico'. Current: ${iconPart}`);
-      }
-      
-      console.log(`[✓] Shortcut Target: ${targetPart}`);
-      console.log(`[✓] Shortcut IconLocation: ${iconPart}`);
-    } catch (err) {
-      throw new Error(`Regression test failed to read shortcut properties: ${err.message}`);
-    }
-  } else {
-    console.log(`[Test] Skipping shortcut check since it is only applicable on Windows.`);
+  const stats = fs.statSync(exePath);
+  console.log(`[✓] setup.exe size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+  
+  if (stats.size < 5 * 1024 * 1024) {
+    throw new Error(`Regression test failed: setup.exe size is too small (${stats.size} bytes). It should be a fully compiled Tauri binary.`);
   }
 }
 
 function runAll() {
   try {
     testLogoIcoHeader();
-    testShortcutProperties();
+    testSetupExecutable();
     console.log(`\n\x1b[32m[✓] All regression tests passed successfully!\x1b[0m\n`);
     process.exit(0);
   } catch (error) {

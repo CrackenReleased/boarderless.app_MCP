@@ -3,908 +3,1355 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boarderless MCP Control Panel</title>
+  <title>Boarderless MCP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #0f0c20 0%, #15102a 100%);
-      --card-bg: rgba(255, 255, 255, 0.04);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --glow-color: rgba(34, 197, 94, 0.4);
-      --accent-color: #7c4dff;
-      --accent-glow: rgba(124, 77, 255, 0.4);
-      --text-main: #f3f1f7;
-      --text-sub: #a09cb0;
+      /* Boarderless Design System Variables adapted for desktop utility */
+      --bg-app: #08080a;
+      --bg-sidebar: #0e0e13;
+      --bg-card: #121217;
+      --bg-card-hover: #161620;
+      --border: rgba(255, 255, 255, 0.07);
+      --border-hover: rgba(255, 255, 255, 0.14);
+      --border-accent: rgba(100, 160, 255, 0.25);
+      
+      --text-main: #f0eef6;
+      --text-secondary: #a09cb0;
+      --text-muted: #5f5c75;
+      
+      --accent: #64a0ff;
+      --accent-dim: rgba(100, 160, 255, 0.12);
+      --accent-glow: rgba(100, 160, 255, 0.25);
+      
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.12);
+      --green-glow: rgba(34, 197, 94, 0.25);
+      
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.12);
+      
+      --warn: #fbbf24;
+      --warn-dim: rgba(251, 191, 36, 0.08);
+
+      --font-brand: 'Outfit', sans-serif;
+      --font-ui: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Outfit', monospace;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
-      background: var(--bg-gradient);
+      font-family: var(--font-ui);
+      background: var(--bg-app);
       color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 720px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    h1 {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 800;
-      font-size: 2.2rem;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-      background: linear-gradient(90deg, #f3f1f7 0%, #a09cb0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    header p {
-      color: var(--text-sub);
-      font-size: 0.95rem;
-    }
-
-    .status-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(16px);
-      border-radius: 20px;
-      padding: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 30px;
-      position: relative;
+      height: 100vh;
+      width: 100vw;
       overflow: hidden;
+      display: flex;
+      user-select: none;
     }
 
-    .status-panel::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
+    /* ─── Layout Structure ─── */
+    .app-layout {
+      display: flex;
+      width: 100%;
       height: 100%;
-      background: #22c55e;
-      box-shadow: 0 0 12px #22c55e;
     }
 
-    .status-info {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .status-indicator {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 12px #22c55e;
-      animation: pulse 2s infinite;
-    }
-
-    .status-label {
-      font-weight: 700;
-      font-size: 1.1rem;
-      letter-spacing: -0.2px;
-    }
-
-    .status-desc {
-      color: var(--text-sub);
-      font-size: 0.85rem;
-      margin-top: 2px;
-    }
-
-    .btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--text-main);
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-family: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.14);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary {
-      background: var(--accent-color);
-      border: 1px solid transparent;
-      box-shadow: 0 4px 14px var(--accent-glow);
-    }
-
-    .btn-primary:hover {
-      background: #8e62ff;
-      box-shadow: 0 6px 20px var(--accent-glow);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(16px);
-      border-radius: 20px;
-      padding: 24px;
-    }
-
-    .card-title {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 600;
-      font-size: 1.2rem;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .snippet-container {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 16px;
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: #9cdcfe;
-      overflow-x: auto;
-      white-space: pre;
-      position: relative;
-    }
-
-    .copy-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(255, 255, 255, 0.08);
-      border: none;
-      color: var(--text-main);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .copy-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .faq-item {
-      margin-bottom: 16px;
-    }
-
-    .faq-question {
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin-bottom: 4px;
-      color: var(--text-main);
-    }
-
-    .faq-answer {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      line-height: 1.5;
-    }
-
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-      }
-    }
-    /* Wizard Styles */
-    .wizard-card {
-      display: none;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    
-    .wizard-card.active {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .wizard-selection-group {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .wizard-select-item {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1.5px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 14px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s ease;
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 250px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .wizard-select-item:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(124, 77, 255, 0.3);
-    }
-
-    .wizard-select-item.selected {
-      background: rgba(124, 77, 255, 0.1);
-      border-color: var(--accent-color);
-      box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);
-    }
-
-    .wizard-select-item svg {
-      width: 32px;
-      height: 32px;
-    }
-
-    .wizard-select-item * {
-      pointer-events: none;
-    }
-
-    .wizard-profile-option {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1.5px solid rgba(255, 255, 255, 0.06);
-      border-radius: 16px;
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 12px;
-    }
-
-    .wizard-profile-option:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(124, 77, 255, 0.3);
-    }
-
-    .wizard-profile-option.selected {
-      background: rgba(124, 77, 255, 0.08);
-      border-color: var(--accent-color);
-      box-shadow: 0 0 16px rgba(124, 77, 255, 0.25);
-    }
-
-    .step-header {
-      display: flex;
+      flex-shrink: 0;
+      padding: 20px;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      padding-bottom: 12px;
     }
 
-    .step-number {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent-color);
-      background: rgba(124, 77, 255, 0.15);
-      padding: 2px 8px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .step-instruction-box {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .instruction-step {
+    .sidebar-top {
       display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .instruction-step:last-child {
-      margin-bottom: 0;
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .instruction-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
+    .brand-logo-container {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 24px;
+      height: 28px;
+      overflow: visible;
+    }
+
+    .brand-logo-img {
+      height: 24px;
+      width: auto;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* Pulsing blue orbs behind the brand logo */
+    .brand-logo-container::before {
+      content: '';
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(100, 160, 255, 0.45) 0%, rgba(100, 160, 255, 0.08) 50%, transparent 70%);
+      filter: blur(2px);
+      z-index: 1;
+      animation: logo-orb-pulse-1 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .brand-logo-container::after {
+      content: '';
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(100, 160, 255, 0.3) 0%, rgba(100, 160, 255, 0.05) 60%, transparent 80%);
+      filter: blur(1px);
+      z-index: 1;
+      animation: logo-orb-pulse-2 3s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes logo-orb-pulse-1 {
+      0% {
+        transform: scale(0.85);
+        opacity: 0.4;
+      }
+      100% {
+        transform: scale(1.3);
+        opacity: 0.95;
+      }
+    }
+
+    @keyframes logo-orb-pulse-2 {
+      0% {
+        transform: scale(1.15);
+        opacity: 0.75;
+      }
+      100% {
+        transform: scale(0.85);
+        opacity: 0.35;
+      }
+    }
+
+    .brand-title {
+      font-family: var(--font-brand);
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+      letter-spacing: -0.3px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title span {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    /* ─── Status Monitor Widget ─── */
+    .status-widget {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .status-widget-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green-glow);
+      animation: heartbeat 2.2s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0%   { box-shadow: 0 0 0 0   var(--green-glow); }
+      40%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0   rgba(34,197,94,0); }
+    }
+
+    .status-title-text {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.4px;
+    }
+
+    .status-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .status-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1px 6px;
+      border-radius: 4px;
+      max-width: 125px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─── Navigation Menu ─── */
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: var(--text-secondary);
       font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+    }
+
+    .menu-item.active {
+      background: var(--accent-dim);
+      border-color: var(--border-accent);
+      color: var(--accent);
+    }
+
+    .menu-item svg {
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── Main Content Pane ─── */
+    .main-pane {
+      flex: 1;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .view-pane {
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .view-pane.active {
+      display: flex;
+    }
+
+    .pane-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .pane-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .pane-card-title {
+      font-family: var(--font-brand);
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding-bottom: 8px;
+    }
+
+    .pane-card-title svg {
+      color: var(--text-muted);
+    }
+
+    /* ─── Interactive Browser Launcher Grid ─── */
+    .launcher-layout {
+      display: flex;
+      gap: 16px;
+    }
+
+    .launcher-selection {
+      flex: 1.1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      padding-right: 16px;
+    }
+
+    .launcher-actions {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 160px;
+    }
+
+    .panel-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .browser-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .browser-card {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      min-width: 0;
+    }
+
+    .browser-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-hover);
+    }
+
+    .browser-card.selected {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(100, 160, 255, 0.1);
+    }
+
+    .browser-card svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.15s ease;
+    }
+
+    .browser-card:hover svg {
+      transform: scale(1.08);
+    }
+
+    .browser-name-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .browser-card.selected .browser-name-label {
+      color: #fff;
+    }
+
+    .mode-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mode-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mode-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-hover);
+    }
+
+    .mode-card.selected {
+      background: rgba(100, 160, 255, 0.04);
+      border-color: var(--accent);
+    }
+
+    .mode-card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .mode-card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .mode-card-desc {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    .mode-badge {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 10px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .mode-badge.secure {
+      background: rgba(100, 160, 255, 0.12);
+      color: var(--accent);
+    }
+
+    .mode-badge.share {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--green);
+    }
+
+    /* ─── Control Steps / Wizard Panels ─── */
+    .wizard-pane {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .wizard-pane.active {
+      display: flex;
+    }
+
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 10px;
+      opacity: 0.45;
+      transition: opacity 0.2s ease;
+    }
+
+    .step-item.active {
+      opacity: 1;
+    }
+
+    .step-bubble {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
       font-weight: 700;
       flex-shrink: 0;
     }
 
-    .instruction-icon.completed {
-      background: #22c55e;
-      color: #fff;
+    .step-item.active .step-bubble {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
-    .instruction-icon.active {
-      background: var(--accent-color);
-      color: #fff;
-      box-shadow: 0 0 10px var(--accent-glow);
+    .step-item.completed .step-bubble {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: var(--green);
     }
 
-    .instruction-text {
-      font-size: 0.85rem;
-      line-height: 1.5;
-    }
-
-    .instruction-title {
-      font-weight: 700;
-      margin-bottom: 2px;
-      color: #fff;
-    }
-
-    .instruction-desc {
-      color: var(--text-sub);
-    }
-
-    .warning-banner {
-      background: rgba(251, 191, 36, 0.08);
-      border: 1px solid rgba(251, 191, 36, 0.15);
-      border-radius: 12px;
-      padding: 12px;
-      color: #fbbf24;
-      font-size: 0.8rem;
-      line-height: 1.45;
+    .step-body {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .step-desc {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .step-action-btn {
+      margin-top: 4px;
+      align-self: flex-start;
+    }
+
+    /* Personal Close Warning */
+    .warning-banner {
+      background: var(--warn-dim);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      color: var(--warn);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .warning-banner-icon {
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .warning-banner-text strong {
+      color: #fff;
+    }
+
+    /* Active Session Screen */
+    .active-session-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px 0;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .session-icon-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .session-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+    }
+
+    .session-pulse-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 14px;
+      border: 1.5px solid var(--green);
+      opacity: 0;
+      animation: pulse-ring 2.5s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0; }
+      100% { transform: scale(1.15); opacity: 0; }
+    }
+
+    .session-title-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .session-desc-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      max-width: 200px;
+    }
+
+    .reset-session-link {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.15s ease;
+      margin-top: -4px;
+    }
+
+    .reset-session-link:hover {
+      color: var(--accent);
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-hover);
+    }
+
+    .btn-primary {
+      background: var(--accent-dim);
+      border-color: var(--border-accent);
+      color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: rgba(100, 160, 255, 0.18);
+      border-color: rgba(100, 160, 255, 0.4);
+    }
+
+    .btn-danger {
+      background: var(--red-dim);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ─── Terminal Code Snippet Block ─── */
+    .config-description {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .terminal-box {
+      background: #09090d;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .terminal-toolbar {
+      background: #111116;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      position: relative;
+    }
+
+
+
+    .window-title-tab {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    .terminal-copy-button {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.68rem;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .terminal-copy-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .terminal-pre {
+      padding: 12px;
+      margin: 0;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.45;
+      color: #e3e3e3;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Syntax Highlighting Colors */
+    .json-key { color: #8fd2ff; }
+    .json-string { color: #ce9178; }
+    .json-number { color: #b5cea8; }
+    .json-boolean { color: #569cd6; }
+
+    /* ─── Security Document View ─── */
+    .docs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .docs-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .docs-card-header {
+      font-family: var(--font-brand);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .docs-card-header svg {
+      color: var(--accent);
+    }
+
+    .docs-card-body {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Boarderless MCP</h1>
-      <p>System Taskbar Bridge & Configurator</p>
-    </header>
-
-    <div class="status-panel">
-      <div class="status-info">
-        <div class="status-indicator"></div>
-        <div>
-          <div class="status-label">Bridge Connected</div>
-          <div class="status-desc">MCP Server active on standard stdio port.</div>
+  <div class="app-layout">
+    
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-header">
+          <div class="brand-logo-container">
+            <img src="logo.png" class="brand-logo-img" alt="Boarderless Logo">
+          </div>
+          <div class="brand-title">Boarderless <span>MCP Control Center</span></div>
         </div>
-      </div>
-      <button class="btn btn-primary" onclick="openProfileModal()">
-        Launch Debug Browser
-      </button>
-    </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-title">🔌 Connection Settings</div>
-        <p style="color: var(--text-sub); font-size: 0.9rem; margin-bottom: 12px;">
-          To connect Cursor, Windsurf, or custom developer clients, register this stdio configuration:
-        </p>
-        <div class="snippet-container">
-<button class="copy-btn" onclick="copySnippet()">Copy</button><span style="color: #6a9955;">// Stdio MCP Server Config</span>
-Type: stdio
-Name: boarderless
-Command: node <span id="server-path-holder">"E:\boarderless.app_MCP\mcp-stdio-server.js"</span>
-Env Variables:
-  BOARDERLESS_MCP_APP_URL = https://boarderless.app/canvas
-  BOARDERLESS_MCP_BROWSER_URL = http://127.0.0.1:9222</div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📖 Security & Consent</div>
-        <div class="faq-item">
-          <div class="faq-question">Why does it require remote debugging?</div>
-          <div class="faq-answer">
-            The bridge securely attaches to a standard browser tab. This is how the AI reads the canvas spatial ledger and makes layout modifications.
+        <!-- Server status widget -->
+        <div class="status-widget">
+          <div class="status-widget-header">
+            <div class="pulse-dot"></div>
+            <span class="status-title-text">MCP RUNNING</span>
+          </div>
+          <div class="status-description">
+            Stdio bridge interface active. Ready for client connections.
+          </div>
+          <div class="status-metrics">
+            <div class="metric-row">
+              <span class="metric-label">Transport</span>
+              <span class="metric-value">stdio</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Port</span>
+              <span class="metric-value">9222 (CDP)</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Active file</span>
+              <span class="metric-value" id="server-filename-val">stdio-server</span>
+            </div>
           </div>
         </div>
-        <div class="faq-item">
-          <div class="faq-question">Do I have to approve actions?</div>
-          <div class="faq-answer">
-            Yes! A glassmorphic permission drawer rises on the canvas page before any mutation, giving you absolute control to accept or reject edits.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Browser Profile Mode Modal (Walkthrough Wizard) -->
-  <div id="profile-modal" style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: rgba(10, 8, 20, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  ">
-    <div style="
-      width: 520px;
-      max-width: 90%;
-      background: rgba(20, 15, 38, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      padding: 30px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-      transform: translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-    " id="profile-modal-content">
+        <!-- Navigation Menu -->
+        <nav class="sidebar-menu">
+          <div class="menu-item active" id="menu-dashboard" onclick="showView('dashboard')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard Console
+          </div>
+          <div class="menu-item" id="menu-security" onclick="showView('security')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Security &amp; Consent
+          </div>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <span>Boarderless v0.1.12</span>
+        <span>Online</span>
+      </div>
+    </aside>
+
+    <!-- ═══════════ MAIN CONTENT PANES ═══════════ -->
+    <main class="main-pane">
       
-      <!-- STEP 1: Select Browser & Profile Mode -->
-      <div id="wizard-step-1" class="wizard-card active">
-        <div class="step-header">
-          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Setup Browser & Profile
-          </h2>
-          <span class="step-number">Step 1 of 2</span>
-        </div>
-
-        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-          Configure which browser and profile context to use for Boarderless.app automation:
-        </p>
-
-        <!-- Browser Selection -->
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 10px;">
-          1. Select Browser
-        </h4>
-        <div class="wizard-selection-group" id="browser-selection-container">
-          <!-- Dynamic installed browsers populate here -->
-        </div>
-
-        <!-- Profile Selection -->
-        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 10px;">
-          2. Choose Profile Type
-        </h4>
+      <!-- ─── Tab 1: Dashboard View ─── -->
+      <div class="view-pane active" id="view-dashboard">
         
-        <!-- Isolated Option -->
-        <div id="option-isolated" class="wizard-profile-option selected" onclick="setProfileMode('isolated')">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">🛡️ Isolated Profile (Highly Recommended)</h3>
-            <span style="font-size: 0.7rem; background: rgba(124, 77, 255, 0.15); color: #9d6fff; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Secure Login</span>
+        <!-- Launcher Card -->
+        <section class="pane-card">
+          <div class="pane-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Browser Debugger Control Cockpit
           </div>
-          <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.45;">
-            Creates a dedicated Boarderless browser profile. Safe, fast, and does not require closing your personal browser windows. Supports multi-account selection.
-          </p>
-        </div>
 
-        <!-- Personal Option -->
-        <div id="option-personal" class="wizard-profile-option" onclick="setProfileMode('personal')">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">👤 Personal Profile</h3>
-            <span style="font-size: 0.7rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Share Sessions</span>
-          </div>
-          <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.45;">
-            Launches your default, everyday personal Chrome/Edge window. You'll keep active sessions, history, and extensions, but you must completely close Chrome/Edge first.
-          </p>
-        </div>
-
-        <!-- Navigation -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-          <button class="btn" onclick="closeProfileModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="goToStep(2)">Continue</button>
-        </div>
-      </div>
-
-      <!-- STEP 2A: Isolated Profile Authentication Wizard -->
-      <div id="wizard-step-2-isolated" class="wizard-card">
-        <div class="step-header">
-          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Login & Connect AI
-          </h2>
-          <span class="step-number">Step 2 of 2</span>
-        </div>
-
-        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-          Follow these two steps to connect your Google account without triggering automated safety blocks:
-        </p>
-
-        <div class="step-instruction-box">
-          <!-- Sub-step 1 -->
-          <div class="instruction-step">
-            <div id="icon-substep-1" class="instruction-icon active">1</div>
-            <div class="instruction-text">
-              <div class="instruction-title">Google Account Sign-In</div>
-              <div class="instruction-desc" id="substep-1-desc">
-                Launch a standard window, log in with your Google Account, and close it when done.
+          <div class="launcher-layout">
+            <!-- Left inputs side -->
+            <div class="launcher-selection" id="launcher-selection-box">
+              <div class="panel-label">1. Select Target Browser</div>
+              <div class="browser-row" id="browser-grid-inline">
+                <!-- Dynamically populated -->
               </div>
-              <button id="btn-substep-1" class="btn btn-primary" style="margin-top: 10px; font-size: 0.8rem; padding: 8px 14px;" onclick="startIsolatedLogin()">
-                Open Sign-In Window
-              </button>
+
+              <div class="panel-label" style="margin-top: 6px;">2. Connection Profile Mode</div>
+              <div class="mode-list">
+                <div class="mode-card selected" id="mcard-isolated" onclick="setProfileMode('isolated')">
+                  <div class="mode-card-left">
+                    <span class="mode-card-title">🛡️ Isolated Profile</span>
+                    <span class="mode-card-desc">Sandbox session. Your main browser remains untouched.</span>
+                  </div>
+                  <span class="mode-badge secure">Isolated</span>
+                </div>
+                <div class="mode-card" id="mcard-personal" onclick="setProfileMode('personal')">
+                  <div class="mode-card-left">
+                    <span class="mode-card-title">👤 Personal Profile</span>
+                    <span class="mode-card-desc">Shares your daily tabs/history. No re-login required.</span>
+                  </div>
+                  <span class="mode-badge share">Shares cookies</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right steps / wizard controller side -->
+            <div class="launcher-actions">
+              
+              <!-- Isolated Step Wizard -->
+              <div class="wizard-pane active" id="pane-isolated">
+                <div class="panel-label">Launcher Steps</div>
+                <div class="step-list">
+                  <div class="step-item active" id="wizard-step-1">
+                    <div class="step-bubble">1</div>
+                    <div class="step-body">
+                      <span class="step-title">Google Authentication</span>
+                      <span class="step-desc" id="isolated-step-1-desc">Required only on first launch. Sign in to your Boarderless Google account.</span>
+                      <button class="btn btn-primary step-action-btn" id="btn-isolated-login" onclick="startIsolatedLogin()">Open Sign-In Window</button>
+                    </div>
+                  </div>
+                  <div class="step-item active" id="wizard-step-2-isolated">
+                    <div class="step-bubble">2</div>
+                    <div class="step-body">
+                      <span class="step-title">Launch Canvas Debugger</span>
+                      <span class="step-desc">Attach the remote debugging bridge to hook up your AI canvas commands.</span>
+                      <button class="btn btn-primary step-action-btn" id="btn-isolated-debug" onclick="startIsolatedDebug()">Launch AI Session</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Personal Launch Window -->
+              <div class="wizard-pane" id="wizard-step-2-personal">
+                <div class="panel-label">Personal Launcher</div>
+                <div class="warning-banner">
+                  <span class="warning-banner-icon">⚠️</span>
+                  <div class="warning-banner-text">
+                    <strong>Close all open browser windows first.</strong> Debugging requires exclusive control. The engine will crash if the browser is currently running.
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="padding: 10px; font-weight: 700;" onclick="launchPersonalDebug()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Launch Personal Debugger
+                </button>
+              </div>
+
+              <!-- Active Session Window -->
+              <div class="wizard-pane" id="pane-active-session">
+                <div class="active-session-pane">
+                  <div class="session-icon-container">
+                    <div class="session-pulse-ring"></div>
+                    <div class="session-icon-box">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="session-title-label">Debugger Active</div>
+                    <div class="session-desc-label" id="active-session-details">Google Chrome is active with remote debugging enabled on port 9222.</div>
+                  </div>
+                  <button class="btn btn-danger" style="font-weight: 700; width: 100%;" onclick="killActiveSession()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Disconnect Browser Session
+                  </button>
+                  <span class="reset-session-link" onclick="resetUIState()">Reset Launcher State</span>
+                </div>
+              </div>
+
             </div>
           </div>
+        </section>
 
-          <!-- Sub-step 2 -->
-          <div class="instruction-step" style="opacity: 0.5; transition: opacity 0.3s ease;" id="container-substep-2">
-            <div id="icon-substep-2" class="instruction-icon">2</div>
-            <div class="instruction-text">
-              <div class="instruction-title">Relaunch in AI Debug Mode</div>
-              <div class="instruction-desc">
-                Once signed in, click here to close the login session and establish the AI debugger bridge.
-              </div>
-              <button id="btn-substep-2" class="btn btn-primary" style="margin-top: 10px; font-size: 0.8rem; padding: 8px 14px;" onclick="startIsolatedDebug()" disabled>
-                Enable AI Control
+        <!-- Client Config Card -->
+        <section class="pane-card">
+          <div class="pane-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            AI IDE Client Integration Config
+          </div>
+          <p class="config-description">
+            Copy this JSON configuration block into your Claude Desktop, Cursor, or Windsurf config file to grant your AI agent connection rights.
+          </p>
+          <div class="terminal-box">
+            <div class="terminal-toolbar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; opacity: 0.85;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span class="window-title-tab">mcp-config.json</span>
+              <button class="terminal-copy-button" onclick="copySnippet()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copy-btn-text">Copy JSON</span>
               </button>
             </div>
+            <pre class="terminal-pre"><code id="code-block-content"><span class="json-key">"mcpServers"</span>: {
+  <span class="json-key">"boarderless"</span>: {
+    <span class="json-key">"command"</span>: <span class="json-string">"node"</span>,
+    <span class="json-key">"args"</span>: [<span class="json-string" id="server-path-holder-val">"..."</span>]
+  }
+}</code></pre>
           </div>
-        </div>
+        </section>
 
-        <!-- Navigation -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-          <button class="btn" onclick="goToStep(1)">Back</button>
-          <button class="btn" onclick="closeProfileModal()">Cancel</button>
-        </div>
       </div>
 
-      <!-- STEP 2B: Personal Profile Verification Wizard -->
-      <div id="wizard-step-2-personal" class="wizard-card">
-        <div class="step-header">
-          <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; background: linear-gradient(90deg, #fff 0%, #a09cb0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            Launch Personal Debugger
-          </h2>
-          <span class="step-number">Step 2 of 2</span>
-        </div>
-
-        <p style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px;">
-          This will open your existing browser profile so you don't need to log in again.
-        </p>
-
-        <div class="warning-banner">
-          <span style="font-size: 1.1rem; margin-top: -2px;">⚠️</span>
-          <div>
-            <strong>Close all active browser windows first:</strong> You must completely shut down all running instances of the selected browser before launching. The AI debugger cannot hook into an already open session.
+      <!-- ─── Tab 2: Security & Privacy View ─── -->
+      <div class="view-pane" id="view-security">
+        <section class="pane-card">
+          <div class="pane-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Security &amp; Client Consent Protocols
           </div>
-        </div>
 
-        <!-- Navigation -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
-          <button class="btn" onclick="goToStep(1)">Back</button>
-          <div>
-            <button class="btn" style="margin-right: 8px;" onclick="closeProfileModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="launchPersonalDebug()">Launch Debug Browser</button>
+          <div class="docs-container">
+            <div class="docs-card">
+              <div class="docs-card-header">
+                🛡️ Localhost Isolation
+              </div>
+              <div class="docs-card-body">
+                The Boarderless MCP server attaches to Chrome/Edge using the Chrome DevTools Protocol (CDP) exclusively bound to the <code>127.0.0.1</code> local loopback address. No external network clients can connect to or query your canvas state.
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header">
+                ✍️ Explicit Interaction Verification
+              </div>
+              <div class="docs-card-body">
+                Every mutation request (e.g. creating, moving, deleting, or editing visual objects) triggers a slide-out consent dialog directly inside the Boarderless web app. The server is sandboxed and cannot execute any mutations on your board until you click "Accept" in the UI.
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header">
+                👥 Profile Isolation
+              </div>
+              <div class="docs-card-body">
+                By default, the <strong>Isolated Profile</strong> stores cache and cookies in a separate directories (<code>boarderless-mcp-profile</code>) in your local app data. This ensures your daily browsing cookies, passwords, and sessions remain completely separated from the AI workspace.
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
 
-    </div>
+    </main>
+
   </div>
 
   <script>
-    const { invoke } = window.__TAURI__.core;
+    let invoke;
+    try {
+      invoke = window.__TAURI__.core.invoke;
+    } catch (e) {
+      console.warn("Tauri global API not injected, using mock loopback");
+      invoke = async (cmd, args) => {
+        console.log(`[Tauri Mock] invoke('${cmd}') called with:`, args);
+        if (cmd === 'get_server_path') {
+          return "E:\\boarderless.app_MCP\\src\\mcp-stdio-server.js";
+        }
+        if (cmd === 'get_installed_browsers') {
+          return [
+            { name: "Google Chrome", id: "chrome", path: "chrome.exe" },
+            { name: "Microsoft Edge", id: "edge", path: "msedge.exe" },
+            { name: "Brave", id: "brave", path: "brave.exe" },
+            { name: "Opera", id: "opera", path: "launcher.exe" }
+          ];
+        }
+        return null;
+      };
+    }
 
     let selectedBrowser = 'chrome';
     let profileMode = 'isolated';
-    let activeStep = 1;
     let loginLaunched = false;
+    let sessionActive = false;
+    let installedBrowsers = [];
 
-    // High-fidelity vector SVG markup for browser brands
+    // ── Browser SVGs (Clean Brand Vectors) ──
     const browserSvgs = {
-      chrome: `
-        <svg viewBox="0 0 48 48" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
-          <defs>
-            <linearGradient id="chrome-a" x1="3.2173" y1="15" x2="44.7812" y2="15" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#d93025"/>
-              <stop offset="1" stop-color="#ea4335"/>
-            </linearGradient>
-            <linearGradient id="chrome-b" x1="20.7219" y1="47.6791" x2="41.5039" y2="11.6837" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#fcc934"/>
-              <stop offset="1" stop-color="#fbbc04"/>
-            </linearGradient>
-            <linearGradient id="chrome-c" x1="26.5981" y1="46.5015" x2="5.8161" y2="10.506" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#1e8e3e"/>
-              <stop offset="1" stop-color="#34a853"/>
-            </linearGradient>
-          </defs>
-          <circle cx="24" cy="23.9947" r="12" style="fill:#fff"/>
-          <path d="M3.2154,36A24,24,0,1,0,12,3.2154,24,24,0,0,0,3.2154,36ZM34.3923,18A12,12,0,1,1,18,13.6077,12,12,0,0,1,34.3923,18Z" style="fill:none"/>
-          <path d="M24,12H44.7812a23.9939,23.9939,0,0,0-41.5639.0029L13.6079,30l.0093-.0024A11.9852,11.9852,0,0,1,24,12Z" style="fill:url(#chrome-a)"/>
-          <circle cx="24" cy="24" r="9.5" style="fill:#1a73e8"/>
-          <path d="M34.3913,30.0029,24.0007,48A23.994,23.994,0,0,0,44.78,12.0031H23.9989l-.0025.0093A11.985,11.985,0,0,1,34.3913,30.0029Z" style="fill:url(#chrome-b)"/>
-          <path d="M13.6086,30.0031,3.218,12.006A23.994,23.994,0,0,0,24.0025,48L34.3931,30.0029l-.0067-.0068a11.9852,11.9852,0,0,1-20.7778.007Z" style="fill:url(#chrome-c)"/>
-        </svg>
-      `,
-      edge: `
-        <svg viewBox="0 0 256 256" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
-          <defs>
-            <radialGradient id="edge-b" cx="161.8" cy="68.9" r="95.4" gradientTransform="matrix(1 0 0 -.95 0 248.8)" gradientUnits="userSpaceOnUse">
-              <stop offset=".7" stop-opacity="0"/>
-              <stop offset=".9" stop-opacity=".5"/>
-              <stop offset="1"/>
-            </radialGradient>
-            <radialGradient id="edge-d" cx="-340.3" cy="63" r="143.2" gradientTransform="matrix(.15 -.99 -.8 -.12 176.6 -125.4)" gradientUnits="userSpaceOnUse">
-              <stop offset=".8" stop-opacity="0"/>
-              <stop offset=".9" stop-opacity=".5"/>
-              <stop offset="1"/>
-            </radialGradient>
-            <radialGradient id="edge-e" cx="113.4" cy="570.2" r="202.4" gradientTransform="matrix(-.04 1 2.13 .08 -1179.5 -106.7)" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#35c1f1"/>
-              <stop offset=".1" stop-color="#34c1ed"/>
-              <stop offset=".2" stop-color="#2fc2df"/>
-              <stop offset=".3" stop-color="#2bc3d2"/>
-              <stop offset=".7" stop-color="#36c752"/>
-            </radialGradient>
-            <radialGradient id="edge-f" cx="376.5" cy="568" r="97.3" gradientTransform="matrix(.28 .96 .78 -.23 -303.8 -148.5)" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#66eb6e"/>
-              <stop offset="1" stop-color="#66eb6e" stop-opacity="0"/>
-            </radialGradient>
-            <linearGradient id="edge-a" x1="63.3" y1="84" x2="241.7" y2="84" gradientTransform="matrix(1 0 0 -1 0 266)" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#0c59a4"/>
-              <stop offset="1" stop-color="#114a8b"/>
-            </linearGradient>
-            <linearGradient id="edge-c" x1="157.3" y1="161.4" x2="46" y2="40.1" gradientTransform="matrix(1 0 0 -1 0 266)" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#1b9de2"/>
-              <stop offset=".2" stop-color="#1595df"/>
-              <stop offset=".7" stop-color="#0680d7"/>
-              <stop offset="1" stop-color="#0078d4"/>
-            </linearGradient>
-          </defs>
-          <path d="M235.7 195.5a93.7 93.7 0 0 1-10.6 4.7 101.9 101.9 0 0 1-35.9 6.4c-47.3 0-88.5-32.5-88.5-74.3a31.5 31.5 0 0 1 16.4-27.3c-42.8 1.8-53.8 46.4-53.8 72.5 0 74 68.1 81.4 82.8 81.4 7.9 0 19.8-2.3 27-4.6l1.3-.4a128.3 128.3 0 0 0 66.6-52.8 4 4 0 0 0-5.3-5.6Z" transform="translate(-4.6 -5)" style="fill:url(#edge-a)"/>
-          <path d="M235.7 195.5a93.7 93.7 0 0 1-10.6 4.7 101.9 101.9 0 0 1-35.9 6.4c-47.3 0-88.5-32.5-88.5-74.3a31.5 31.5 0 0 1 16.4-27.3c-42.8 1.8-53.8 46.4-53.8 72.5 0 74 68.1 81.4 82.8 81.4 7.9 0 19.8-2.3 27-4.6l1.3-.4a128.3 128.3 0 0 0 66.6-52.8 4 4 0 0 0-5.3-5.6Z" transform="translate(-4.6 -5)" style="isolation:isolate;opacity:.35;fill:url(#edge-b)"/>
-          <path d="M110.3 246.3A79.2 79.2 0 0 1 87.6 225a80.7 80.7 0 0 1 29.5-120c3.2-1.5 8.5-4.1 15.6-4a32.4 32.4 0 0 1 25.7 13 31.9 31.9 0 0 1 6.3 18.7c0-.2 24.5-79.6-80-79.6-43.9 0-80 41.6-80 78.2a130.2 130.2 0 0 0 12.1 56 128 128 0 0 0 156.4 67 75.5 75.5 0 0 1-62.8-8Z" transform="translate(-4.6 -5)" style="fill:url(#edge-c)"/>
-          <path d="M110.3 246.3A79.2 79.2 0 0 1 87.6 225a80.7 80.7 0 0 1 29.5-120c3.2-1.5 8.5-4.1 15.6-4a32.4 32.4 0 0 1 25.7 13 31.9 31.9 0 0 1 6.3 18.7c0-.2 24.5-79.6-80-79.6-43.9 0-80 41.6-80 78.2a130.2 130.2 0 0 0 12.1 56 128 128 0 0 0 156.4 67 75.5 75.5 0 0 1-62.8-8Z" transform="translate(-4.6 -5)" style="opacity:.41;fill:url(#edge-d);isolation:isolate"/>
-          <path d="M157 153.8c-.9 1-3.4 2.5-3.4 5.6 0 2.6 1.7 5.2 4.8 7.3 14.3 10 41.4 8.6 41.5 8.6a59.6 59.6 0 0 0 30.3-8.3 61.4 61.4 0 0 0 30.4-52.9c.3-22.4-8-37.3-11.3-43.9C228 28.8 182.3 5 132.6 5a128 128 0 0 0-128 126.2c.5-36.5 36.8-66 80-66 3.5 0 23.5.3 42 10a72.6 72.6 0 0 1 30.9 29.3c6.1 10.6 7.2 24.1 7.2 29.5s-2.7 13.3-7.8 19.9Z" transform="translate(-4.6 -5)" style="fill:url(#edge-e)"/>
-          <path d="M157 153.8c-.9 1-3.4 2.5-3.4 5.6 0 2.6 1.7 5.2 4.8 7.3 14.3 10 41.4 8.6 41.5 8.6a59.6 59.6 0 0 0 30.3-8.3 61.4 61.4 0 0 0 30.4-52.9c.3-22.4-8-37.3-11.3-43.9C228 28.8 182.3 5 132.6 5a128 128 0 0 0-128 126.2c.5-36.5 36.8-66 80-66 3.5 0 23.5.3 42 10a72.6 72.6 0 0 1 30.9 29.3c6.1 10.6 7.2 24.1 7.2 29.5s-2.7 13.3-7.8 19.9Z" transform="translate(-4.6 -5)" style="fill:url(#edge-f)"/>
-        </svg>
-      `,
-      brave: `
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff6000" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
-          <path d="M12 0l-.066.071c-.083.088-.309.324-.627.653-.622.64-1.637 1.688-2.613 2.73-1.956 2.08-3.902 4.296-4.664 5.378-.456.648-.828 1.488-.95 2.128-.052.275-.069.605-.069.96v.121c.006 1.76.602 3.197 1.956 4.398l.09.079.112.062c2.476 1.373 5.42 2.65 6.753 3.149l.062.023.062-.023c1.333-.499 4.277-1.776 6.753-3.149l.112-.062.09-.079c1.354-1.201 1.95-2.638 1.956-4.398v-.121c0-.355-.017-.685-.069-.96-.122-.64-.494-1.48-1.01-2.128-.762-1.082-2.708-3.298-4.664-5.378-.976-1.042-1.991-2.09-2.613-2.73-.318-.329-.544-.565-.627-.653L12 0zm0 4.195c.571.603 1.547 1.624 2.502 2.646.953 1.02 1.83 2.012 2.193 2.528.212.302.348.618.396.852.017.085.023.167.023.243v.018a1.233 1.233 0 0 1-.035.26l-.427-1.176c-.256-.705-1.066-1.554-2.09-2.129a7.618 7.618 0 0 0-2.562-.976 7.618 7.618 0 0 0-2.562.976c-1.024.575-1.834 1.424-2.09 2.129l-.427 1.176a1.233 1.233 0 0 1-.035-.26v-.018c0-.076.006-.158.023-.243.048-.234.184-.55.396-.852.363-.516 1.24-1.508 2.193-2.528.955-1.022 1.931-2.043 2.502-2.646z"/>
-        </svg>
-      `,
-      opera: `
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="#FF1B2D" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
-          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.2c4.418 0 8 4.388 8 9.8s-3.582 9.8-8 9.8-8-4.388-8-9.8 3.582-9.8 8-9.8z"/>
-        </svg>
-      `,
-      generic: `
-        <svg viewBox="0 0 24 24" width="32" height="32" stroke="#a09cb0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          <path d="M2 12h20"/>
-        </svg>
-      `
+      chrome: `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none"><defs><linearGradient id="ca" x1="3.2" y1="15" x2="44.8" y2="15" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d93025"/><stop offset="1" stop-color="#ea4335"/></linearGradient><linearGradient id="cb" x1="20.7" y1="47.7" x2="41.5" y2="11.7" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fcc934"/><stop offset="1" stop-color="#fbbc04"/></linearGradient><linearGradient id="cc" x1="26.6" y1="46.5" x2="5.8" y2="10.5" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1e8e3e"/><stop offset="1" stop-color="#34a853"/></linearGradient></defs><circle cx="24" cy="24" r="12" fill="#fff"/><path d="M24 12h20.8A24 24 0 0 0 3.2 12l10.4 18A12 12 0 0 1 24 12Z" fill="url(#ca)"/><circle cx="24" cy="24" r="9.5" fill="#1a73e8"/><path d="M34.4 30 24 48a24 24 0 0 0 20.8-36H24a12 12 0 0 1 10.4 18Z" fill="url(#cb)"/><path d="M13.6 30 3.2 12A24 24 0 0 0 24 48L34.4 30a12 12 0 0 1-20.8 0Z" fill="url(#cc)"/></svg>`,
+      edge: `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none"><defs><linearGradient id="ea" x1="63" y1="182" x2="242" y2="182" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0c59a4"/><stop offset="1" stop-color="#114a8b"/></linearGradient><linearGradient id="ec" x1="157" y1="105" x2="46" y2="226" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1b9de2"/><stop offset=".2" stop-color="#1595df"/><stop offset=".7" stop-color="#0680d7"/><stop offset="1" stop-color="#0078d4"/></linearGradient><radialGradient id="ee" cx="114" cy="-304" r="202" gradientTransform="matrix(-.04 1 2.13 .08 -1180 -106)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#35c1f1"/><stop offset=".1" stop-color="#34c1ed"/><stop offset=".2" stop-color="#2fc2df"/><stop offset=".3" stop-color="#2bc3d2"/><stop offset=".7" stop-color="#36c752"/></radialGradient></defs><path d="M236 196a94 94 0 0 1-11 5 102 102 0 0 1-36 6c-47 0-88-33-88-74a32 32 0 0 1 16-27c-43 2-54 46-54 73 0 74 68 81 83 81 8 0 20-2 27-5l1-0a128 128 0 0 0 67-53 4 4 0 0 0-5-6z" fill="url(#ea)"/><path d="M110 246A79 79 0 0 1 88 225a81 81 0 0 1 29-120c3-2 9-4 16-4a32 32 0 0 1 26 13 32 32 0 0 1 6 19c0 0 25-80-80-80-44 0-80 42-80 78a130 130 0 0 0 12 56 128 128 0 0 0 156 67 76 76 0 0 1-63-8z" fill="url(#ec)"/><path d="M157 154c-1 1-3 3-3 6 0 3 2 5 5 7 14 10 41 9 42 9a60 60 0 0 0 30-8 61 61 0 0 0 30-53c0-22-8-37-11-44C228 29 182 5 133 5A128 128 0 0 0 5 131c0-37 37-66 80-66 3 0 24 0 42 10a73 73 0 0 1 31 29c6 11 7 24 7 30s-3 13-8 20z" fill="url(#ee)"/></svg>`,
+      brave: `<svg viewBox="0 0 24 24" fill="#ff6000" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none"><path d="M12 0l-.07.07c-.08.09-.31.32-.62.65-.62.64-1.64 1.69-2.61 2.73C6.7 5.6 4.76 7.81 4 8.89c-.46.65-.83 1.49-.95 2.13-.05.27-.07.6-.07.96v.12c.01 1.76.6 3.2 1.96 4.4l.09.08.11.06c2.48 1.37 5.42 2.65 6.75 3.15l.06.02.06-.02c1.33-.5 4.28-1.78 6.75-3.15l.11-.06.09-.08c1.35-1.2 1.95-2.64 1.96-4.4v-.12c0-.36-.02-.69-.07-.96-.12-.64-.49-1.48-1.01-2.13-.76-1.08-2.71-3.29-4.66-5.38C13.57 1.72 12.56.67 11.93.07l-.63-.65L12 0zm0 4.2c.57.6 1.55 1.62 2.5 2.65.95 1.02 1.83 2.01 2.19 2.53.21.3.35.62.4.85.02.08.02.17.02.24v.02c-.01.09-.02.18-.04.26l-.43-1.18c-.25-.7-1.07-1.55-2.09-2.13a7.6 7.6 0 0 0-2.56-.98 7.6 7.6 0 0 0-2.56.98C8.41 8.06 7.6 8.91 7.35 9.6L6.92 10.79a1.2 1.2 0 0 1-.04-.26v-.02c0-.07 0-.16.02-.24.05-.23.19-.55.4-.85.36-.52 1.24-1.51 2.19-2.53C10.45 5.82 11.43 4.8 12 4.2z"/></svg>`,
+      opera: `<svg viewBox="0 0 24 24" fill="#FF1B2D" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 2.2c4.4 0 8 4.4 8 9.8s-3.6 9.8-8 9.8-8-4.4-8-9.8 3.6-9.8 8-9.8z"/></svg>`,
+      generic: `<svg viewBox="0 0 24 24" stroke="#5f5c75" stroke-width="2" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>`
     };
 
+    // ── Tab View Switching ──
+    function showView(viewId) {
+      document.querySelectorAll('.view-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('view-' + viewId).classList.add('active');
+      document.getElementById('menu-' + viewId).classList.add('active');
+    }
+
+    // ── Load installed browsers into grid ──
     async function loadInstalledBrowsers() {
-      const container = document.getElementById('browser-selection-container');
+      const grid = document.getElementById('browser-grid-inline');
       try {
         const browsers = await invoke('get_installed_browsers');
+        installedBrowsers = browsers;
         let html = '';
-        browsers.forEach((b, idx) => {
-          const isSelected = idx === 0 ? 'selected' : '';
-          if (idx === 0) selectedBrowser = b.id;
-          
-          const svgContent = browserSvgs[b.id] || browserSvgs.generic;
-          
-          html += `
-            <div id="browser-${b.id}" class="wizard-select-item ${isSelected}" onclick="setBrowser('${b.id}')">
-              ${svgContent}
-              <div class="browser-name-label" style="font-size: 0.85rem; font-weight: 600; margin-top: 4px; color: ${isSelected ? '#fff' : 'var(--text-sub)'}; pointer-events: none;">${b.name}</div>
-            </div>
-          `;
+        browsers.forEach((b, i) => {
+          const sel = b.id === selectedBrowser ? 'selected' : '';
+          html += `<div id="btile-${b.id}" class="browser-card ${sel}" onclick="setBrowser('${b.id}')">
+            ${browserSvgs[b.id] || browserSvgs.generic}
+            <div class="browser-name-label">${b.name}</div>
+          </div>`;
         });
-        container.innerHTML = html;
-      } catch (e) {
-        console.error("Failed to load installed browsers:", e);
-        // Fallback static HTML in case of error
-        container.innerHTML = `
-          <div id="browser-chrome" class="wizard-select-item selected" onclick="setBrowser('chrome')">
-            ${browserSvgs.chrome}
-            <div class="browser-name-label" style="font-size: 0.85rem; font-weight: 600; margin-top: 4px; color: #fff;">Google Chrome</div>
-          </div>
-        `;
-      }
-    }
-
-    async function openProfileModal() {
-      await loadInstalledBrowsers();
-      
-      const modal = document.getElementById('profile-modal');
-      const content = document.getElementById('profile-modal-content');
-      modal.style.display = 'flex';
-      // Force reflow
-      modal.offsetHeight;
-      modal.style.opacity = '1';
-      content.style.transform = 'translateY(0)';
-    }
-
-    function closeProfileModal() {
-      const modal = document.getElementById('profile-modal');
-      const content = document.getElementById('profile-modal-content');
-      modal.style.opacity = '0';
-      content.style.transform = 'translateY(20px)';
-      setTimeout(() => {
-        modal.style.display = 'none';
-        if (loginLaunched) {
-          invoke('kill_active_browser');
-          loginLaunched = false;
+        grid.innerHTML = html;
+        
+        // Auto select first browser if target not found
+        if (browsers.length > 0 && !browsers.some(b => b.id === selectedBrowser)) {
+          setBrowser(browsers[0].id);
         }
-        goToStep(1);
-        resetIsolatedWizard();
-      }, 300);
+      } catch (e) {
+        // Fallback layout if tauri invoke fails
+        grid.innerHTML = `<div id="btile-chrome" class="browser-card selected" onclick="setBrowser('chrome')">${browserSvgs.chrome}<div class="browser-name-label">Chrome</div></div>`;
+      }
     }
 
-    function setBrowser(browser) {
-      selectedBrowser = browser;
-      
-      const items = document.querySelectorAll('#browser-selection-container .wizard-select-item');
-      items.forEach(el => {
-        el.classList.remove('selected');
-        const text = el.querySelector('.browser-name-label');
-        if (text) text.style.color = 'var(--text-sub)';
+    function setBrowser(id) {
+      selectedBrowser = id;
+      document.querySelectorAll('.browser-card').forEach(el => {
+        el.classList.toggle('selected', el.id === 'btile-' + id);
       });
-      
-      const selectedEl = document.getElementById('browser-' + browser);
-      if (selectedEl) {
-        selectedEl.classList.add('selected');
-        const text = selectedEl.querySelector('.browser-name-label');
-        if (text) text.style.color = '#fff';
-      }
+      updateWizardUI();
     }
 
     function setProfileMode(mode) {
       profileMode = mode;
-      document.getElementById('option-isolated').classList.remove('selected');
-      document.getElementById('option-personal').classList.remove('selected');
-      document.getElementById('option-' + mode).classList.add('selected');
+      document.getElementById('mcard-isolated').classList.toggle('selected', mode === 'isolated');
+      document.getElementById('mcard-personal').classList.toggle('selected', mode === 'personal');
+      updateWizardUI();
     }
 
-    function goToStep(step) {
-      activeStep = step;
-      document.getElementById('wizard-step-1').classList.remove('active');
-      document.getElementById('wizard-step-2-isolated').classList.remove('active');
+    // ── Update Wizard Controls State ──
+    function updateWizardUI() {
+      // Hide all panels initially
+      document.getElementById('pane-isolated').classList.remove('active');
       document.getElementById('wizard-step-2-personal').classList.remove('active');
+      document.getElementById('pane-active-session').classList.remove('active');
 
-      if (step === 1) {
-        document.getElementById('wizard-step-1').classList.add('active');
-        if (loginLaunched) {
-          invoke('kill_active_browser');
-          loginLaunched = false;
-          resetIsolatedWizard();
-        }
-      } else if (step === 2) {
+      if (sessionActive) {
+        document.getElementById('pane-active-session').classList.add('active');
+        const browserObj = installedBrowsers.find(b => b.id === selectedBrowser) || { name: selectedBrowser };
+        const modeLabel = profileMode === 'isolated' ? 'Isolated Profile' : 'Personal Profile';
+        document.getElementById('active-session-details').textContent = `${browserObj.name} is active in ${modeLabel} mode with remote debugging enabled on port 9222.`;
+        document.getElementById('launcher-selection-box').style.pointerEvents = 'none';
+        document.getElementById('launcher-selection-box').style.opacity = '0.5';
+      } else {
+        document.getElementById('launcher-selection-box').style.pointerEvents = 'all';
+        document.getElementById('launcher-selection-box').style.opacity = '1';
+
         if (profileMode === 'isolated') {
-          document.getElementById('wizard-step-2-isolated').classList.add('active');
+          document.getElementById('pane-isolated').classList.add('active');
+          const step1 = document.getElementById('wizard-step-1');
+          const step2 = document.getElementById('wizard-step-2-isolated');
+          const btn2 = document.getElementById('btn-isolated-debug');
+
+          if (loginLaunched) {
+            step1.className = 'step-item completed';
+            step1.querySelector('.step-bubble').textContent = '✓';
+            document.getElementById('btn-isolated-login').textContent = 'Standard Session Running...';
+            document.getElementById('isolated-step-1-desc').textContent = 'Authenticating in standard browser window...';
+            
+            step2.className = 'step-item active';
+            btn2.disabled = false;
+          } else {
+            step1.className = 'step-item active';
+            step1.querySelector('.step-bubble').textContent = '1';
+            document.getElementById('btn-isolated-login').textContent = 'Open Sign-In Window';
+            document.getElementById('isolated-step-1-desc').textContent = 'Required only on first launch. Sign in to your Boarderless Google account.';
+            
+            step2.className = 'step-item active';
+            btn2.disabled = false;
+          }
         } else {
           document.getElementById('wizard-step-2-personal').classList.add('active');
         }
       }
     }
 
-    function resetIsolatedWizard() {
-      const containerSub2 = document.getElementById('container-substep-2');
-      containerSub2.style.opacity = '0.5';
-      const btn2 = document.getElementById('btn-substep-2');
-      btn2.disabled = true;
-      const icon1 = document.getElementById('icon-substep-1');
-      icon1.className = 'instruction-icon active';
-      icon1.textContent = '1';
-      const icon2 = document.getElementById('icon-substep-2');
-      icon2.className = 'instruction-icon';
-      const btn1 = document.getElementById('btn-substep-1');
-      btn1.textContent = 'Open Sign-In Window';
-      document.getElementById('substep-1-desc').textContent = 'Launch a standard window, log in with your Google Account, and close it when done.';
-    }
-
+    // ── Actions Wiring ──
     async function startIsolatedLogin() {
       loginLaunched = true;
-      const btn1 = document.getElementById('btn-substep-1');
-      btn1.textContent = 'Sign-In Window Active';
-      document.getElementById('substep-1-desc').textContent = 'Please log into Google inside the opened browser. Once signed in, keep the window open (or close it) and proceed to Step 2.';
-      
-      const icon1 = document.getElementById('icon-substep-1');
-      icon1.className = 'instruction-icon completed';
-      icon1.textContent = '✓';
-
-      const icon2 = document.getElementById('icon-substep-2');
-      icon2.className = 'instruction-icon active';
-      
-      const containerSub2 = document.getElementById('container-substep-2');
-      containerSub2.style.opacity = '1';
-      
-      const btn2 = document.getElementById('btn-substep-2');
-      btn2.disabled = false;
-
+      updateWizardUI();
       try {
-        await invoke('launch_browser', { 
-          profileType: 'isolated', 
-          mode: 'login', 
-          browserName: selectedBrowser 
-        });
+        await invoke('launch_browser', { profileType: 'isolated', mode: 'login', browserName: selectedBrowser });
       } catch (e) {
-        console.error("Failed to launch login browser:", e);
+        console.error('Failed to launch login browser:', e);
+        resetUIState();
       }
     }
 
     async function startIsolatedDebug() {
-      closeProfileModal();
+      sessionActive = true;
+      updateWizardUI();
       try {
-        await invoke('launch_browser', { 
-          profileType: 'isolated', 
-          mode: 'debug', 
-          browserName: selectedBrowser 
-        });
+        await invoke('launch_browser', { profileType: 'isolated', mode: 'debug', browserName: selectedBrowser });
       } catch (e) {
-        console.error("Failed to launch debug browser:", e);
+        console.error('Failed to launch debug browser:', e);
+        resetUIState();
       }
     }
 
     async function launchPersonalDebug() {
-      closeProfileModal();
+      sessionActive = true;
+      updateWizardUI();
       try {
-        await invoke('launch_browser', { 
-          profileType: 'personal', 
-          mode: 'debug', 
-          browserName: selectedBrowser 
-        });
+        await invoke('launch_browser', { profileType: 'personal', mode: 'debug', browserName: selectedBrowser });
       } catch (e) {
-        console.error("Failed to launch personal debug browser:", e);
+        console.error('Failed to launch personal debug browser:', e);
+        resetUIState();
       }
     }
 
-    async function updatePaths() {
+    async function killActiveSession() {
+      sessionActive = false;
+      loginLaunched = false;
+      updateWizardUI();
       try {
-        const path = await invoke('get_server_path');
-        document.getElementById('server-path-holder').textContent = `"${path}"`;
+        await invoke('kill_active_browser');
+      } catch (e) {
+        console.error('Failed to kill active browser:', e);
+      }
+    }
+
+    function resetUIState() {
+      sessionActive = false;
+      loginLaunched = false;
+      updateWizardUI();
+      try {
+        invoke('kill_active_browser');
       } catch (e) {}
     }
 
-    function copySnippet() {
-      const code = `Type: stdio\nName: boarderless\nCommand: node ${document.getElementById('server-path-holder').textContent}\nEnv:\n  BOARDERLESS_MCP_APP_URL = https://boarderless.app/canvas\n  BOARDERLESS_MCP_BROWSER_URL = http://127.0.0.1:9222`;
-      navigator.clipboard.writeText(code);
-      const btn = document.querySelector('.copy-btn');
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy', 2000);
+    // ── Highlight JSON Keys / values ──
+    function syntaxHighlight(json) {
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+        let cls = 'number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'key';
+          } else {
+            cls = 'string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'boolean';
+        } else if (/null/.test(match)) {
+          cls = 'null';
+        }
+        
+        if (cls === 'key') {
+          return '<span class="json-key">' + match.slice(0, -1) + '</span>:';
+        } else {
+          return '<span class="json-' + cls + '">' + match + '</span>';
+        }
+      });
     }
 
-    updatePaths();
+    // ── Fetch Server Path & Render Config JSON ──
+    async function updatePaths() {
+      try {
+        const p = await invoke('get_server_path');
+        document.getElementById('server-path-holder-val').textContent = p;
+        
+        // Render JSON config
+        const config = {
+          "mcpServers": {
+            "boarderless": {
+              "command": "node",
+              "args": [p],
+              "env": {
+                "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
+                "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
+              }
+            }
+          }
+        };
+
+        const jsonStr = JSON.stringify(config, null, 2);
+        document.getElementById('code-block-content').innerHTML = syntaxHighlight(jsonStr);
+        
+        const filename = p.split(/[\\/]/).pop();
+        document.getElementById('server-filename-val').textContent = filename;
+      } catch (e) {
+        console.error('Failed to get server path:', e);
+      }
+    }
+
+    // ── Clipboard Copy ──
+    function copySnippet() {
+      const pathVal = document.getElementById('server-path-holder-val').textContent;
+      const config = {
+        "mcpServers": {
+          "boarderless": {
+            "command": "node",
+            "args": [pathVal],
+            "env": {
+              "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
+              "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
+            }
+          }
+        }
+      };
+      
+      const text = JSON.stringify(config, null, 2);
+      navigator.clipboard.writeText(text);
+      
+      const copyBtn = document.querySelector('.terminal-copy-button');
+      const btnText = document.getElementById('copy-btn-text');
+      btnText.textContent = 'Copied JSON!';
+      
+      setTimeout(() => {
+        btnText.textContent = 'Copy JSON';
+      }, 2000);
+    }
+
+    // ── Boot Init ──
+    async function init() {
+      await loadInstalledBrowsers();
+      updateWizardUI();
+      await updatePaths();
+    }
+
+    init();
   </script>
 </body>
 </html>
-

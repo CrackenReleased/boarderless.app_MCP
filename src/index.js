@@ -1,3 +1,10 @@
+// ============================================================
+// DEV / TESTING ONLY — not intended for public users.
+// This client connects to a LOCAL Vite dev server at
+// http://127.0.0.1:5174/canvas which public users won't have.
+// To test the production MCP server, configure Claude Desktop
+// or Cursor to point at src/mcp-stdio-server.js instead.
+// ============================================================
 // index.js
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";

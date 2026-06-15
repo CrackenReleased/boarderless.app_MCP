@@ -12,11 +12,29 @@ import net from "net";
 import fs from "fs";
 import os from "os";
 
-import { performRenaming } from "./helpers/rename_photos.js";
-import { standardize } from "./helpers/standardize_images.js";
+// Graduation helpers are lazy-loaded on first use — keeps server startup
+// clean even if heic-convert/jimp have install issues on the user's machine.
+let _performRenaming = null;
+let _standardize = null;
+async function getGraduationHelpers() {
+  if (!_performRenaming) {
+    try {
+      const renameModule = await import("./helpers/rename_photos.js");
+      const stdModule    = await import("./helpers/standardize_images.js");
+      _performRenaming = renameModule.performRenaming;
+      _standardize     = stdModule.standardize;
+    } catch (e) {
+      throw new Error(
+        `[Boarderless] Failed to load graduation photo helpers: ${e.message}\n` +
+        `Run 'npm install' in the boarderless-mcp directory and try again.`
+      );
+    }
+  }
+  return { performRenaming: _performRenaming, standardize: _standardize };
+}
 
 const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.6";
+const SERVER_VERSION = "0.1.12";
 const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
@@ -47,16 +65,28 @@ function findChromeOrEdge() {
 
   if (platform === 'win32') {
     paths.push(
+      // Chrome
       'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
       path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
+      // Edge
       'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+      // Brave
+      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      path.join(process.env.LOCALAPPDATA || '', 'BraveSoftware\\Brave-Browser\\Application\\brave.exe'),
+      // Opera
+      path.join(process.env.LOCALAPPDATA || '', 'Programs\\Opera\\opera.exe'),
+      path.join(process.env.LOCALAPPDATA || '', 'Programs\\Opera GX\\opera.exe')
     );
   } else if (platform === 'darwin') {
     paths.push(
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+      '/Applications/Opera.app/Contents/MacOS/Opera',
+      '/Applications/Opera GX.app/Contents/MacOS/Opera GX'
     );
   } else {
     // Linux
@@ -64,7 +94,9 @@ function findChromeOrEdge() {
       '/usr/bin/google-chrome',
       '/usr/bin/google-chrome-stable',
       '/usr/bin/chromium',
-      '/usr/bin/chromium-browser'
+      '/usr/bin/chromium-browser',
+      '/usr/bin/brave-browser',
+      '/opt/brave.com/brave/brave-browser'
     );
   }
 
@@ -255,6 +287,7 @@ async function run() {
     
     if (name === "graduation_rename_photos") {
       try {
+        const { performRenaming } = await getGraduationHelpers();
         const result = await performRenaming(args.seniorsDir, args.mode);
         return { content: [{ type: "text", text: result }] };
       } catch (err) {
@@ -264,6 +297,7 @@ async function run() {
     
     if (name === "graduation_standardize_images") {
       try {
+        const { standardize } = await getGraduationHelpers();
         const result = await standardize(args.seniorsDir);
         return { content: [{ type: "text", text: result }] };
       } catch (err) {
