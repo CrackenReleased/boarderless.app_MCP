@@ -1,5 +1,8 @@
 # Boarderless Model Context Protocol (MCP) Server
 
+> [!IMPORTANT]
+> **Operating System & Browser Support**: This Model Context Protocol (MCP) server and launcher tool are designed and optimized **specifically for Windows and Google Chrome**. Other configurations (such as macOS, Linux, or other browsers) are not fully supported.
+
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A Model Context Protocol (MCP) server for **Boarderless**, allowing AI agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly.
@@ -55,10 +58,10 @@ The interactive installer will:
 ## Prerequisites
 
 1. **Node.js** (v18 or higher)
-2. **Chromium-based Browser** (Google Chrome or Microsoft Edge)
+2. **Supported OS & Browser**: Windows 10/11 with Google Chrome (fully supported and optimized). Microsoft Edge is supported as a fallback.
 3. **Boarderless Web App**: Running locally (typically at `http://127.0.0.1:5174/canvas`) or via production web portal.
 
-*No Python, pip, or native build tools are required. All image standardizing tools run on pure JavaScript.*
+*Note: This Model Context Protocol server is optimized specifically for Windows and Google Chrome. Other operating systems and browsers (like macOS, Linux, or Edge) are supported as fallbacks, but Windows/Chrome is the primary target.*
 
 ---
 

@@ -22,7 +22,8 @@ async function main() {
   assert(libRsContent.includes('browser_child: Arc<Mutex<Option<Child>>>'), 'AppState includes browser_child');
   assert(libRsContent.includes('fn launch_browser(') && libRsContent.includes('state: State<\'_, AppState>'), 'launch_browser accepts AppState');
   assert(libRsContent.includes('fn kill_active_browser('), 'kill_active_browser command is defined');
-  assert(libRsContent.includes('tauri::generate_handler![get_server_path, launch_browser, kill_active_browser]'), 'kill_active_browser is registered in the Tauri handler list');
+  assert(libRsContent.includes('fn get_installed_browsers('), 'get_installed_browsers command is defined');
+  assert(libRsContent.includes('tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers]'), 'commands are registered in the Tauri handler list');
   assert(libRsContent.includes('browser_child: Arc::new(Mutex::new(None))'), 'browser_child state is correctly initialized on setup');
 
   // 2. Verify UI Frontend Structure
@@ -36,6 +37,7 @@ async function main() {
   assert(uiHtmlContent.includes('function startIsolatedLogin()'), 'startIsolatedLogin JS helper is defined');
   assert(uiHtmlContent.includes('function startIsolatedDebug()'), 'startIsolatedDebug JS helper is defined');
   assert(uiHtmlContent.includes('function launchPersonalDebug()'), 'launchPersonalDebug JS helper is defined');
+  assert(uiHtmlContent.includes('function loadInstalledBrowsers()'), 'loadInstalledBrowsers JS helper is defined');
   assert(uiHtmlContent.includes("invoke('kill_active_browser')"), 'kill_active_browser is called on modal close and step back');
 
   console.log('\n[+] REGRESSION TEST SUCCESSFUL: Walkthrough Wizard implementation verified end-to-end.');

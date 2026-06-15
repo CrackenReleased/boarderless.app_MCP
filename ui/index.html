@@ -490,27 +490,8 @@ Env Variables:
         <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); margin-bottom: 10px;">
           1. Select Browser
         </h4>
-        <div class="wizard-selection-group">
-          <!-- Chrome Item -->
-          <div id="browser-chrome" class="wizard-select-item selected" onclick="setBrowser('chrome')">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 8C14.2091 8 16 9.79086 16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8Z" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 8L5.5 15.5" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 12H22" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 16L17 21" stroke="#7c4dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div style="font-size: 0.85rem; font-weight: 600; color: #fff;">Google Chrome</div>
-          </div>
-          <!-- Edge Item -->
-          <div id="browser-edge" class="wizard-select-item" onclick="setBrowser('edge')">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18C15.3137 18 18 15.3137 18 12" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M18 12C18 9.5 16 8 14 8C12 8 10.5 9 10.5 11C10.5 13 13.5 12.5 13.5 14.5C13.5 16 12 16.5 10.5 16.5" stroke="#a09cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub);">Microsoft Edge</div>
-          </div>
+        <div class="wizard-selection-group" id="browser-selection-container">
+          <!-- Dynamic installed browsers populate here -->
         </div>
 
         <!-- Profile Selection -->
@@ -613,7 +594,7 @@ Env Variables:
         <div class="warning-banner">
           <span style="font-size: 1.1rem; margin-top: -2px;">⚠️</span>
           <div>
-            <strong>Close all active browser windows first:</strong> You must completely shut down all running instances of Google Chrome / Microsoft Edge before launching. The AI debugger cannot hook into an already open session.
+            <strong>Close all active browser windows first:</strong> You must completely shut down all running instances of the selected browser before launching. The AI debugger cannot hook into an already open session.
           </div>
         </div>
 
@@ -638,7 +619,93 @@ Env Variables:
     let activeStep = 1;
     let loginLaunched = false;
 
-    function openProfileModal() {
+    // High-fidelity vector SVG markup for browser brands
+    const browserSvgs = {
+      chrome: `
+        <svg viewBox="0 0 48 48" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="12" fill="#fff"/>
+          <path d="M24 12h20.781a23.994 23.994 0 0 0-41.564 0l10.39 17.997A11.985 11.985 0 0 1 24 12z" fill="#ea4335"/>
+          <path d="M34.391 30.003l-10.39 17.997A23.994 23.994 0 0 0 44.78 12h-20.78a11.985 11.985 0 0 1 10.391 18.003z" fill="#fbbc04"/>
+          <path d="M13.609 30.003L3.218 12.006A23.994 23.994 0 0 0 24 48l10.393-17.997a11.985 11.985 0 0 1-20.784 0z" fill="#34a853"/>
+          <circle cx="24" cy="24" r="9.5" fill="#1a73e8"/>
+        </svg>
+      `,
+      edge: `
+        <svg viewBox="0 0 48 48" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="edge-b1" x1="19.4" y1="21.6" x2="39.2" y2="40.3" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#0c59a4"/>
+              <stop offset="1" stop-color="#1193d4"/>
+            </linearGradient>
+            <linearGradient id="edge-b2" x1="17.2" y1="9.7" x2="27.4" y2="28" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#1b9de2"/>
+              <stop offset="1" stop-color="#36c4c2"/>
+            </linearGradient>
+            <linearGradient id="edge-b3" x1="28.9" y1="7.1" x2="42.8" y2="25.5" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#35c1f1"/>
+              <stop offset="0.35" stop-color="#41c96a"/>
+              <stop offset="0.7" stop-color="#a4d531"/>
+              <stop offset="1" stop-color="#e2e717"/>
+            </linearGradient>
+          </defs>
+          <path d="M24.7 44c10.3 0 19.3-8 19.3-19.3 0-1.8-.3-3.6-.9-5.3-2.1 4.7-6.2 8.3-11.2 9.9-5.1 1.7-10.6 1.1-15.3-1.6-4.7-2.7-8.1-7.2-9.4-12.4C6 20.1 5.3 25.1 7.2 29.8 9.9 36.4 15.6 44 24.7 44z" fill="url(#edge-b1)"/>
+          <path d="M31.9 29.3c5-1.6 9.1-5.2 11.2-9.9C44 18 44 16.2 43.6 14.4c-.9 3.6-2.9 6.8-5.7 9.2-2.8 2.4-6.3 3.9-10.1 4.2-3.8.3-7.5-.6-10.7-2.6-3.2-2-5.5-5.1-6.5-8.7-1 3.6-.7 7.5.9 10.9 1.6 3.4 4.3 6.1 7.7 7.7 3.4 1.6 7.3 1.9 10.9.9 3.6-1 6.8-3.1 9-5.8l-7.2-1z" fill="url(#edge-b2)"/>
+          <path d="M37.9 23.6c2.8-2.4 4.8-5.6 5.7-9.2C44 12.6 44 10.8 43.4 9 41.5 5 37.9 2 33 2c-5.8 0-10.9 3.4-13.6 8.3 2.7-.8 5.6-.8 8.3.1 2.7.9 4.9 2.8 6.2 5.3 1.3 2.5 1.6 5.5.9 8.3-.7 2.8-2.4 5.2-4.8 6.8l7.9-7.3z" fill="url(#edge-b3)"/>
+        </svg>
+      `,
+      brave: `
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff6000" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0l-.066.071c-.083.088-.309.324-.627.653-.622.64-1.637 1.688-2.613 2.73-1.956 2.08-3.902 4.296-4.664 5.378-.456.648-.828 1.488-.95 2.128-.052.275-.069.605-.069.96v.121c.006 1.76.602 3.197 1.956 4.398l.09.079.112.062c2.476 1.373 5.42 2.65 6.753 3.149l.062.023.062-.023c1.333-.499 4.277-1.776 6.753-3.149l.112-.062.09-.079c1.354-1.201 1.95-2.638 1.956-4.398v-.121c0-.355-.017-.685-.069-.96-.122-.64-.494-1.48-1.01-2.128-.762-1.082-2.708-3.298-4.664-5.378-.976-1.042-1.991-2.09-2.613-2.73-.318-.329-.544-.565-.627-.653L12 0zm0 4.195c.571.603 1.547 1.624 2.502 2.646.953 1.02 1.83 2.012 2.193 2.528.212.302.348.618.396.852.017.085.023.167.023.243v.018a1.233 1.233 0 0 1-.035.26l-.427-1.176c-.256-.705-1.066-1.554-2.09-2.129a7.618 7.618 0 0 0-2.562-.976 7.618 7.618 0 0 0-2.562.976c-1.024.575-1.834 1.424-2.09 2.129l-.427 1.176a1.233 1.233 0 0 1-.035-.26v-.018c0-.076.006-.158.023-.243.048-.234.184-.55.396-.852.363-.516 1.24-1.508 2.193-2.528.955-1.022 1.931-2.043 2.502-2.646z"/>
+        </svg>
+      `,
+      opera: `
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="#FF1B2D" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2.2c4.418 0 8 4.388 8 9.8s-3.582 9.8-8 9.8-8-4.388-8-9.8 3.582-9.8 8-9.8z"/>
+        </svg>
+      `,
+      generic: `
+        <svg viewBox="0 0 24 24" width="32" height="32" stroke="#a09cb0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          <path d="M2 12h20"/>
+        </svg>
+      `
+    };
+
+    async function loadInstalledBrowsers() {
+      const container = document.getElementById('browser-selection-container');
+      try {
+        const browsers = await invoke('get_installed_browsers');
+        let html = '';
+        browsers.forEach((b, idx) => {
+          const isSelected = idx === 0 ? 'selected' : '';
+          if (idx === 0) selectedBrowser = b.id;
+          
+          const svgContent = browserSvgs[b.id] || browserSvgs.generic;
+          
+          html += `
+            <div id="browser-${b.id}" class="wizard-select-item ${isSelected}" onclick="setBrowser('${b.id}')">
+              ${svgContent}
+              <div class="browser-name-label" style="font-size: 0.85rem; font-weight: 600; margin-top: 4px; color: ${isSelected ? '#fff' : 'var(--text-sub)'};">${b.name}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (e) {
+        console.error("Failed to load installed browsers:", e);
+        // Fallback static HTML in case of error
+        container.innerHTML = `
+          <div id="browser-chrome" class="wizard-select-item selected" onclick="setBrowser('chrome')">
+            ${browserSvgs.chrome}
+            <div class="browser-name-label" style="font-size: 0.85rem; font-weight: 600; margin-top: 4px; color: #fff;">Google Chrome</div>
+          </div>
+        `;
+      }
+    }
+
+    async function openProfileModal() {
+      await loadInstalledBrowsers();
+      
       const modal = document.getElementById('profile-modal');
       const content = document.getElementById('profile-modal-content');
       modal.style.display = 'flex';
@@ -666,24 +733,19 @@ Env Variables:
 
     function setBrowser(browser) {
       selectedBrowser = browser;
-      document.getElementById('browser-chrome').classList.remove('selected');
-      document.getElementById('browser-edge').classList.remove('selected');
+      
+      const items = document.querySelectorAll('#browser-selection-container .wizard-select-item');
+      items.forEach(el => {
+        el.classList.remove('selected');
+        const text = el.querySelector('.browser-name-label');
+        if (text) text.style.color = 'var(--text-sub)';
+      });
       
       const selectedEl = document.getElementById('browser-' + browser);
-      selectedEl.classList.add('selected');
-      
-      const chromeText = document.querySelector('#browser-chrome div');
-      const edgeText = document.querySelector('#browser-edge div');
-      if (browser === 'chrome') {
-        chromeText.style.color = '#fff';
-        edgeText.style.color = 'var(--text-sub)';
-        document.querySelector('#browser-chrome svg path').setAttribute('stroke', '#7c4dff');
-        document.querySelector('#browser-edge svg path').setAttribute('stroke', '#a09cb0');
-      } else {
-        chromeText.style.color = 'var(--text-sub)';
-        edgeText.style.color = '#fff';
-        document.querySelector('#browser-chrome svg path').setAttribute('stroke', '#a09cb0');
-        document.querySelector('#browser-edge svg path').setAttribute('stroke', '#7c4dff');
+      if (selectedEl) {
+        selectedEl.classList.add('selected');
+        const text = selectedEl.querySelector('.browser-name-label');
+        if (text) text.style.color = '#fff';
       }
     }
 
