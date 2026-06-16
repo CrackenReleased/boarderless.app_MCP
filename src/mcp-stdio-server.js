@@ -34,7 +34,7 @@ async function getGraduationHelpers() {
 }
 
 const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.16";
+const SERVER_VERSION = "0.1.17";
 const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;

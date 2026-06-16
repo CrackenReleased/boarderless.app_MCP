@@ -116,6 +116,16 @@ async function main() {
     try {
       // 1. Recursive finder to extract Zustand stores from React 18 Fiber
       function findStores() {
+        if (window.useBoardsStore && window.useShapeToolStore && window.useTextToolStore && window.useAppStore && window.useGalleryStore) {
+          return {
+            useBoardsStore: window.useBoardsStore,
+            useShapeToolStore: window.useShapeToolStore,
+            useTextToolStore: window.useTextToolStore,
+            useAppStore: window.useAppStore,
+            useGalleryStore: window.useGalleryStore
+          };
+        }
+
         const rootEl = document.getElementById('react-root');
         if (!rootEl) return null;
         const key = Object.keys(rootEl).find(k => k.startsWith('__reactContainer$'));
