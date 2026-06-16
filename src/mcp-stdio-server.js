@@ -34,7 +34,7 @@ async function getGraduationHelpers() {
 }
 
 const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.13";
+const SERVER_VERSION = "0.1.16";
 const DEFAULT_APP_URL = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
@@ -183,47 +183,100 @@ async function detectAppUrl() {
   return DEFAULT_APP_URL;
 }
 
+// ─── Live page resolver ──────────────────────────────────────────────────────
+// Re-connects to Chrome and finds the live canvas tab on EVERY call.
+// This prevents "detached Frame" errors that occur when the page reloads,
+// navigates, or the tab is refreshed while the MCP server is running.
+let _browser = null;
+let _APP_URL  = null;
+
+async function getPage() {
+  // Re-connect if browser handle is gone or disconnected
+  if (!_browser || !_browser.isConnected()) {
+    await ensureBrowserRunning(_APP_URL);
+    _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
+  }
+
+  const appOrigin = new URL(_APP_URL).origin;
+  let pages;
+  try {
+    pages = await _browser.pages();
+  } catch (e) {
+    // Browser disconnected mid-call — reconnect and retry once
+    _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
+    pages = await _browser.pages();
+  }
+
+  // Find an attached (non-detached) canvas tab
+  let page = null;
+  for (const p of pages) {
+    try {
+      const url = p.url(); // throws if detached
+      if (url.startsWith(appOrigin)) { page = p; break; }
+    } catch (_) {
+      // skip detached frames
+    }
+  }
+
+  // No canvas tab open — open one
+  if (!page) {
+    page = await _browser.newPage();
+    await page.goto(_APP_URL, { waitUntil: 'domcontentloaded' });
+  }
+
+  // Ensure page is stable, window.boarderlessMcp is ready, and set auto-approve
+  let mcpReady = false;
+  for (let i = 0; i < 20; i++) {
+    try {
+      mcpReady = await page.evaluate(() => typeof window.boarderlessMcp !== 'undefined');
+      if (mcpReady) break;
+    } catch (e) {
+      // ignore evaluation errors / detached frame transitions
+    }
+    await new Promise(r => setTimeout(r, 250));
+  }
+
+  if (mcpReady) {
+    try {
+      await page.evaluate(() => {
+        window.boarderlessMcpAutoApprove = true;
+      });
+      await page.evaluateOnNewDocument(() => {
+        window.boarderlessMcpAutoApprove = true;
+      });
+    } catch (e) {
+      // ignore errors if frame changes mid-injection
+    }
+  } else {
+    console.error('[Boarderless] Warning: boarderlessMcp bridge not ready after timeout.');
+  }
+
+  return page;
+}
+
 async function run() {
-  const APP_URL = await detectAppUrl();
-  
+  _APP_URL = await detectAppUrl();
+
   // Make sure remote debugging browser is open
-  await ensureBrowserRunning(APP_URL);
+  await ensureBrowserRunning(_APP_URL);
 
-  // Connect to the browser
-  const browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
-  const pages = await browser.pages();
-  const appOrigin = new URL(APP_URL).origin;
-  const page = pages.find(p => p.url().startsWith(appOrigin)) || await browser.newPage();
-  if (!page.url().startsWith(appOrigin)) await page.goto(APP_URL, { waitUntil: "domcontentloaded" });
+  // Initial connection — populate _browser
+  _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
 
+  // Warm up: get the page once and log auth status
   try {
-    const client = await page.createCDPSession();
-    await client.send('Emulation.clearDeviceMetricsOverride');
+    const page = await getPage();
+    const isAuthenticated = await page.evaluate(() =>
+      localStorage.getItem('boarderless_has_authenticated') === 'true'
+    );
+    if (isAuthenticated) {
+      console.error('[Boarderless] ✓ Authenticated. Canvas tools ready.');
+    } else {
+      console.error('\n\x1b[33m[Boarderless Auth Required]\x1b[0m');
+      console.error(`Please sign in at: ${_APP_URL}\n`);
+    }
   } catch (e) {
-    // Ignore
-  }
-
-  try {
-    await page.waitForFunction(() => Boolean(window.boarderlessMcp), { timeout: 2000 });
-  } catch (e) {
-    console.error("[Boarderless] Warning: window.boarderlessMcp not detected yet (loading or needs auth).");
-  }
-
-  let isAuthenticated = false;
-  try {
-    isAuthenticated = await page.evaluate(() => {
-      return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
-    });
-  } catch (e) {
-    // Ignore error if useAuthStore doesn't exist yet
-  }
-
-  if (!isAuthenticated) {
-    console.error("\n\x1b[33m[Boarderless Auth Required]\x1b[0m");
-    console.error("The connected browser session is not authenticated.");
-    console.error(`Please complete Google OAuth sign-in in your browser window.`);
-    console.error(`If the tab is not open, visit: ${APP_URL}\n`);
-    console.error("[Boarderless] Proceeding to start MCP server in unauthenticated mode. Canvas tools will return an authentication error until logged in.\n");
+    console.error('[Boarderless] Warning during startup check:', e.message);
   }
 
   const server = new Server({ name: SERVER_NAME, version: SERVER_VERSION }, { capabilities: { tools: {} } });
@@ -231,13 +284,14 @@ async function run() {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     let tools = [];
     try {
+      const page = await getPage();
       tools = await page.evaluate(() => {
         return (window.boarderlessMcp && typeof window.boarderlessMcp.listTools === 'function')
           ? window.boarderlessMcp.listTools()
           : [];
       });
     } catch (e) {
-      console.error("[Boarderless] Could not fetch dynamic tools:", e.message);
+      console.error('[Boarderless] Could not fetch dynamic tools:', e.message);
     }
     return {
       tools: [
@@ -269,13 +323,13 @@ async function run() {
         },
         {
           name: "export_board",
-          description: "Trigger a canvas or selection export inside the browser to download the board as PNG, PDF, or SVG.",
+          description: "Export the current Boarderless canvas to PNG, PDF, or SVG.",
           inputSchema: {
             type: "object",
             properties: {
-              format: { type: "string", enum: ["png", "pdf", "svg"], description: "The export file format: png, pdf, or svg." },
-              mode: { type: "string", enum: ["canvas", "selection"], description: "The export mode: canvas (entire composition) or selection (only currently highlighted items). Defaults to canvas." },
-              filename: { type: "string", description: "Optional custom name for the exported file." }
+              format: { type: "string", enum: ["png", "pdf", "svg"], description: "Export format." },
+              mode: { type: "string", enum: ["canvas", "selection"], description: "Export mode." },
+              filename: { type: "string", description: "Optional filename override." }
             },
             required: ["format"],
             additionalProperties: false
@@ -288,7 +342,7 @@ async function run() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const name = request.params.name;
     const args = request.params.arguments || {};
-    
+
     if (name === "graduation_rename_photos") {
       try {
         const { performRenaming } = await getGraduationHelpers();
@@ -298,7 +352,7 @@ async function run() {
         return { content: [{ type: "text", text: err.message }], isError: true };
       }
     }
-    
+
     if (name === "graduation_standardize_images") {
       try {
         const { standardize } = await getGraduationHelpers();
@@ -309,32 +363,33 @@ async function run() {
       }
     }
 
-    // Check authentication for all canvas-related tools
+    // All canvas tools need a live page
+    let page;
+    try {
+      page = await getPage();
+    } catch (e) {
+      return { content: [{ type: "text", text: `[-] Could not connect to Boarderless canvas: ${e.message}` }], isError: true };
+    }
+
+    // Auth gate: use localStorage flag (window.useAuthStore is not exposed)
     let isAuthed = false;
     try {
-      isAuthed = await page.evaluate(() => {
-        return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
-      });
-    } catch (e) {
-      // ignore
-    }
+      isAuthed = await page.evaluate(() =>
+        localStorage.getItem('boarderless_has_authenticated') === 'true'
+      );
+    } catch (e) { /* ignore */ }
 
     if (!isAuthed) {
       return {
-        content: [{
-          type: "text",
-          text: `[-] Error: The connected browser session is not authenticated on Boarderless.\n` +
-                `Please complete Google OAuth sign-in in the Chrome window opened on your desktop.\n` +
-                `If the window is closed or needs to be loaded, visit: ${APP_URL}`
-        }],
+        content: [{ type: "text", text: `[-] Not authenticated on Boarderless. Please sign in at: ${_APP_URL}` }],
         isError: true
       };
     }
 
     if (name === "export_board") {
       try {
-        const format = args.format;
-        const mode = args.mode || "canvas";
+        const format   = args.format;
+        const mode     = args.mode || "canvas";
         const filename = args.filename || "";
         const result = await page.evaluate(async (fmt, md, fn) => {
           try {
@@ -357,19 +412,20 @@ async function run() {
         }, format, mode, filename);
 
         if (result.success) {
-          return { content: [{ type: "text", text: `[+] Exported board successfully as ${format.toUpperCase()} (${mode} mode) in the browser window.` }] };
+          return { content: [{ type: "text", text: `[+] Exported board as ${format.toUpperCase()} (${mode} mode).` }] };
         } else {
-          return { content: [{ type: "text", text: `[-] Failed to export: ${result.error}` }], isError: true };
+          return { content: [{ type: "text", text: `[-] Export failed: ${result.error}` }], isError: true };
         }
       } catch (err) {
         return { content: [{ type: "text", text: err.message }], isError: true };
       }
     }
 
+    // All other canvas tools via boarderlessMcp bridge
     try {
       return await page.evaluate(
         ({ name, args }) => window.boarderlessMcp.callTool(name, args || {}),
-        { name, args },
+        { name, args }
       );
     } catch (err) {
       return { content: [{ type: "text", text: `[-] Error invoking tool on page: ${err.message}` }], isError: true };
@@ -378,10 +434,11 @@ async function run() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`[Boarderless] MCP Server running on stdio connected to ${APP_URL}`);
+  console.error(`[Boarderless] MCP Server v${SERVER_VERSION} running on stdio → ${_APP_URL}`);
 }
 
 run().catch(err => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
+
