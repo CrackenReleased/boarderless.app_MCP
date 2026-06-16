@@ -340,10 +340,14 @@ async function run() {
       }
     }
 
-    return page.evaluate(
-      ({ name, args }) => window.boarderlessMcp.callTool(name, args || {}),
-      { name, args },
-    );
+    try {
+      return await page.evaluate(
+        ({ name, args }) => window.boarderlessMcp.callTool(name, args || {}),
+        { name, args },
+      );
+    } catch (err) {
+      return { content: [{ type: "text", text: `[-] Error invoking tool on page: ${err.message}` }], isError: true };
+    }
   });
 
   const transport = new StdioServerTransport();

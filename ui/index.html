@@ -810,6 +810,13 @@
       color: #e3e3e3;
       white-space: pre-wrap;
       word-break: break-all;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+
+    code, pre {
+      user-select: text !important;
+      -webkit-user-select: text !important;
     }
 
     /* Syntax Highlighting Colors */
@@ -906,7 +913,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <span>Boarderless v0.1.12</span>
+        <span>Boarderless v0.1.13</span>
         <span>Online</span>
       </div>
     </aside>
@@ -1334,27 +1341,60 @@
     }
 
     // ── Clipboard Copy ──
-    function copySnippet() {
-      const pathVal = document.getElementById('server-path-holder-val').textContent;
-      const config = {
-        "mcpServers": {
-          "boarderless": {
-            "command": "node",
-            "args": [pathVal],
-            "env": {
-              "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
-              "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
-            }
-          }
-        }
-      };
+    async function copySnippet() {
+      let text = "";
+      try {
+        text = document.getElementById('code-block-content').textContent;
+      } catch (e) {
+        console.error("Failed to read code block content:", e);
+        return;
+      }
       
-      const text = JSON.stringify(config, null, 2);
-      navigator.clipboard.writeText(text);
+      let copied = false;
+      
+      // Try native Tauri clipboard command first (failsafe, bypasses web sandbox)
+      try {
+        await invoke('copy_to_clipboard', { text });
+        copied = true;
+      } catch (err) {
+        console.warn("Native copy failed, trying browser APIs:", err);
+      }
+      
+      if (!copied) {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            copied = true;
+          }
+        } catch (err) {
+          console.warn("navigator.clipboard failed, using fallback:", err);
+        }
+      }
+      
+      if (!copied) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.left = '-9999px';
+          textarea.style.top = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          copied = true;
+        } catch (err) {
+          console.error("Fallback copy failed:", err);
+        }
+      }
       
       const copyBtn = document.querySelector('.terminal-copy-button');
       const btnText = document.getElementById('copy-btn-text');
-      btnText.textContent = 'Copied JSON!';
+      if (copied) {
+        btnText.textContent = 'Copied JSON!';
+      } else {
+        btnText.textContent = 'Copy Failed!';
+      }
       
       setTimeout(() => {
         btnText.textContent = 'Copy JSON';

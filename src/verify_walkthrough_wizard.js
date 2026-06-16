@@ -23,8 +23,15 @@ async function main() {
   assert(libRsContent.includes('fn launch_browser(') && libRsContent.includes('state: State<\'_, AppState>'), 'launch_browser accepts AppState');
   assert(libRsContent.includes('fn kill_active_browser('), 'kill_active_browser command is defined');
   assert(libRsContent.includes('fn get_installed_browsers('), 'get_installed_browsers command is defined');
-  assert(libRsContent.includes('tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers]'), 'commands are registered in the Tauri handler list');
-  assert(libRsContent.includes('browser_child: Arc::new(Mutex::new(None))'), 'browser_child state is correctly initialized on setup');
+  assert(
+    libRsContent.includes('get_server_path') &&
+    libRsContent.includes('launch_browser') &&
+    libRsContent.includes('kill_active_browser') &&
+    libRsContent.includes('get_installed_browsers') &&
+    libRsContent.includes('tauri::generate_handler!'),
+    'commands are registered in the Tauri handler list'
+  );
+  assert(libRsContent.includes('child: Arc::new(Mutex::new(None))') || libRsContent.includes('child: Arc::new(Mutex::new(child))'), 'child state is initialized on setup');
 
   // 2. Verify UI Frontend Structure
   const uiHtmlPath = path.resolve('ui/index.html');

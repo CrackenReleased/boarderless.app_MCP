@@ -331,6 +331,13 @@ fn launch_browser(profile_type: String, mode: String, browser_name: String, stat
 }
 
 #[tauri::command]
+fn copy_to_clipboard(text: String) -> Result<(), String> {
+    let mut clipboard = arboard::Clipboard::new().map_err(|e| e.to_string())?;
+    clipboard.set_text(text).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn kill_active_browser(state: State<'_, AppState>) {
     if let Some(mut old_child) = state.browser_child.lock().unwrap().take() {
         let _ = old_child.kill();
@@ -341,7 +348,7 @@ fn kill_active_browser(state: State<'_, AppState>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers])
+        .invoke_handler(tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers, copy_to_clipboard])
         .setup(|app| {
             let resource_dir = app.path().resource_dir().unwrap_or_default();
             let mut server_path = resource_dir.join("mcp-stdio-server.js");
@@ -349,14 +356,8 @@ pub fn run() {
                 server_path = std::env::current_dir().unwrap_or_default().join("src/mcp-stdio-server.js");
             }
 
-            // Spawn the node MCP server in background
-            let child = Command::new("node")
-                .arg(&server_path)
-                .spawn()
-                .ok();
-
             let state = AppState {
-                child: Arc::new(Mutex::new(child)),
+                child: Arc::new(Mutex::new(None)),
                 browser_child: Arc::new(Mutex::new(None)),
                 server_path,
             };
