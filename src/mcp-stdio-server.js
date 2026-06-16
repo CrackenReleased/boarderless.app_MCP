@@ -203,38 +203,42 @@ async function run() {
     // Ignore
   }
 
-  await page.waitForFunction(() => Boolean(window.boarderlessMcp), { timeout: 15000 });
+  try {
+    await page.waitForFunction(() => Boolean(window.boarderlessMcp), { timeout: 2000 });
+  } catch (e) {
+    console.error("[Boarderless] Warning: window.boarderlessMcp not detected yet (loading or needs auth).");
+  }
 
-  let isAuthenticated = await page.evaluate(() => {
-    return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
-  });
+  let isAuthenticated = false;
+  try {
+    isAuthenticated = await page.evaluate(() => {
+      return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
+    });
+  } catch (e) {
+    // Ignore error if useAuthStore doesn't exist yet
+  }
 
   if (!isAuthenticated) {
     console.error("\n\x1b[33m[Boarderless Auth Required]\x1b[0m");
     console.error("The connected browser session is not authenticated.");
     console.error(`Please complete Google OAuth sign-in in your browser window.`);
     console.error(`If the tab is not open, visit: ${APP_URL}\n`);
-    
-    // Poll every 1.5 seconds for authentication success
-    while (!isAuthenticated) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      try {
-        isAuthenticated = await page.evaluate(() => {
-          return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
-        });
-        if (isAuthenticated) {
-          console.error("\x1b[32m[Boarderless Auth Success]\x1b[0m OAuth session verified. Starting MCP server...\n");
-        }
-      } catch (e) {
-        // Tab might be navigating or temporarily unavailable
-      }
-    }
+    console.error("[Boarderless] Proceeding to start MCP server in unauthenticated mode. Canvas tools will return an authentication error until logged in.\n");
   }
 
   const server = new Server({ name: SERVER_NAME, version: SERVER_VERSION }, { capabilities: { tools: {} } });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools = await page.evaluate(() => window.boarderlessMcp.listTools());
+    let tools = [];
+    try {
+      tools = await page.evaluate(() => {
+        return (window.boarderlessMcp && typeof window.boarderlessMcp.listTools === 'function')
+          ? window.boarderlessMcp.listTools()
+          : [];
+      });
+    } catch (e) {
+      console.error("[Boarderless] Could not fetch dynamic tools:", e.message);
+    }
     return {
       tools: [
         ...tools,
@@ -303,6 +307,28 @@ async function run() {
       } catch (err) {
         return { content: [{ type: "text", text: err.message }], isError: true };
       }
+    }
+
+    // Check authentication for all canvas-related tools
+    let isAuthed = false;
+    try {
+      isAuthed = await page.evaluate(() => {
+        return window.useAuthStore ? window.useAuthStore.getState().isAuthenticated : false;
+      });
+    } catch (e) {
+      // ignore
+    }
+
+    if (!isAuthed) {
+      return {
+        content: [{
+          type: "text",
+          text: `[-] Error: The connected browser session is not authenticated on Boarderless.\n` +
+                `Please complete Google OAuth sign-in in the Chrome window opened on your desktop.\n` +
+                `If the window is closed or needs to be loaded, visit: ${APP_URL}`
+        }],
+        isError: true
+      };
     }
 
     if (name === "export_board") {

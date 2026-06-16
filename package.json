@@ -13,7 +13,7 @@
     "example": "node src/index.js",
     "setup": "node src/setup.js",
     "tauri": "tauri",
-    "test": "node src/verify_shortcut.js"
+    "test": "node src/verify_shortcut.js && node src/verify_nonblocking_auth.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
