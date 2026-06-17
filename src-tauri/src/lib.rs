@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use tauri::{Manager, State};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use sysinfo::{System, ProcessExt};
+use sysinfo::System;
 
 struct AppState {
     child: Arc<Mutex<Option<Child>>>,
@@ -364,6 +364,7 @@ fn kill_active_browser(state: State<'_, AppState>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers, copy_to_clipboard])
         .setup(|app| {
             kill_duplicate_instances();
@@ -430,7 +431,10 @@ pub fn run() {
                 api.prevent_close();
                 
                 // Notify the user that the app is still active in the tray
-                let _ = tauri::Notification::builder()
+                let app_handle = window.app_handle();
+                use tauri_plugin_notification::NotificationExt;
+                let _ = app_handle.notification()
+                    .builder()
                     .title("Boarderless MCP Active")
                     .body("Boarderless MCP is still running in the system tray to keep your AI canvas bridge active.")
                     .show();
