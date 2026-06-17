@@ -428,6 +428,12 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 window.hide().unwrap();
                 api.prevent_close();
+                
+                // Notify the user that the app is still active in the tray
+                let _ = tauri::Notification::builder()
+                    .title("Boarderless MCP Active")
+                    .body("Boarderless MCP is still running in the system tray to keep your AI canvas bridge active.")
+                    .show();
             }
         })
         .run(tauri::generate_context!())
