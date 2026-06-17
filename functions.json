@@ -9,6 +9,25 @@
     }
   },
   {
+    "name": "execute_mcp_command",
+    "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The command to run, e.g., 'get_system_status'"
+        },
+        "output_format": {
+          "type": "string",
+          "description": "Optional format format."
+        }
+      },
+      "required": ["command"],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "get_board_state",
     "description": "Returns the current Boarderless canvas board as a structured, render-ordered JSON spatial ledger.",
     "parameters": {

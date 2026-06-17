@@ -453,6 +453,21 @@ async function run() {
             "authentication status, canvas bridge health, and per-tool error counts.",
           inputSchema: { type: "object", properties: {}, additionalProperties: false },
         },
+        {
+          name: "execute_mcp_command",
+          description:
+            "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard " +
+            "individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status').",
+          inputSchema: {
+            type: "object",
+            properties: {
+              command: { type: "string", description: "The action or command identifier (e.g. 'get_system_status')" },
+              output_format: { type: "string", description: "Optional format selection." }
+            },
+            required: ["command"],
+            additionalProperties: false
+          }
+        },
 
         // ── Canvas tools (dynamic from bridge) ───────────────────────────────
         ...canvasTools,
@@ -611,6 +626,86 @@ async function run() {
             ? ["Call get_board_state to inspect the current canvas.", "Call mutate_object to modify elements."]
             : checks.filter(c => !c.passed).map(c => c.resolution).filter(Boolean),
         });
+      });
+    }
+
+    // ── execute_mcp_command ───────────────────────────────────────────────────
+    if (name === "execute_mcp_command") {
+      return runTool(name, async () => {
+        const cmd = args.command;
+        if (!cmd) {
+          return makeError("MISSING_ARGUMENT", "command is required.", "Provide a command name like 'get_system_status'.");
+        }
+
+        if (cmd === "get_system_status") {
+          // Inline diagnostic run identical to get_server_status
+          let browserOk  = false;
+          let authed     = false;
+          let bridgeOk   = false;
+          let pageUrl    = null;
+          try {
+            const urlObj = new URL(BROWSER_URL);
+            const port   = parseInt(urlObj.port || "9222", 10);
+            browserOk    = await isPortOpen(port, urlObj.hostname);
+            if (browserOk) {
+              const page = await getPage();
+              pageUrl    = page.url();
+              bridgeOk   = _status.mcpBridgeReady;
+              authed     = await checkAuth(page);
+            }
+          } catch (e) {
+            // non-fatal
+          }
+
+          const checks = [
+            {
+              check: "browser_port",
+              passed: browserOk,
+              detail: browserOk ? `Chromium DevTools listening on ${BROWSER_URL}` : `No browser found on ${BROWSER_URL}`
+            },
+            {
+              check: "canvas_tab",
+              passed: !!pageUrl,
+              detail: pageUrl ? `Active canvas tab: ${pageUrl}` : "No Boarderless canvas tab detected"
+            },
+            {
+              check: "mcp_bridge",
+              passed: bridgeOk,
+              detail: bridgeOk ? "window.boarderlessMcp bridge is mounted and ready" : "window.boarderlessMcp not found on page"
+            },
+            {
+              check: "authentication",
+              passed: authed,
+              detail: authed ? "User is authenticated — canvas tools are available" : "User is NOT authenticated — canvas tools will be blocked"
+            }
+          ];
+
+          const allPassed = checks.every(c => c.passed);
+          return makeSuccess({
+            ready: allPassed,
+            summary: allPassed
+              ? "All systems operational. Ready to control Boarderless."
+              : "One or more checks failed. See 'checks' array for resolution steps.",
+            checks,
+            runtime: {
+              platform:       _status.platform,
+              node_version:   _status.nodeVersion,
+              server_version: SERVER_VERSION,
+              app_url:        _APP_URL,
+              browser_url:    BROWSER_URL,
+              started_at:     _status.startedAt,
+              tool_calls:     _status.toolCallCount,
+              tool_errors:    _status.toolErrors,
+              last_error:     _status.lastError,
+            }
+          });
+        }
+
+        return makeError(
+          "COMMAND_UNSUPPORTED",
+          `Command '${cmd}' is not supported by this server.`,
+          "Valid commands are: 'get_system_status'. Or call individual MCP tools directly."
+        );
       });
     }
 
