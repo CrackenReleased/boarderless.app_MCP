@@ -1032,16 +1032,21 @@
         <section class="pane-card">
           <div class="pane-card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            AI IDE Client Integration Config
+            AI Agent Integration Config Center
           </div>
           <p class="config-description">
-            Copy this JSON configuration block into your Claude Desktop, Cursor, or Windsurf config file to grant your AI agent connection rights.
+            Choose your integration target. Copy the configuration block into your system config or paste the schema directly to local models.
           </p>
-          <div class="terminal-box">
+          <div class="browser-row" style="margin-bottom: 12px; gap: 8px;">
+            <button class="btn btn-primary" id="btn-tab-mcp" onclick="switchConfigTab('mcp')" style="flex: 1; padding: 8px;">Standard MCP Client Config</button>
+            <button class="btn" id="btn-tab-ollama" onclick="switchConfigTab('ollama')" style="flex: 1; padding: 8px;">Ollama / Custom Harness Schema</button>
+          </div>
+          
+          <div class="terminal-box" id="terminal-mcp">
             <div class="terminal-toolbar">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; opacity: 0.85;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              <span class="window-title-tab">mcp-config.json</span>
-              <button class="terminal-copy-button" onclick="copySnippet()">
+              <span class="window-title-tab">mcp-config.json (Claude Desktop / Cursor)</span>
+              <button class="terminal-copy-button" onclick="copySnippet('code-block-content')">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 <span id="copy-btn-text">Copy JSON</span>
               </button>
@@ -1052,6 +1057,18 @@
     <span class="json-key">"args"</span>: [<span class="json-string" id="server-path-holder-val">"..."</span>]
   }
 }</code></pre>
+          </div>
+
+          <div class="terminal-box" id="terminal-ollama" style="display: none;">
+            <div class="terminal-toolbar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; opacity: 0.85;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span class="window-title-tab">functions.json (Tool Calling Schema)</span>
+              <button class="terminal-copy-button" onclick="copySnippet('code-block-ollama')">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copy-btn-text-ollama">Copy Schema</span>
+              </button>
+            </div>
+            <pre class="terminal-pre" style="max-height: 200px; overflow-y: auto;"><code id="code-block-ollama">Loading schema...</code></pre>
           </div>
         </section>
 
@@ -1438,6 +1455,19 @@
     }
 
     // ── Fetch Server Path & Render Config JSON ──
+    // ── Configuration Tabs switching ──
+    function switchConfigTab(tab) {
+      document.getElementById('terminal-mcp').style.display = tab === 'mcp' ? 'block' : 'none';
+      document.getElementById('terminal-ollama').style.display = tab === 'ollama' ? 'block' : 'none';
+      
+      const btnMcp = document.getElementById('btn-tab-mcp');
+      const btnOllama = document.getElementById('btn-tab-ollama');
+      
+      btnMcp.className = tab === 'mcp' ? 'btn btn-primary' : 'btn';
+      btnOllama.className = tab === 'ollama' ? 'btn btn-primary' : 'btn';
+    }
+
+    // ── Fetch Server Path & Render Config JSON ──
     async function updatePaths() {
       try {
         const p = await invoke('get_server_path');
@@ -1460,6 +1490,62 @@
         const jsonStr = JSON.stringify(config, null, 2);
         document.getElementById('code-block-content').innerHTML = syntaxHighlight(jsonStr);
         
+        // Expose static functions tool calling schema
+        const ollamaSchema = [
+          {
+            "name": "get_server_status",
+            "description": "Returns full diagnostics for the Boarderless MCP server.",
+            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+          },
+          {
+            "name": "get_board_state",
+            "description": "Returns the current Boarderless canvas board as a structured spatial ledger.",
+            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+          },
+          {
+            "name": "mutate_object",
+            "description": "Modifies coordinates or style properties of a canvas object. Writes to the undo stack.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "description": "The unique ID of the object." },
+                "x": { "type": "number", "description": "Horizontal position." },
+                "y": { "type": "number", "description": "Vertical position." },
+                "width": { "type": "number", "description": "Width." },
+                "height": { "type": "number", "description": "Height." },
+                "rotation": { "type": "number", "description": "Rotation in degrees." },
+                "opacity": { "type": "number", "description": "Opacity (0-1)." },
+                "fill": { "type": "string", "description": "Fill hex code." },
+                "stroke": { "type": "string", "description": "Stroke hex code." },
+                "strokeWidth": { "type": "number", "description": "Stroke width." },
+                "text": { "type": "string", "description": "Text content." }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "calculate_export_bounds",
+            "description": "Returns the collective bounding box of all active objects on the canvas.",
+            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+          },
+          {
+            "name": "export_board",
+            "description": "Export the canvas to PNG, PDF, or SVG. Requires auth.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "format": { "type": "string", "enum": ["png", "pdf", "svg"], "description": "Format." },
+                "mode": { "type": "string", "enum": ["canvas", "selection"], "description": "Scope." }
+              },
+              "required": ["format"],
+              "additionalProperties": false
+            }
+          }
+        ];
+        
+        document.getElementById('code-block-ollama').innerHTML = syntaxHighlight(JSON.stringify(ollamaSchema, null, 2));
+
         const filename = p.split(/[\\/]/).pop();
         document.getElementById('server-filename-val').textContent = filename;
       } catch (e) {
@@ -1468,10 +1554,10 @@
     }
 
     // ── Clipboard Copy ──
-    async function copySnippet() {
+    async function copySnippet(elementId) {
       let text = "";
       try {
-        text = document.getElementById('code-block-content').textContent;
+        text = document.getElementById(elementId).textContent;
       } catch (e) {
         console.error("Failed to read code block content:", e);
         return;
@@ -1515,16 +1601,16 @@
         }
       }
       
-      const copyBtn = document.querySelector('.terminal-copy-button');
-      const btnText = document.getElementById('copy-btn-text');
+      const isOllama = elementId === 'code-block-ollama';
+      const btnText = document.getElementById(isOllama ? 'copy-btn-text-ollama' : 'copy-btn-text');
       if (copied) {
-        btnText.textContent = 'Copied JSON!';
+        btnText.textContent = isOllama ? 'Copied Schema!' : 'Copied JSON!';
       } else {
         btnText.textContent = 'Copy Failed!';
       }
       
       setTimeout(() => {
-        btnText.textContent = 'Copy JSON';
+        btnText.textContent = isOllama ? 'Copy Schema' : 'Copy JSON';
       }, 2000);
     }
 
