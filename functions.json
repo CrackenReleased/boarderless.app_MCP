@@ -1,0 +1,165 @@
+[
+  {
+    "name": "get_server_status",
+    "description": "Returns a full diagnostic status report for the Boarderless MCP server. Use this first to verify connectivity, authentication, and tool availability before attempting canvas operations. Includes browser connection state, authentication status, canvas bridge health, and per-tool error counts.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "get_board_state",
+    "description": "Returns the current Boarderless canvas board as a structured, render-ordered JSON spatial ledger.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "mutate_object",
+    "description": "Modifies coordinates or style properties of a canvas object. Writes to the undo stack.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique ID of the object to mutate."
+        },
+        "x": {
+          "type": "number",
+          "description": "The X coordinate (horizontal position) on the canvas."
+        },
+        "y": {
+          "type": "number",
+          "description": "The Y coordinate (vertical position) on the canvas."
+        },
+        "width": {
+          "type": "number",
+          "description": "The width of the object."
+        },
+        "height": {
+          "type": "number",
+          "description": "The height of the object."
+        },
+        "rotation": {
+          "type": "number",
+          "description": "Rotation angle in degrees."
+        },
+        "opacity": {
+          "type": "number",
+          "description": "Opacity value between 0 and 1."
+        },
+        "fill": {
+          "type": "string",
+          "description": "Hex color code for shape fill."
+        },
+        "stroke": {
+          "type": "string",
+          "description": "Hex color code for outline stroke."
+        },
+        "strokeWidth": {
+          "type": "number",
+          "description": "Width of the outline border stroke."
+        },
+        "text": {
+          "type": "string",
+          "description": "The text content of text elements."
+        },
+        "fontSize": {
+          "type": "number",
+          "description": "Font size for text elements."
+        },
+        "fontFamily": {
+          "type": "string",
+          "description": "Font family name."
+        },
+        "align": {
+          "type": "string",
+          "enum": ["left", "center", "right", "justify"],
+          "description": "Text alignment."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "description": "Corner radius for rounded shapes."
+        },
+        "edgeFeather": {
+          "type": "number",
+          "description": "Feather value for shapes."
+        }
+      },
+      "required": ["id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "calculate_export_bounds",
+    "description": "Returns the collective bounding box of all active objects on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "export_board",
+    "description": "Export the current Boarderless canvas to PNG, PDF, or SVG. Requires the user to be authenticated. SVG and PDF require a Pro plan.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["png", "pdf", "svg"],
+          "description": "Export file format."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["canvas", "selection"],
+          "description": "Export scope scope. Defaults to 'canvas'."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Optional output filename override."
+        }
+      },
+      "required": ["format"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "graduation_rename_photos",
+    "description": "Rename and number photo files inside a directory to a sequential format (e.g. seniorname_01.jpg). Operates on local filesystem.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "seniorsDir": {
+          "type": "string",
+          "description": "Absolute path to the folder containing photos."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["sequential", "gap_fill"],
+          "description": "'sequential' numbers files 01-XX strictly. 'gap_fill' preserves existing numbers and fills gaps."
+        }
+      },
+      "required": ["seniorsDir", "mode"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "graduation_standardize_images",
+    "description": "Scan and convert progressive JPEGs and HEIC files inside subdirectories into standard baseline RGB JPEGs. Operates on local filesystem.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "seniorsDir": {
+          "type": "string",
+          "description": "Absolute path to the folder containing photos."
+        }
+      },
+      "required": ["seniorsDir"],
+      "additionalProperties": false
+    }
+  }
+]
