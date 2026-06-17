@@ -115,114 +115,178 @@ npm run example
 
 ---
 
-## Gating & CLI Authentication
+## Diagnosing Issues — `get_server_status`
 
-To respect user plan limits and session validity, the MCP server checks the tab's authentication status before running. 
-- If the browser session is unauthenticated, the CLI will output clear directions:
-  `[Boarderless Auth Required] Please complete Google OAuth sign-in in your browser window.`
-- The MCP server will pause and poll in the background, automatically proceeding once verification succeeds.
+**Always call `get_server_status` first** before attempting canvas operations.
+
+It returns a structured JSON report with four health checks and actionable resolution steps for every failure:
+
+```json
+{
+  "status": "ok",
+  "ready": true,
+  "summary": "All systems operational. Ready to control Boarderless.",
+  "checks": [
+    { "check": "browser_port",    "passed": true,  "detail": "Chromium DevTools listening on http://127.0.0.1:9222" },
+    { "check": "canvas_tab",      "passed": true,  "detail": "Active canvas tab: https://boarderless.app/canvas" },
+    { "check": "mcp_bridge",      "passed": true,  "detail": "window.boarderlessMcp bridge is mounted and ready" },
+    { "check": "authentication",  "passed": true,  "detail": "User is authenticated — canvas tools are available" }
+  ],
+  "runtime": {
+    "platform": "win32",
+    "node_version": "v22.3.0",
+    "server_version": "0.1.18",
+    "app_url": "https://boarderless.app/canvas",
+    "browser_url": "http://127.0.0.1:9222",
+    "started_at": "2026-06-16T19:07:00.000Z",
+    "tool_calls": 1,
+    "tool_errors": {}
+  },
+  "next_steps": ["Call get_board_state to inspect the current canvas."]
+}
+```
+
+When something fails, each check includes a `resolution` field with exact fix steps:
+```json
+{ "check": "authentication", "passed": false,
+  "resolution": "Sign in with Google at https://boarderless.app/canvas. Canvas tools require an active Boarderless session." }
+```
+
+---
+
+## Structured Error Responses
+
+Every tool returns a structured JSON error object — never a raw exception string. Agents can parse `error_code` to decide next steps programmatically.
+
+| `error_code` | Meaning | Resolution |
+|---|---|---|
+| `BROWSER_CONNECT_FAILED` | No Chromium browser running on the debug port | Launch Chrome with `--remote-debugging-port=9222` |
+| `AUTH_REQUIRED` | Canvas session not authenticated | Sign in at `boarderless.app/canvas` |
+| `BRIDGE_NOT_READY` | `window.boarderlessMcp` not mounted | Navigate to `/canvas` and refresh |
+| `BRIDGE_MISSING` | Bridge removed mid-session | Refresh the browser tab |
+| `EXPORT_FN_MISSING` | Export function not bound on page | Ensure a board is open and you're on `/canvas` |
+| `EXPORT_RUNTIME_ERROR` | Export threw a runtime exception | Check plan tier — SVG/PDF require Pro |
+| `PATH_NOT_FOUND` | Filesystem path argument doesn't exist | Use an absolute path to an existing directory |
+| `MISSING_ARGUMENT` | Required tool argument was omitted | Check the tool's input schema |
+| `TOOL_UNEXPECTED_ERROR` | Unhandled error in the tool silo | Check server stderr; open a GitHub issue |
+
+Error shape:
+```json
+{
+  "status": "error",
+  "error_code": "AUTH_REQUIRED",
+  "message": "You must be signed in to Boarderless to use canvas tools.",
+  "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
+  "server": "boarderless-mcp-bridge",
+  "version": "0.1.18",
+  "timestamp": "2026-06-16T19:07:00.000Z"
+}
+```
+
+---
+
+## Environment Variables (Full Reference)
+
+All configuration uses environment variables — no hardcoded paths, no user-specific assumptions.
+
+| Variable | Default | Description |
+|---|---|---|
+| `BOARDERLESS_MCP_APP_URL` | `https://boarderless.app/canvas` | Canvas URL to connect to. Set to `http://127.0.0.1:5174/canvas` for local dev. |
+| `BOARDERLESS_MCP_BROWSER_URL` | `http://127.0.0.1:9222` | Chrome DevTools URL. Change if you use a different debug port. |
+| `BOARDERLESS_MCP_BROWSER_EXE` | *(auto-detected)* | Full path to browser executable. Set if auto-detection misses your browser. |
+| `BOARDERLESS_MCP_PROFILE_DIR` | *(OS-standard, see below)* | Override the persistent browser profile directory. |
+| `BOARDERLESS_MCP_HEADLESS` | `false` | Set to `"true"` for headless browser mode (CI/testing). |
+
+**Default profile directories** (resolved from OS env vars, never hardcoded):
+- **Windows**: `%LOCALAPPDATA%\boarderless-mcp-profile`
+- **macOS**: `~/Library/Application Support/boarderless-mcp-profile`
+- **Linux**: `~/.boarderless-mcp-profile`
 
 ---
 
 ## Tool API Specifications
 
-### 1. `get_board_state`
-Returns the canvas state as a structured, render-ordered JSON ledger (`boarderless.boardSnapshot.v1`).
+### `get_server_status` *(always call this first)*
+Returns a full diagnostic report. Input: none. See [Diagnosing Issues](#diagnosing-issues--get_server_status) above.
+
+---
+
+### `get_board_state`
+Returns the canvas as a structured, render-ordered JSON ledger.
 
 - **Input**: None (`{}`)
 - **Output**:
   ```json
   {
     "schema": "boarderless.boardSnapshot.v1",
-    "generatedAt": "2026-05-25T18:40:00.000Z",
+    "generatedAt": "2026-06-16T19:00:00.000Z",
     "objectCount": 3,
     "objects": [
       {
         "id": "rect-1",
         "objectKind": "shape",
         "objectType": "rect",
-        "x": 20,
-        "y": 20,
-        "rawWidth": 80,
-        "rawHeight": 50,
-        "boundsLeft": 18,
-        "boundsTop": 18,
-        "boundsRight": 102,
-        "boundsBottom": 72,
-        "fill": "#ff0000",
-        "stroke": "#ff0000",
-        "strokeWidth": 4,
-        "opacity": 1,
-        "rotation": 0
+        "x": 20, "y": 20,
+        "rawWidth": 80, "rawHeight": 50,
+        "fill": "#ff0000", "stroke": "#ff0000",
+        "strokeWidth": 4, "opacity": 1, "rotation": 0
       }
     ]
   }
   ```
 
-### 2. `mutate_object`
-Modifies spatial coordinates or visual style properties of a canvas object. Mutated actions are pushed to the undo stack.
+---
 
-- **Input Schema**:
-  - `id` (string, required): Object ID.
-  - Mutable Fields: `x`, `y`, `width`, `height`, `rotation`, `opacity`, `fill`, `stroke`, `strokeWidth`, `text`, `fontSize`, `fontFamily`, `align`, `cornerRadius`, `edgeFeather`, `points`, `scaleX`, `scaleY`.
+### `mutate_object`
+Modifies coordinates or style properties of a canvas object. Writes to the undo stack.
 
-- **Example Call**:
-  ```json
-  {
-    "id": "rect-1",
-    "x": 140,
-    "y": 130,
-    "fill": "#22c55e"
-  }
-  ```
+- **Required**: `id` (string)
+- **Optional mutable fields**: `x`, `y`, `width`, `height`, `rotation`, `opacity`, `fill`, `stroke`, `strokeWidth`, `text`, `fontSize`, `fontFamily`, `align`, `cornerRadius`, `edgeFeather`, `points`, `scaleX`, `scaleY`
 
-### 3. `calculate_export_bounds`
-Calculates the collective mathematical boundary coordinates of all active objects on the canvas. Used by agents to calculate exact crops for export.
+---
+
+### `calculate_export_bounds`
+Returns the collective bounding box of all active objects.
 
 - **Input**: None (`{}`)
-- **Output**:
-  ```json
-  {
-    "schema": "boarderless.exportBounds.v1",
-    "empty": false,
-    "objectCount": 1,
-    "bounds": {
-      "x": 138,
-      "y": 128,
-      "width": 84,
-      "height": 54,
-      "left": 138,
-      "top": 128,
-      "right": 222,
-      "bottom": 182
-    }
-  }
-  ```
+- **Output**: `{ bounds: { x, y, width, height, left, top, right, bottom } }`
 
-### 4. `graduation_rename_photos`
-Renames and numbers photo files inside a directory to a standard sequential format (`seniorname_01.jpg`, etc.) or fills existing gaps within the directory.
-- **Input**:
-  - `seniorsDir` (string, required): Absolute path to the folder.
-  - `mode` (string, required): `"sequential"` or `"gap_fill"`.
+---
 
-### 5. `graduation_standardize_images`
-Scans and converts progressive JPEGs and HEIC files inside subdirectories into baseline RGB JPEGs.
-- **Input**:
-  - `seniorsDir` (string, required): Absolute path to the folder.
+### `export_board`
+Exports the current canvas to PNG, PDF, or SVG.
+
+- **Required**: `format` — `"png"` | `"pdf"` | `"svg"`
+- **Optional**: `mode` — `"canvas"` (default) | `"selection"`, `filename` — output name override
+- **Note**: SVG and PDF require a Pro plan. The error response will indicate this clearly.
+
+---
+
+### `graduation_rename_photos`
+Renames photo files in a local directory to sequential format. **No browser required.**
+
+- **Required**: `seniorsDir` (absolute path), `mode` (`"sequential"` | `"gap_fill"`)
+
+---
+
+### `graduation_standardize_images`
+Converts progressive JPEGs and HEIC files to baseline RGB JPEGs. **No browser required.**
+
+- **Required**: `seniorsDir` (absolute path)
 
 ---
 
 ## Connecting to AI Clients
 
-### Claude Desktop Configuration
-Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS). Running `npm run setup` will do this automatically!
+### Claude Desktop
+Add to `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS).
 
 ```json
 {
   "mcpServers": {
     "boarderless": {
       "command": "node",
-      "args": ["C:\\path\\to\\boarderless.app_MCP\\src\\mcp-stdio-server.js"],
+      "args": ["/absolute/path/to/boarderless.app_MCP/src/mcp-stdio-server.js"],
       "env": {
         "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
         "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
@@ -232,8 +296,42 @@ Add the server entry to your `%APPDATA%\Claude\claude_desktop_config.json` (Wind
 }
 ```
 
+Running `npm run setup` will write this automatically.
+
+### Hermes / OpenClaw (Local AI Gateway)
+Add to your `openclaw.json` under `mcp.servers`:
+
+```json
+"mcp": {
+  "servers": {
+    "boarderless": {
+      "command": "node",
+      "args": ["/absolute/path/to/boarderless.app_MCP/src/mcp-stdio-server.js"],
+      "env": {
+        "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
+        "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
+      }
+    }
+  }
+}
+```
+
+### Cursor / Windsurf
+See the `mcp-config.json` file generated by `npm run setup` for the exact config block to paste.
+
+---
+
+## Contributing
+
+This MCP server is open source under the Apache 2.0 license. Contributions are welcome!
+
+- **Bug reports**: Open an issue describing the `error_code` you received and your `get_server_status` output.
+- **New tools**: Tools should be added as siloed handlers in `mcp-stdio-server.js` with structured `makeError` / `makeSuccess` responses. Every new tool must have a corresponding regression test.
+- **Platform support**: If your browser or OS isn't detected, open a PR adding its path to `getBrowserCandidates()` — all paths must use OS env vars, never hardcoded usernames.
+
 ---
 
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+

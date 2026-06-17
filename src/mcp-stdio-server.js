@@ -1,6 +1,23 @@
 #!/usr/bin/env node
 
-// mcp-stdio-server.js
+/**
+ * Boarderless MCP Server — mcp-stdio-server.js
+ *
+ * Model Context Protocol server that bridges AI agents to the live
+ * Boarderless canvas via Chrome DevTools Protocol (CDP / Puppeteer).
+ *
+ * Cross-platform: works on Windows, macOS, and Linux.
+ * No hardcoded user paths — all paths are resolved at runtime from
+ * environment variables or OS-standard directories.
+ *
+ * TOOL SILOING: Every tool is wrapped in its own error boundary so that
+ * a failure in one tool never crashes or corrupts another. All errors are
+ * returned as structured JSON objects that agents and users can act on.
+ *
+ * @see https://github.com/CrackenReleased/boarderless.app_MCP
+ * @license Apache-2.0
+ */
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -12,433 +29,743 @@ import net from "net";
 import fs from "fs";
 import os from "os";
 
-// Graduation helpers are lazy-loaded on first use — keeps server startup
-// clean even if heic-convert/jimp have install issues on the user's machine.
-let _performRenaming = null;
-let _standardize = null;
-async function getGraduationHelpers() {
-  if (!_performRenaming) {
-    try {
-      const renameModule = await import("./helpers/rename_photos.js");
-      const stdModule    = await import("./helpers/standardize_images.js");
-      _performRenaming = renameModule.performRenaming;
-      _standardize     = stdModule.standardize;
-    } catch (e) {
-      throw new Error(
-        `[Boarderless] Failed to load graduation photo helpers: ${e.message}\n` +
-        `Run 'npm install' in the boarderless-mcp directory and try again.`
-      );
-    }
-  }
-  return { performRenaming: _performRenaming, standardize: _standardize };
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
-const SERVER_NAME = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.17";
-const DEFAULT_APP_URL = "https://boarderless.app/canvas";
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SERVER_NAME    = "boarderless-mcp-bridge";
+const SERVER_VERSION = "0.1.18";
+const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
+
+/** Resolved at runtime — never hardcoded. */
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
 
-function isPortOpen(port) {
+// ─── Structured error helpers ─────────────────────────────────────────────────
+
+/**
+ * Build a transparent, agent-readable error response.
+ *
+ * Every error contains:
+ *   - error_code    — machine-readable short string (e.g. "AUTH_REQUIRED")
+ *   - message       — human-readable description
+ *   - resolution    — step-by-step user fix
+ *   - context       — optional extra debug fields
+ */
+function makeError(code, message, resolution, context = {}) {
+  const payload = {
+    status:     "error",
+    error_code: code,
+    message,
+    resolution,
+    server:     SERVER_NAME,
+    version:    SERVER_VERSION,
+    timestamp:  new Date().toISOString(),
+    ...context,
+  };
+  return {
+    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+    isError: true,
+  };
+}
+
+function makeSuccess(data) {
+  const payload = {
+    status:    "ok",
+    server:    SERVER_NAME,
+    version:   SERVER_VERSION,
+    timestamp: new Date().toISOString(),
+    ...data,
+  };
+  return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+}
+
+// ─── Server status tracker ────────────────────────────────────────────────────
+
+const _status = {
+  startedAt:         new Date().toISOString(),
+  platform:          os.platform(),
+  nodeVersion:       process.version,
+  browserConnected:  false,
+  browserUrl:        BROWSER_URL,
+  appUrl:            null,
+  authenticated:     false,
+  mcpBridgeReady:    false,
+  lastError:         null,
+  toolCallCount:     0,
+  toolErrors:        {},     // { toolName: count }
+};
+
+function recordToolError(toolName) {
+  _status.lastError = new Date().toISOString();
+  _status.toolErrors[toolName] = (_status.toolErrors[toolName] || 0) + 1;
+}
+
+// ─── Graduation helpers (lazy-loaded) ─────────────────────────────────────────
+
+let _performRenaming = null;
+let _standardize     = null;
+
+async function getGraduationHelpers() {
+  if (_performRenaming) return { performRenaming: _performRenaming, standardize: _standardize };
+  try {
+    const helperDir  = path.join(__dirname, "..", "helpers");
+    const renameFile = path.join(helperDir, "rename_photos.js");
+    const stdFile    = path.join(helperDir, "standardize_images.js");
+
+    if (!fs.existsSync(renameFile) || !fs.existsSync(stdFile)) {
+      throw new Error(`Helper files not found in ${helperDir}. Run 'npm install' inside the boarderless.app_MCP directory.`);
+    }
+
+    const renameModule = await import(renameFile);
+    const stdModule    = await import(stdFile);
+    _performRenaming = renameModule.performRenaming;
+    _standardize     = stdModule.standardize;
+    return { performRenaming: _performRenaming, standardize: _standardize };
+  } catch (e) {
+    throw new Error(`Failed to load graduation photo helpers: ${e.message}`);
+  }
+}
+
+// ─── Port check ───────────────────────────────────────────────────────────────
+
+function isPortOpen(port, host = "127.0.0.1") {
   return new Promise((resolve) => {
     const client = new net.Socket();
-    client.setTimeout(150);
-    client.once('connect', () => {
-      client.destroy();
-      resolve(true);
-    });
-    client.once('timeout', () => {
-      client.destroy();
-      resolve(false);
-    });
-    client.once('error', () => {
-      client.destroy();
-      resolve(false);
-    });
-    client.connect(port, '127.0.0.1');
+    client.setTimeout(300);
+    client.once("connect", () => { client.destroy(); resolve(true); });
+    client.once("timeout", () => { client.destroy(); resolve(false); });
+    client.once("error",   () => { client.destroy(); resolve(false); });
+    client.connect(port, host);
   });
 }
 
-function findChromeOrEdge() {
-  const platform = os.platform();
-  const paths = [];
+// ─── Browser discovery ────────────────────────────────────────────────────────
 
-  if (platform === 'win32') {
-    paths.push(
-      // Chrome
-      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
-      // Edge
-      'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
-      // Brave
-      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-      'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-      path.join(process.env.LOCALAPPDATA || '', 'BraveSoftware\\Brave-Browser\\Application\\brave.exe'),
-      // Opera
-      path.join(process.env.LOCALAPPDATA || '', 'Programs\\Opera\\opera.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs\\Opera GX\\opera.exe')
-    );
-  } else if (platform === 'darwin') {
-    paths.push(
-      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
-      '/Applications/Opera.app/Contents/MacOS/Opera',
-      '/Applications/Opera GX.app/Contents/MacOS/Opera GX'
-    );
-  } else {
-    // Linux
-    paths.push(
-      '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable',
-      '/usr/bin/chromium',
-      '/usr/bin/chromium-browser',
-      '/usr/bin/brave-browser',
-      '/opt/brave.com/brave/brave-browser'
-    );
+/**
+ * Returns a list of candidate browser executable paths for the current OS.
+ * Uses only OS-level environment variables — no hardcoded usernames.
+ */
+function getBrowserCandidates() {
+  const platform = os.platform();
+  const localApp = process.env.LOCALAPPDATA || "";   // Windows only
+  const progFiles  = process.env.ProgramFiles  || "C:\\Program Files";
+  const progFiles86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+
+  if (platform === "win32") {
+    return [
+      path.join(progFiles,   "Google", "Chrome", "Application", "chrome.exe"),
+      path.join(progFiles86, "Google", "Chrome", "Application", "chrome.exe"),
+      path.join(localApp,    "Google", "Chrome", "Application", "chrome.exe"),
+      path.join(progFiles86, "Microsoft", "Edge", "Application", "msedge.exe"),
+      path.join(progFiles,   "Microsoft", "Edge", "Application", "msedge.exe"),
+      path.join(progFiles,   "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+      path.join(progFiles86, "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+      path.join(localApp,    "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+      path.join(localApp,    "Programs", "Opera", "opera.exe"),
+      path.join(localApp,    "Programs", "Opera GX", "opera.exe"),
+    ];
   }
 
-  for (const p of paths) {
-    if (p && fs.existsSync(p)) {
-      return p;
-    }
+  if (platform === "darwin") {
+    return [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+      "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+      "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+      "/Applications/Opera.app/Contents/MacOS/Opera",
+      "/Applications/Opera GX.app/Contents/MacOS/Opera GX",
+    ];
+  }
+
+  // Linux
+  return [
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/brave-browser",
+    "/opt/brave.com/brave/brave-browser",
+    "/snap/bin/chromium",
+  ];
+}
+
+function findBrowser() {
+  // Explicit override from env var
+  if (process.env.BOARDERLESS_MCP_BROWSER_EXE) {
+    const exe = process.env.BOARDERLESS_MCP_BROWSER_EXE;
+    if (fs.existsSync(exe)) return { path: exe, source: "env:BOARDERLESS_MCP_BROWSER_EXE" };
+    return null;
+  }
+
+  const candidates = getBrowserCandidates();
+  for (const p of candidates) {
+    if (p && fs.existsSync(p)) return { path: p, source: "auto-detected" };
   }
   return null;
 }
 
-async function ensureBrowserRunning(appUrl) {
-  // If BROWSER_URL is pointing to localhost:9222, we check if it is open
-  const urlObj = new URL(BROWSER_URL);
-  if (urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
-    const port = parseInt(urlObj.port || '9222', 10);
-    const isOpen = await isPortOpen(port);
-    if (!isOpen) {
-      console.error(`[Boarderless] Remote debugging port ${port} is closed. Attempting to launch browser...`);
-      const exePath = findChromeOrEdge();
-      if (exePath) {
-        let profilePath = "";
-        if (os.platform() === 'win32') {
-          profilePath = path.join(process.env.LOCALAPPDATA || '', 'boarderless-mcp-profile');
-        } else if (os.platform() === 'darwin') {
-          profilePath = path.join(os.homedir(), 'Library', 'Application Support', 'boarderless-mcp-profile');
-        } else {
-          profilePath = path.join(os.homedir(), '.boarderless-mcp-profile');
-        }
-
-        console.error(`[Boarderless] Launching browser: ${exePath} with profile ${profilePath}`);
-        const args = [
-          `--remote-debugging-port=${port}`,
-          `--user-data-dir=${profilePath}`,
-          '--no-first-run',
-          '--no-default-browser-check'
-        ];
-        if (process.env.BOARDERLESS_MCP_HEADLESS === 'true') {
-          args.push('--headless=new');
-        }
-        args.push(appUrl);
-        
-        // Spawn browser and detach so it keeps running when this server restarts
-        const child = spawn(exePath, args, {
-          detached: true,
-          stdio: 'ignore'
-        });
-        child.unref();
-
-        // Wait up to 5 seconds for port to open
-        for (let i = 0; i < 25; i++) {
-          await new Promise(r => setTimeout(r, 200));
-          if (await isPortOpen(port)) {
-            console.error(`[Boarderless] Browser connected successfully on port ${port}.`);
-            return;
-          }
-        }
-        console.error(`[Boarderless] Warning: Launched browser but port ${port} did not open in time.`);
-      } else {
-        console.error(`[Boarderless] Error: Could not automatically locate Google Chrome or Microsoft Edge.`);
-        console.error(`Please launch your browser manually with command:`);
-        console.error(`chrome.exe --remote-debugging-port=9222`);
-      }
-    }
+/**
+ * Compute a safe, cross-platform persistent profile directory for the MCP
+ * browser session. Never touches the user's default browser profile.
+ */
+function getMcpProfileDir() {
+  if (process.env.BOARDERLESS_MCP_PROFILE_DIR) {
+    return process.env.BOARDERLESS_MCP_PROFILE_DIR;
   }
+
+  const platform = os.platform();
+  if (platform === "win32") {
+    const base = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
+    return path.join(base, "boarderless-mcp-profile");
+  }
+  if (platform === "darwin") {
+    return path.join(os.homedir(), "Library", "Application Support", "boarderless-mcp-profile");
+  }
+  return path.join(os.homedir(), ".boarderless-mcp-profile");
 }
 
-async function detectAppUrl() {
-  if (process.env.BOARDERLESS_MCP_APP_URL) {
-    return process.env.BOARDERLESS_MCP_APP_URL;
+// ─── Browser launcher ─────────────────────────────────────────────────────────
+
+async function ensureBrowserRunning(appUrl) {
+  const urlObj = new URL(BROWSER_URL);
+  // Only attempt auto-launch when pointing at localhost
+  if (urlObj.hostname !== "127.0.0.1" && urlObj.hostname !== "localhost") return;
+
+  const port   = parseInt(urlObj.port || "9222", 10);
+  const isOpen = await isPortOpen(port);
+  if (isOpen) return; // Already running — nothing to do.
+
+  console.error(`[Boarderless] Port ${port} not open. Attempting to launch a Chromium-based browser...`);
+
+  const browser = findBrowser();
+  if (!browser) {
+    console.error("[Boarderless] ⚠ No supported browser found. Checked paths:");
+    for (const p of getBrowserCandidates()) console.error(`    ${p}`);
+    console.error("[Boarderless] Fix: Install Google Chrome, Edge, Brave, or Chromium, OR set env BOARDERLESS_MCP_BROWSER_EXE=/path/to/browser");
+    return;
   }
-  // Try to detect if local development server is running on port 5174
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 100);
-    const res = await fetch("http://127.0.0.1:5174/canvas", { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (res.ok) {
-      return "http://127.0.0.1:5174/canvas";
+
+  const profileDir = getMcpProfileDir();
+  console.error(`[Boarderless] Launching: ${browser.path} (${browser.source})`);
+  console.error(`[Boarderless] Profile:   ${profileDir}`);
+
+  const args = [
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${profileDir}`,
+    "--no-first-run",
+    "--no-default-browser-check",
+  ];
+  if (process.env.BOARDERLESS_MCP_HEADLESS === "true") args.push("--headless=new");
+  args.push(appUrl);
+
+  const child = spawn(browser.path, args, { detached: true, stdio: "ignore" });
+  child.unref();
+
+  // Wait up to 6 seconds for port to open
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 200));
+    if (await isPortOpen(port)) {
+      console.error(`[Boarderless] ✓ Browser connected on port ${port}.`);
+      _status.browserConnected = true;
+      return;
     }
-  } catch (e) {
-    // Local server is not running
   }
+  console.error(`[Boarderless] ⚠ Browser launched but port ${port} did not open within 6 s.`);
+}
+
+// ─── App URL detection ────────────────────────────────────────────────────────
+
+async function detectAppUrl() {
+  if (process.env.BOARDERLESS_MCP_APP_URL) return process.env.BOARDERLESS_MCP_APP_URL;
+
+  // Detect local dev server on Vite's default port
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 200);
+    const res  = await fetch("http://127.0.0.1:5174/canvas", { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (res.ok) return "http://127.0.0.1:5174/canvas";
+  } catch (_) { /* not running locally */ }
+
   return DEFAULT_APP_URL;
 }
 
-// ─── Live page resolver ──────────────────────────────────────────────────────
-// Re-connects to Chrome and finds the live canvas tab on EVERY call.
-// This prevents "detached Frame" errors that occur when the page reloads,
-// navigates, or the tab is refreshed while the MCP server is running.
+// ─── Live page resolver ───────────────────────────────────────────────────────
+
 let _browser = null;
 let _APP_URL  = null;
 
 async function getPage() {
-  // Re-connect if browser handle is gone or disconnected
+  // Reconnect if handle is stale or disconnected
   if (!_browser || !_browser.isConnected()) {
     await ensureBrowserRunning(_APP_URL);
     _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
+    _status.browserConnected = true;
   }
 
   const appOrigin = new URL(_APP_URL).origin;
   let pages;
   try {
     pages = await _browser.pages();
-  } catch (e) {
-    // Browser disconnected mid-call — reconnect and retry once
+  } catch (_) {
     _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
     pages = await _browser.pages();
   }
 
-  // Find an attached (non-detached) canvas tab
+  // Find an active (non-detached) canvas tab
   let page = null;
   for (const p of pages) {
     try {
-      const url = p.url(); // throws if detached
+      const url = p.url();
       if (url.startsWith(appOrigin)) { page = p; break; }
-    } catch (_) {
-      // skip detached frames
-    }
+    } catch (_) { /* skip detached */ }
   }
 
-  // No canvas tab open — open one
+  // No canvas tab found — open one
   if (!page) {
     page = await _browser.newPage();
-    await page.goto(_APP_URL, { waitUntil: 'domcontentloaded' });
+    await page.goto(_APP_URL, { waitUntil: "domcontentloaded" });
   }
 
-  // Ensure page is stable, window.boarderlessMcp is ready, and set auto-approve
+  // Wait for boarderlessMcp bridge to mount (up to 5 s)
   let mcpReady = false;
   for (let i = 0; i < 20; i++) {
     try {
-      mcpReady = await page.evaluate(() => typeof window.boarderlessMcp !== 'undefined');
+      mcpReady = await page.evaluate(() => typeof window.boarderlessMcp !== "undefined");
       if (mcpReady) break;
-    } catch (e) {
-      // ignore evaluation errors / detached frame transitions
-    }
+    } catch (_) { /* frame transition — retry */ }
     await new Promise(r => setTimeout(r, 250));
   }
 
+  _status.mcpBridgeReady = mcpReady;
+
   if (mcpReady) {
     try {
-      await page.evaluate(() => {
-        window.boarderlessMcpAutoApprove = true;
-      });
-      await page.evaluateOnNewDocument(() => {
-        window.boarderlessMcpAutoApprove = true;
-      });
-    } catch (e) {
-      // ignore errors if frame changes mid-injection
-    }
-  } else {
-    console.error('[Boarderless] Warning: boarderlessMcp bridge not ready after timeout.');
+      await page.evaluate(() => { window.boarderlessMcpAutoApprove = true; });
+      await page.evaluateOnNewDocument(() => { window.boarderlessMcpAutoApprove = true; });
+    } catch (_) { /* ignore mid-navigation race */ }
   }
 
   return page;
 }
 
-async function run() {
-  _APP_URL = await detectAppUrl();
+// ─── Auth check ───────────────────────────────────────────────────────────────
 
-  // Make sure remote debugging browser is open
-  await ensureBrowserRunning(_APP_URL);
-
-  // Initial connection — populate _browser
-  _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
-
-  // Warm up: get the page once and log auth status
+async function checkAuth(page) {
   try {
-    const page = await getPage();
-    const isAuthenticated = await page.evaluate(() =>
-      localStorage.getItem('boarderless_has_authenticated') === 'true'
+    const authed = await page.evaluate(() =>
+      localStorage.getItem("boarderless_has_authenticated") === "true"
     );
-    if (isAuthenticated) {
-      console.error('[Boarderless] ✓ Authenticated. Canvas tools ready.');
+    _status.authenticated = authed;
+    return authed;
+  } catch (_) {
+    _status.authenticated = false;
+    return false;
+  }
+}
+
+// ─── Tool silo wrapper ────────────────────────────────────────────────────────
+/**
+ * Every tool invocation is wrapped here. If anything throws unexpectedly
+ * the error is captured, logged, and returned as a structured error response
+ * rather than crashing or silently failing.
+ */
+async function runTool(toolName, fn) {
+  _status.toolCallCount++;
+  try {
+    return await fn();
+  } catch (err) {
+    recordToolError(toolName);
+    console.error(`[Boarderless][${toolName}] Unhandled error:`, err.message);
+    return makeError(
+      "TOOL_UNEXPECTED_ERROR",
+      `Unhandled error in tool '${toolName}': ${err.message}`,
+      "Check the MCP server stderr log for a full stack trace. If the issue persists, please open an issue at https://github.com/CrackenReleased/boarderless.app_MCP",
+      { tool: toolName, stack: err.stack?.split("\n").slice(0, 6).join("\n") }
+    );
+  }
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+async function run() {
+  _APP_URL         = await detectAppUrl();
+  _status.appUrl   = _APP_URL;
+
+  // Non-blocking browser warm-up
+  try {
+    await ensureBrowserRunning(_APP_URL);
+    _browser = await puppeteer.connect({ browserURL: BROWSER_URL, defaultViewport: null });
+    _status.browserConnected = true;
+
+    const page   = await getPage();
+    const authed = await checkAuth(page);
+
+    if (authed) {
+      console.error("[Boarderless] ✓ Authenticated. Canvas tools ready.");
     } else {
-      console.error('\n\x1b[33m[Boarderless Auth Required]\x1b[0m');
-      console.error(`Please sign in at: ${_APP_URL}\n`);
+      console.error("\n\x1b[33m[Boarderless Auth Required]\x1b[0m");
+      console.error(`  Please sign in at: ${_APP_URL}`);
+      console.error("  Canvas tools will return AUTH_REQUIRED until sign-in is complete.\n");
     }
   } catch (e) {
-    console.error('[Boarderless] Warning during startup check:', e.message);
+    // Non-fatal — log and continue. Tools will surface specific errors at call time.
+    console.error("[Boarderless] ⚠ Startup warning:", e.message);
+    _status.lastError = e.message;
   }
 
-  const server = new Server({ name: SERVER_NAME, version: SERVER_VERSION }, { capabilities: { tools: {} } });
+  // ─── MCP Server setup ──────────────────────────────────────────────────────
+
+  const server = new Server(
+    { name: SERVER_NAME, version: SERVER_VERSION },
+    { capabilities: { tools: {} } }
+  );
+
+  // ── Tool listing ────────────────────────────────────────────────────────────
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    let tools = [];
+    // Always include static tools; dynamically fetch canvas tools if bridge is live.
+    let canvasTools = [];
     try {
       const page = await getPage();
-      tools = await page.evaluate(() => {
-        return (window.boarderlessMcp && typeof window.boarderlessMcp.listTools === 'function')
-          ? window.boarderlessMcp.listTools()
-          : [];
-      });
+      if (_status.mcpBridgeReady) {
+        canvasTools = await page.evaluate(() =>
+          typeof window.boarderlessMcp?.listTools === "function"
+            ? window.boarderlessMcp.listTools()
+            : []
+        );
+      }
     } catch (e) {
-      console.error('[Boarderless] Could not fetch dynamic tools:', e.message);
+      console.error("[Boarderless] Could not fetch dynamic canvas tools:", e.message);
     }
+
     return {
       tools: [
-        ...tools,
+        // ── Diagnostic ────────────────────────────────────────────────────────
         {
-          name: "graduation_rename_photos",
-          description: "Rename and number photo files in senior subdirectories to 01-XX format.",
+          name: "get_server_status",
+          description:
+            "Returns a full diagnostic status report for the Boarderless MCP server. " +
+            "Use this first to verify connectivity, authentication, and tool availability " +
+            "before attempting canvas operations. Includes browser connection state, " +
+            "authentication status, canvas bridge health, and per-tool error counts.",
+          inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        },
+
+        // ── Canvas tools (dynamic from bridge) ───────────────────────────────
+        ...canvasTools,
+
+        // ── Export ────────────────────────────────────────────────────────────
+        {
+          name: "export_board",
+          description:
+            "Export the current Boarderless canvas to PNG, PDF, or SVG. " +
+            "Requires the user to be authenticated. " +
+            "Returns a structured error with resolution steps if export fails.",
           inputSchema: {
             type: "object",
             properties: {
-              seniorsDir: { type: "string", description: "Absolute path to the Seniors folder." },
-              mode: { type: "string", enum: ["sequential", "gap_fill"], description: "Rename mode: sequential (number 01-XX strictly) or gap_fill (keep numbers, fill gaps)." }
+              format:   { type: "string", enum: ["png", "pdf", "svg"], description: "Export format." },
+              mode:     { type: "string", enum: ["canvas", "selection"], description: "Export scope. Defaults to 'canvas'." },
+              filename: { type: "string", description: "Optional output filename override." },
+            },
+            required: ["format"],
+            additionalProperties: false,
+          },
+        },
+
+        // ── File helpers ──────────────────────────────────────────────────────
+        {
+          name: "graduation_rename_photos",
+          description:
+            "Rename and number photo files inside a directory to a sequential format " +
+            "(e.g. seniorname_01.jpg). Operates on the local filesystem — no browser required. " +
+            "Returns a structured report of renamed files and any errors encountered.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              seniorsDir: { type: "string", description: "Absolute path to the folder containing photos." },
+              mode: {
+                type: "string",
+                enum: ["sequential", "gap_fill"],
+                description: "'sequential' numbers files 01–XX strictly. 'gap_fill' preserves existing numbers and fills gaps.",
+              },
             },
             required: ["seniorsDir", "mode"],
-            additionalProperties: false
-          }
+            additionalProperties: false,
+          },
         },
         {
           name: "graduation_standardize_images",
-          description: "Scan and convert progressive JPEGs and HEIC files to standard baseline RGB JPEGs.",
+          description:
+            "Scan and convert progressive JPEGs and HEIC files inside subdirectories " +
+            "into standard baseline RGB JPEGs. Operates on the local filesystem — no browser required. " +
+            "Returns a structured report of converted files and any errors encountered.",
           inputSchema: {
             type: "object",
             properties: {
-              seniorsDir: { type: "string", description: "Absolute path to the Seniors folder." }
+              seniorsDir: { type: "string", description: "Absolute path to the folder containing photos." },
             },
             required: ["seniorsDir"],
-            additionalProperties: false
-          }
+            additionalProperties: false,
+          },
         },
-        {
-          name: "export_board",
-          description: "Export the current Boarderless canvas to PNG, PDF, or SVG.",
-          inputSchema: {
-            type: "object",
-            properties: {
-              format: { type: "string", enum: ["png", "pdf", "svg"], description: "Export format." },
-              mode: { type: "string", enum: ["canvas", "selection"], description: "Export mode." },
-              filename: { type: "string", description: "Optional filename override." }
-            },
-            required: ["format"],
-            additionalProperties: false
-          }
-        }
-      ]
+      ],
     };
   });
+
+  // ── Tool dispatch ───────────────────────────────────────────────────────────
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const name = request.params.name;
     const args = request.params.arguments || {};
 
+    // ── get_server_status ─────────────────────────────────────────────────────
+    if (name === "get_server_status") {
+      return runTool(name, async () => {
+        // Re-check live state
+        let browserOk  = false;
+        let authed     = false;
+        let bridgeOk   = false;
+        let pageUrl    = null;
+        let browserErr = null;
+        let authErr    = null;
+
+        try {
+          const urlObj = new URL(BROWSER_URL);
+          const port   = parseInt(urlObj.port || "9222", 10);
+          browserOk    = await isPortOpen(port, urlObj.hostname);
+
+          if (browserOk) {
+            const page = await getPage();
+            pageUrl    = page.url();
+            bridgeOk   = _status.mcpBridgeReady;
+            authed     = await checkAuth(page);
+          }
+        } catch (e) {
+          browserErr = e.message;
+        }
+
+        const checks = [
+          {
+            check: "browser_port",
+            passed: browserOk,
+            detail: browserOk
+              ? `Chromium DevTools listening on ${BROWSER_URL}`
+              : `No browser found on ${BROWSER_URL}`,
+            resolution: browserOk ? null :
+              "Launch your browser with: chrome --remote-debugging-port=9222\n" +
+              "Or use the Boarderless MCP desktop app to launch it automatically.\n" +
+              "You can also set env BOARDERLESS_MCP_BROWSER_URL=http://127.0.0.1:9222",
+          },
+          {
+            check: "canvas_tab",
+            passed: !!pageUrl,
+            detail: pageUrl ? `Active canvas tab: ${pageUrl}` : "No Boarderless canvas tab detected",
+            resolution: pageUrl ? null :
+              `Open ${_APP_URL} in the connected browser. The MCP server will attach automatically.`,
+          },
+          {
+            check: "mcp_bridge",
+            passed: bridgeOk,
+            detail: bridgeOk
+              ? "window.boarderlessMcp bridge is mounted and ready"
+              : "window.boarderlessMcp not found on page",
+            resolution: bridgeOk ? null :
+              "Ensure you are on the canvas page at boarderless.app/canvas and are logged in. " +
+              "If this persists, try refreshing the browser tab.",
+          },
+          {
+            check: "authentication",
+            passed: authed,
+            detail: authed
+              ? "User is authenticated — canvas tools are available"
+              : "User is NOT authenticated — canvas tools will be blocked",
+            resolution: authed ? null :
+              `Sign in with Google at ${_APP_URL}. Canvas tools require an active Boarderless session.`,
+          },
+        ];
+
+        const allPassed = checks.every(c => c.passed);
+
+        return makeSuccess({
+          ready: allPassed,
+          summary: allPassed
+            ? "All systems operational. Ready to control Boarderless."
+            : "One or more checks failed. See 'checks' array for resolution steps.",
+          checks,
+          runtime: {
+            platform:       _status.platform,
+            node_version:   _status.nodeVersion,
+            server_version: SERVER_VERSION,
+            app_url:        _APP_URL,
+            browser_url:    BROWSER_URL,
+            started_at:     _status.startedAt,
+            tool_calls:     _status.toolCallCount,
+            tool_errors:    _status.toolErrors,
+            last_error:     _status.lastError,
+          },
+          next_steps: allPassed
+            ? ["Call get_board_state to inspect the current canvas.", "Call mutate_object to modify elements."]
+            : checks.filter(c => !c.passed).map(c => c.resolution).filter(Boolean),
+        });
+      });
+    }
+
+    // ── graduation_rename_photos ──────────────────────────────────────────────
     if (name === "graduation_rename_photos") {
-      try {
+      return runTool(name, async () => {
+        if (!args.seniorsDir) {
+          return makeError("MISSING_ARGUMENT", "seniorsDir is required.", "Provide an absolute path to the photos directory.");
+        }
+        if (!fs.existsSync(args.seniorsDir)) {
+          return makeError(
+            "PATH_NOT_FOUND",
+            `Directory not found: ${args.seniorsDir}`,
+            "Ensure the path exists and is accessible. Use an absolute path (e.g. /Users/name/Photos or C:\\Users\\name\\Photos).",
+            { provided_path: args.seniorsDir }
+          );
+        }
         const { performRenaming } = await getGraduationHelpers();
         const result = await performRenaming(args.seniorsDir, args.mode);
-        return { content: [{ type: "text", text: result }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: err.message }], isError: true };
-      }
+        return makeSuccess({ result, path: args.seniorsDir, mode: args.mode });
+      });
     }
 
+    // ── graduation_standardize_images ─────────────────────────────────────────
     if (name === "graduation_standardize_images") {
-      try {
+      return runTool(name, async () => {
+        if (!args.seniorsDir) {
+          return makeError("MISSING_ARGUMENT", "seniorsDir is required.", "Provide an absolute path to the photos directory.");
+        }
+        if (!fs.existsSync(args.seniorsDir)) {
+          return makeError(
+            "PATH_NOT_FOUND",
+            `Directory not found: ${args.seniorsDir}`,
+            "Ensure the path exists and is accessible. Use an absolute path.",
+            { provided_path: args.seniorsDir }
+          );
+        }
         const { standardize } = await getGraduationHelpers();
         const result = await standardize(args.seniorsDir);
-        return { content: [{ type: "text", text: result }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: err.message }], isError: true };
-      }
+        return makeSuccess({ result, path: args.seniorsDir });
+      });
     }
 
-    // All canvas tools need a live page
-    let page;
-    try {
-      page = await getPage();
-    } catch (e) {
-      return { content: [{ type: "text", text: `[-] Could not connect to Boarderless canvas: ${e.message}` }], isError: true };
-    }
+    // ── All canvas tools — require browser + auth ─────────────────────────────
 
-    // Auth gate: use localStorage flag (window.useAuthStore is not exposed)
-    let isAuthed = false;
-    try {
-      isAuthed = await page.evaluate(() =>
-        localStorage.getItem('boarderless_has_authenticated') === 'true'
-      );
-    } catch (e) { /* ignore */ }
-
-    if (!isAuthed) {
-      return {
-        content: [{ type: "text", text: `[-] Not authenticated on Boarderless. Please sign in at: ${_APP_URL}` }],
-        isError: true
-      };
-    }
-
-    if (name === "export_board") {
+    return runTool(name, async () => {
+      // Step 1: Get live page
+      let page;
       try {
+        page = await getPage();
+      } catch (e) {
+        return makeError(
+          "BROWSER_CONNECT_FAILED",
+          `Cannot connect to browser on ${BROWSER_URL}: ${e.message}`,
+          "Run get_server_status to diagnose the issue. Common fixes:\n" +
+          "1. Launch a Chromium browser with --remote-debugging-port=9222\n" +
+          "2. Set BOARDERLESS_MCP_BROWSER_URL if your browser is on a different port\n" +
+          "3. Use the Boarderless MCP desktop app which handles browser launch automatically.",
+          { browser_url: BROWSER_URL }
+        );
+      }
+
+      // Step 2: Auth gate
+      const authed = await checkAuth(page);
+      if (!authed) {
+        return makeError(
+          "AUTH_REQUIRED",
+          "You must be signed in to Boarderless to use canvas tools.",
+          `1. Open ${_APP_URL} in the connected browser.\n` +
+          "2. Sign in with your Google account.\n" +
+          "3. Wait for the canvas to load, then retry this tool.",
+          { app_url: _APP_URL }
+        );
+      }
+
+      // Step 3: Canvas bridge check
+      if (!_status.mcpBridgeReady) {
+        return makeError(
+          "BRIDGE_NOT_READY",
+          "The window.boarderlessMcp bridge is not mounted on the canvas page.",
+          "1. Ensure the browser tab is on boarderless.app/canvas (not the home page).\n" +
+          "2. Refresh the browser tab and wait a few seconds.\n" +
+          "3. Call get_server_status to check current bridge health.",
+          { app_url: _APP_URL }
+        );
+      }
+
+      // Step 4: export_board (special handling)
+      if (name === "export_board") {
         const format   = args.format;
         const mode     = args.mode || "canvas";
         const filename = args.filename || "";
+
         const result = await page.evaluate(async (fmt, md, fn) => {
           try {
-            if (fmt === "png") {
-              if (typeof window.runReactExport !== "function") throw new Error("runReactExport not bound on page window");
-              await window.runReactExport(md, fn);
-            } else if (fmt === "pdf") {
-              if (typeof window.runReactPdfExport !== "function") throw new Error("runReactPdfExport not bound on page window");
-              await window.runReactPdfExport(md, fn);
-            } else if (fmt === "svg") {
-              if (typeof window.runReactSvgExport !== "function") throw new Error("runReactSvgExport not bound on page window");
-              await window.runReactSvgExport(md, fn);
-            } else {
-              throw new Error(`Unsupported export format: ${fmt}`);
+            const exportMap = {
+              png: window.runReactExport,
+              pdf: window.runReactPdfExport,
+              svg: window.runReactSvgExport,
+            };
+            const fn_ref = exportMap[fmt];
+            if (typeof fn_ref !== "function") {
+              return { success: false, error_code: "EXPORT_FN_MISSING", error: `Export function for format '${fmt}' is not bound on the page. Ensure you are on boarderless.app/canvas with a loaded board.` };
             }
+            await fn_ref(md, fn);
             return { success: true };
           } catch (e) {
-            return { success: false, error: e.message };
+            return { success: false, error_code: "EXPORT_RUNTIME_ERROR", error: e.message };
           }
         }, format, mode, filename);
 
         if (result.success) {
-          return { content: [{ type: "text", text: `[+] Exported board as ${format.toUpperCase()} (${mode} mode).` }] };
-        } else {
-          return { content: [{ type: "text", text: `[-] Export failed: ${result.error}` }], isError: true };
+          return makeSuccess({ message: `Board exported as ${format.toUpperCase()} (${mode} mode).`, format, mode });
         }
-      } catch (err) {
-        return { content: [{ type: "text", text: err.message }], isError: true };
+        return makeError(
+          result.error_code || "EXPORT_FAILED",
+          result.error,
+          "Ensure a board is open in the canvas before exporting. " +
+          "SVG and PDF export require a Pro plan. Check your account at boarderless.app.",
+          { format, mode }
+        );
       }
-    }
 
-    // All other canvas tools via boarderlessMcp bridge
-    try {
-      return await page.evaluate(
-        ({ name, args }) => window.boarderlessMcp.callTool(name, args || {}),
-        { name, args }
+      // Step 5: All other canvas tools via the boarderlessMcp bridge
+      const result = await page.evaluate(
+        ({ toolName, toolArgs }) => {
+          if (!window.boarderlessMcp || typeof window.boarderlessMcp.callTool !== "function") {
+            return {
+              content: [{ type: "text", text: JSON.stringify({
+                status: "error",
+                error_code: "BRIDGE_MISSING",
+                message: "window.boarderlessMcp.callTool is not a function.",
+                resolution: "Refresh the Boarderless canvas tab and retry.",
+              }) }],
+              isError: true,
+            };
+          }
+          return window.boarderlessMcp.callTool(toolName, toolArgs || {});
+        },
+        { toolName: name, toolArgs: args }
       );
-    } catch (err) {
-      return { content: [{ type: "text", text: `[-] Error invoking tool on page: ${err.message}` }], isError: true };
-    }
+
+      return result;
+    });
   });
+
+  // ─── Connect transport ───────────────────────────────────────────────────────
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`[Boarderless] MCP Server v${SERVER_VERSION} running on stdio → ${_APP_URL}`);
+  console.error(`[Boarderless] MCP Server v${SERVER_VERSION} ready → ${_APP_URL}`);
 }
 
 run().catch(err => {
-  console.error("Fatal error:", err);
+  console.error("[Boarderless] Fatal startup error:", err.message);
+  console.error(err.stack);
   process.exit(1);
 });
-
