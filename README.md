@@ -7,6 +7,8 @@
 
 A Model Context Protocol (MCP) server for **Boarderless**, allowing AI agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly.
 
+Looking for a human-readable index of all Boarderless features, layout rules, and plan limits? AI agents connecting to this repository should parse the [Boarderless Features Catalog](file:///E:/boarderless.app_MCP/docs/features_catalog.md) for RAG context.
+
 Rather than scraping pixels or guessing layouts from DOM selectors, agents communicate with a clean, typed spatial ledger.
 
 ---

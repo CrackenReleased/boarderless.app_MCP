@@ -905,6 +905,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Dashboard Console
           </div>
+          <div class="menu-item" id="menu-tools" onclick="showView('tools')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Tools Reference
+          </div>
           <div class="menu-item" id="menu-security" onclick="showView('security')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Security &amp; Consent
@@ -1053,7 +1057,112 @@
 
       </div>
 
-      <!-- ─── Tab 2: Security & Privacy View ─── -->
+      <!-- ─── Tab 3: Tools Reference View ─── -->
+      <div class="view-pane" id="view-tools">
+        <section class="pane-card" style="height: 100%; display: flex; flex-direction: column;">
+          <div class="pane-card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Model Context Protocol Tool Registry &amp; API Specifications
+          </div>
+          <p class="config-description">
+            The Boarderless MCP server exposes functional endpoints below. Provide this registry to your LLM when configuring custom harnesses like Ollama, Hermes, or OpenClaw.
+          </p>
+          <div class="docs-container" style="flex: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 12px; max-height: 480px;">
+            
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>⚙️ <code>get_server_status</code></span>
+                <span class="mode-badge secure" style="background: rgba(100, 160, 255, 0.1); color: var(--accent);">Diagnostic</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Returns full diagnostics for the Boarderless MCP server. Call this first to verify browser connectivity, authentication, and bridge state.<br>
+                <strong>Arguments:</strong> None (<code>{}</code>)<br>
+                <strong>Key Output Payload:</strong>
+                <pre style="background: #09090d; border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-top: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: #a09cb0;">{ "ready": true, "checks": [ { "check": "browser_port", "passed": true } ] }</pre>
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>📋 <code>get_board_state</code></span>
+                <span class="mode-badge secure" style="background: rgba(100, 160, 255, 0.1); color: var(--accent);">Canvas Read</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Returns the canvas elements as a structured spatial ledger.<br>
+                <strong>Arguments:</strong> None (<code>{}</code>)<br>
+                <strong>Key Output Payload:</strong>
+                <pre style="background: #09090d; border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-top: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: #a09cb0;">{ "schema": "boarderless.boardSnapshot.v1", "objects": [ { "id": "rect-1", "objectKind": "shape", "x": 20, "y": 20 } ] }</pre>
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>✍️ <code>mutate_object</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Modifies position, size, rotation, fill/stroke, text content, font family, scale, opacity, alignment or corners of an object.<br>
+                <strong>Arguments:</strong><br>
+                • <code>id</code>: <code style="color:var(--accent);">string</code> (Required)<br>
+                • <code>x</code> / <code>y</code> / <code>width</code> / <code>height</code> / <code>rotation</code> / <code>opacity</code>: <code style="color:var(--accent);">number</code> (Optional)<br>
+                • <code>fill</code> / <code>stroke</code> / <code>text</code>: <code style="color:var(--accent);">string</code> (Optional)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>📐 <code>calculate_export_bounds</code></span>
+                <span class="mode-badge secure" style="background: rgba(100, 160, 255, 0.1); color: var(--accent);">Canvas Read</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Returns the bounding box encompassing all objects on the active canvas board.<br>
+                <strong>Arguments:</strong> None (<code>{}</code>)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>💾 <code>export_board</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Action</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Exports the current canvas to PNG, PDF, or SVG. SVG and PDF require a Pro plan subscription.<br>
+                <strong>Arguments:</strong><br>
+                • <code>format</code>: <code style="color:var(--accent);">"png" | "pdf" | "svg"</code> (Required)<br>
+                • <code>mode</code>: <code style="color:var(--accent);">"canvas" | "selection"</code> (Optional, defaults to `"canvas"`)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>📁 <code>graduation_rename_photos</code></span>
+                <span class="mode-badge secure" style="background: rgba(251, 191, 36, 0.1); color: var(--warn);">File System</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Renames local photo files sequentially or by filling gaps. Does not require browser/live session.<br>
+                <strong>Arguments:</strong><br>
+                • <code>seniorsDir</code>: <code style="color:var(--accent);">string</code> (Required absolute path)<br>
+                • <code>mode</code>: <code style="color:var(--accent);">"sequential" | "gap_fill"</code> (Required)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>🖼️ <code>graduation_standardize_images</code></span>
+                <span class="mode-badge secure" style="background: rgba(251, 191, 36, 0.1); color: var(--warn);">File System</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Converts progressive JPEGs and HEIC photos to standard RGB JPEGs. Does not require browser/live session.<br>
+                <strong>Arguments:</strong><br>
+                • <code>seniorsDir</code>: <code style="color:var(--accent);">string</code> (Required absolute path)
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </div>
+
+      <!-- ─── Tab 4: Security & Privacy View ─── -->
       <div class="view-pane" id="view-security">
         <section class="pane-card">
           <div class="pane-card-title">
@@ -1086,6 +1195,24 @@
               </div>
               <div class="docs-card-body">
                 By default, the <strong>Isolated Profile</strong> stores cache and cookies in a separate directories (<code>boarderless-mcp-profile</code>) in your local app data. This ensures your daily browsing cookies, passwords, and sessions remain completely separated from the AI workspace.
+              </div>
+            </div>
+
+            <div class="docs-card" style="border-color: var(--border-accent); background: rgba(100, 160, 255, 0.02);">
+              <div class="docs-card-header" style="color: var(--accent);">
+                🎨 Boarderless Capabilities Index (RAG Index)
+              </div>
+              <div class="docs-card-body" style="display: flex; flex-direction: column; gap: 8px;">
+                <span>This application operates as a bridge for the following core Boarderless capabilities:</span>
+                <ul style="padding-left: 16px; margin: 4px 0; display: flex; flex-direction: column; gap: 4px;">
+                  <li><strong>Canvas &amp; Viewport:</strong> Zoom, Pan, alignment grid snap, and z-order sorting.</li>
+                  <li><strong>Element Selection &amp; Mutate:</strong> Coordinates (x/y), dimensions (width/height), angles, opacities, corner radius, borders, strokes, fills, typography fonts, sizes, and text content alignment.</li>
+                  <li><strong>Media &amp; Image Grades:</strong> Flip operations, image mask cropping, and filter grades.</li>
+                  <li><strong>Local File Operations:</strong> Sequentially rename photo directories and standardize baseline color properties for HEIC/JPEG images.</li>
+                </ul>
+                <div style="margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 0.7rem;">
+                  See the full catalog at <code style="color:var(--accent);">docs/features_catalog.md</code> inside the MCP application directory.
+                </div>
               </div>
             </div>
           </div>
