@@ -1,15 +1,31 @@
-// src-tauri/src/lib.rs
 use std::process::{Command, Child};
 use std::sync::{Arc, Mutex};
 use std::path::PathBuf;
 use tauri::{Manager, State};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
+use sysinfo::{System, ProcessExt};
 
 struct AppState {
     child: Arc<Mutex<Option<Child>>>,
     browser_child: Arc<Mutex<Option<Child>>>,
     server_path: PathBuf,
+}
+
+fn kill_duplicate_instances() {
+    let mut sys = System::new_all();
+    sys.refresh_processes();
+    let current_pid = std::process::id();
+    
+    for (pid, process) in sys.processes() {
+        let name = process.name().to_lowercase();
+        // Target Boarderless MCP.exe or build target executable
+        if (name.contains("boarderless mcp") || name == "boarderless mcp.exe" || name == "app.exe") 
+            && pid.as_u32() != current_pid {
+            log::info!("Killing duplicate running Boarderless MCP process: PID {}", pid);
+            process.kill();
+        }
+    }
 }
 
 #[derive(serde::Serialize)]
@@ -350,6 +366,8 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::default().build())
         .invoke_handler(tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers, copy_to_clipboard])
         .setup(|app| {
+            kill_duplicate_instances();
+
             let resource_dir = app.path().resource_dir().unwrap_or_default();
             let mut server_path = resource_dir.join("mcp-stdio-server.js");
             if !server_path.exists() {
