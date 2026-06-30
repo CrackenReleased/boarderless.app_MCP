@@ -255,6 +255,56 @@ Returns the collective bounding box of all active objects.
 
 ---
 
+### `create_object`
+Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas.
+
+- **Required**: `type` — `"text"` | `"rect"` | `"ellipse"` | `"triangle"` | `"arrow"`
+- **Optional**: `x` (number), `y` (number), `width` (number), `height` (number), `text` (string), `fill` (string), `stroke` (string), `strokeWidth` (number)
+
+---
+
+### `delete_objects`
+Delete one or more objects by their IDs from the canvas.
+
+- **Required**: `ids` (array of strings)
+
+---
+
+### `history_undo`
+Undo the last action on the canvas.
+
+- **Input**: None (`{}`)
+
+---
+
+### `history_redo`
+Redo the next action in the history queue on the canvas.
+
+- **Input**: None (`{}`)
+
+---
+
+### `group_objects`
+Group multiple canvas objects under a unique `groupId`.
+
+- **Required**: `ids` (array of strings)
+
+---
+
+### `ungroup_objects`
+Ungroup objects belonging to a specific `groupId`.
+
+- **Required**: `groupId` (string)
+
+---
+
+### `reorder_object`
+Reorder z-index layering of an object (bring to front, send to back, forward, backward).
+
+- **Required**: `id` (string), `action` — `"front"` | `"back"` | `"forward"` | `"backward"`
+
+---
+
 ### `export_board`
 Exports the current canvas to PNG, PDF, or SVG.
 

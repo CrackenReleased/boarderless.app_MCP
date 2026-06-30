@@ -61,9 +61,17 @@ AI agents can connect directly to the running canvas using the following Stdio M
 
 ### Available Tools:
 1. `get_server_status`: Diagnoses port availability, OAuth status, and canvas connection.
-2. `get_board_state`: Reads a JSON snapshot of coordinates, types (text, shape, image), and visual styles.
-3. `mutate_object`: Programmatically shifts, resizes, rotates, or changes colors/text on any shape or typography element.
-4. `calculate_export_bounds`: Computes bounds for selected/total nodes to format clean outputs.
-5. `export_board`: Requests file creation in PNG, SVG, or PDF formats.
-6. `graduation_rename_photos`: Formats local folders sequentially.
-7. `graduation_standardize_images`: Batch converts progressive JPEGs and HEIC files to standard RGB JPEGs.
+2. `execute_mcp_command`: Compatibility wrapper to dispatch commands by name.
+3. `get_board_state`: Reads a JSON snapshot of coordinates, types (text, shape, image), and visual styles.
+4. `mutate_object`: Programmatically shifts, resizes, rotates, or changes colors/text on any shape or typography element.
+5. `calculate_export_bounds`: Computes bounds for selected/total nodes to format clean outputs.
+6. `create_object`: Spawns a new text block or shape (rect, ellipse, triangle, arrow) on the canvas stage.
+7. `delete_objects`: Removes one or more objects by their IDs from the canvas.
+8. `history_undo`: Undoes the last canvas mutation.
+9. `history_redo`: Redoes the next canvas mutation in the history timeline.
+10. `group_objects`: Combines multiple objects under a unique groupId.
+11. `ungroup_objects`: Dissolves grouping for a specified groupId.
+12. `reorder_object`: Shifts the z-index layer stack position of an object.
+13. `export_board`: Requests file creation in PNG, SVG, or PDF formats.
+14. `graduation_rename_photos`: Formats local folders sequentially.
+15. `graduation_standardize_images`: Batch converts progressive JPEGs and HEIC files to standard RGB JPEGs.

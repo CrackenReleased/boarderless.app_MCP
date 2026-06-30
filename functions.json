@@ -10,17 +10,17 @@
   },
   {
     "name": "execute_mcp_command",
-    "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names.",
+    "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status').",
     "parameters": {
       "type": "object",
       "properties": {
         "command": {
           "type": "string",
-          "description": "The command to run, e.g., 'get_system_status'"
+          "description": "The action or command identifier (e.g. 'get_system_status')"
         },
         "output_format": {
           "type": "string",
-          "description": "Optional format format."
+          "description": "Optional format selection."
         }
       },
       "required": ["command"],
@@ -29,7 +29,7 @@
   },
   {
     "name": "get_board_state",
-    "description": "Returns the current Boarderless canvas board as a structured, render-ordered JSON spatial ledger.",
+    "description": "Read the current Boarderless board as a flat JSON spatial ledger.",
     "parameters": {
       "type": "object",
       "properties": {},
@@ -38,86 +38,149 @@
   },
   {
     "name": "mutate_object",
-    "description": "Modifies coordinates or style properties of a canvas object. Writes to the undo stack.",
+    "description": "Patch one Boarderless Object by id and route the mutation to its owning Zustand store.",
     "parameters": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "description": "The unique ID of the object to mutate."
+          "description": "The BoardSnapshot Object id to mutate."
         },
-        "x": {
-          "type": "number",
-          "description": "The X coordinate (horizontal position) on the canvas."
-        },
-        "y": {
-          "type": "number",
-          "description": "The Y coordinate (vertical position) on the canvas."
-        },
-        "width": {
-          "type": "number",
-          "description": "The width of the object."
-        },
-        "height": {
-          "type": "number",
-          "description": "The height of the object."
-        },
-        "rotation": {
-          "type": "number",
-          "description": "Rotation angle in degrees."
-        },
-        "opacity": {
-          "type": "number",
-          "description": "Opacity value between 0 and 1."
-        },
-        "fill": {
-          "type": "string",
-          "description": "Hex color code for shape fill."
-        },
-        "stroke": {
-          "type": "string",
-          "description": "Hex color code for outline stroke."
-        },
-        "strokeWidth": {
-          "type": "number",
-          "description": "Width of the outline border stroke."
-        },
-        "text": {
-          "type": "string",
-          "description": "The text content of text elements."
-        },
-        "fontSize": {
-          "type": "number",
-          "description": "Font size for text elements."
-        },
-        "fontFamily": {
-          "type": "string",
-          "description": "Font family name."
-        },
-        "align": {
-          "type": "string",
-          "enum": ["left", "center", "right", "justify"],
-          "description": "Text alignment."
-        },
-        "cornerRadius": {
-          "type": "number",
-          "description": "Corner radius for rounded shapes."
-        },
-        "edgeFeather": {
-          "type": "number",
-          "description": "Feather value for shapes."
-        }
+        "x": { "type": "number", "description": "X coordinate." },
+        "y": { "type": "number", "description": "Y coordinate." },
+        "width": { "type": "number", "description": "Width." },
+        "height": { "type": "number", "description": "Height." },
+        "rotation": { "type": "number", "description": "Rotation in degrees." },
+        "opacity": { "type": "number", "description": "Opacity (0-1)." },
+        "fill": { "type": "string", "description": "Fill color hex." },
+        "stroke": { "type": "string", "description": "Stroke color hex." },
+        "strokeWidth": { "type": "number", "description": "Stroke width." },
+        "text": { "type": "string", "description": "Text content." },
+        "fontSize": { "type": "number", "description": "Font size." },
+        "fontFamily": { "type": "string", "description": "Font family." },
+        "align": { "type": "string", "enum": ["left", "center", "right", "justify"], "description": "Text alignment." },
+        "cornerRadius": { "type": "number", "description": "Corner radius for shapes." },
+        "edgeFeather": { "type": "number", "description": "Feather value." }
       },
       "required": ["id"],
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   {
     "name": "calculate_export_bounds",
-    "description": "Returns the collective bounding box of all active objects on the canvas.",
+    "description": "Calculate the absolute mathematical export bounding box for the current composition.",
     "parameters": {
       "type": "object",
       "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "create_object",
+    "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["text", "rect", "ellipse", "triangle", "arrow"],
+          "description": "The kind of object to create."
+        },
+        "x": { "type": "number", "description": "X coordinate." },
+        "y": { "type": "number", "description": "Y coordinate." },
+        "width": { "type": "number", "description": "Width of rectangle/text (or bounds)." },
+        "height": { "type": "number", "description": "Height of rectangle/text (or bounds)." },
+        "text": { "type": "string", "description": "The text value (required for type=\"text\")." },
+        "fill": { "type": "string", "description": "Fill color (e.g. hex #ffffff)." },
+        "stroke": { "type": "string", "description": "Stroke color (e.g. hex #000000)." },
+        "strokeWidth": { "type": "number", "description": "Stroke width." }
+      },
+      "required": ["type"],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "delete_objects",
+    "description": "Delete one or more objects by their IDs from the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Array of object IDs to delete."
+        }
+      },
+      "required": ["ids"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "history_undo",
+    "description": "Undo the last action on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "history_redo",
+    "description": "Redo the next action in the history queue on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "group_objects",
+    "description": "Group multiple canvas objects under a unique groupId.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Array of object IDs to group."
+        }
+      },
+      "required": ["ids"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "ungroup_objects",
+    "description": "Ungroup objects belonging to a specific groupId.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "string",
+          "description": "The groupId to ungroup."
+        }
+      },
+      "required": ["groupId"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "reorder_object",
+    "description": "Reorder z-index layering of an object (bring to front, send to back, etc.).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The object ID to reorder."
+        },
+        "action": {
+          "type": "string",
+          "enum": ["front", "back", "forward", "backward"],
+          "description": "The reorder layering action."
+        }
+      },
+      "required": ["id", "action"],
       "additionalProperties": false
     }
   },
@@ -135,7 +198,7 @@
         "mode": {
           "type": "string",
           "enum": ["canvas", "selection"],
-          "description": "Export scope scope. Defaults to 'canvas'."
+          "description": "Export scope. Defaults to 'canvas'."
         },
         "filename": {
           "type": "string",

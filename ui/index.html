@@ -920,7 +920,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <span>Boarderless v0.1.13</span>
+        <span>Boarderless v0.1.19</span>
         <span>Online</span>
       </div>
     </aside>
@@ -1150,6 +1150,91 @@
                 <strong>Arguments:</strong><br>
                 • <code>format</code>: <code style="color:var(--accent);">"png" | "pdf" | "svg"</code> (Required)<br>
                 • <code>mode</code>: <code style="color:var(--accent);">"canvas" | "selection"</code> (Optional, defaults to `"canvas"`)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>➕ <code>create_object</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas.<br>
+                <strong>Arguments:</strong><br>
+                • <code>type</code>: <code style="color:var(--accent);">"text" | "rect" | "ellipse" | "triangle" | "arrow"</code> (Required)<br>
+                • <code>x</code> / <code>y</code> / <code>width</code> / <code>height</code> / <code>strokeWidth</code>: <code style="color:var(--accent);">number</code> (Optional)<br>
+                • <code>text</code> / <code>fill</code> / <code>stroke</code>: <code style="color:var(--accent);">string</code> (Optional)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>❌ <code>delete_objects</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Delete one or more objects by their IDs from the canvas.<br>
+                <strong>Arguments:</strong><br>
+                • <code>ids</code>: <code style="color:var(--accent);">string[]</code> (Required)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>↩️ <code>history_undo</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Action</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Undo the last action on the canvas.<br>
+                <strong>Arguments:</strong> None (<code>{}</code>)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>↪️ <code>history_redo</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Action</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Redo the next action in the history queue on the canvas.<br>
+                <strong>Arguments:</strong> None (<code>{}</code>)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>📦 <code>group_objects</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Group multiple canvas objects under a unique groupId.<br>
+                <strong>Arguments:</strong><br>
+                • <code>ids</code>: <code style="color:var(--accent);">string[]</code> (Required)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>🔓 <code>ungroup_objects</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Ungroup objects belonging to a specific groupId.<br>
+                <strong>Arguments:</strong><br>
+                • <code>groupId</code>: <code style="color:var(--accent);">string</code> (Required)
+              </div>
+            </div>
+
+            <div class="docs-card">
+              <div class="docs-card-header" style="justify-content: space-between;">
+                <span>↕️ <code>reorder_object</code></span>
+                <span class="mode-badge share" style="background: rgba(34, 197, 94, 0.1); color: var(--green);">Canvas Write</span>
+              </div>
+              <div class="docs-card-body" style="margin-top: 8px;">
+                <strong>Description:</strong> Reorder z-index layering of an object (bring to front, send to back, forward, backward).<br>
+                <strong>Arguments:</strong><br>
+                • <code>id</code>: <code style="color:var(--accent);">string</code> (Required)<br>
+                • <code>action</code>: <code style="color:var(--accent);">"front" | "back" | "forward" | "backward"</code> (Required)
               </div>
             </div>
 
@@ -1497,51 +1582,246 @@
         const ollamaSchema = [
           {
             "name": "get_server_status",
-            "description": "Returns full diagnostics for the Boarderless MCP server.",
-            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
-          },
-          {
-            "name": "get_board_state",
-            "description": "Returns the current Boarderless canvas board as a structured spatial ledger.",
-            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
-          },
-          {
-            "name": "mutate_object",
-            "description": "Modifies coordinates or style properties of a canvas object. Writes to the undo stack.",
+            "description": "Returns a full diagnostic status report for the Boarderless MCP server. Use this first to verify connectivity, authentication, and tool availability before attempting canvas operations. Includes browser connection state, authentication status, canvas bridge health, and per-tool error counts.",
             "parameters": {
               "type": "object",
-              "properties": {
-                "id": { "type": "string", "description": "The unique ID of the object." },
-                "x": { "type": "number", "description": "Horizontal position." },
-                "y": { "type": "number", "description": "Vertical position." },
-                "width": { "type": "number", "description": "Width." },
-                "height": { "type": "number", "description": "Height." },
-                "rotation": { "type": "number", "description": "Rotation in degrees." },
-                "opacity": { "type": "number", "description": "Opacity (0-1)." },
-                "fill": { "type": "string", "description": "Fill hex code." },
-                "stroke": { "type": "string", "description": "Stroke hex code." },
-                "strokeWidth": { "type": "number", "description": "Stroke width." },
-                "text": { "type": "string", "description": "Text content." }
-              },
-              "required": ["id"],
+              "properties": {},
               "additionalProperties": false
             }
           },
           {
-            "name": "calculate_export_bounds",
-            "description": "Returns the collective bounding box of all active objects on the canvas.",
-            "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
-          },
-          {
-            "name": "export_board",
-            "description": "Export the canvas to PNG, PDF, or SVG. Requires auth.",
+            "name": "execute_mcp_command",
+            "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status').",
             "parameters": {
               "type": "object",
               "properties": {
-                "format": { "type": "string", "enum": ["png", "pdf", "svg"], "description": "Format." },
-                "mode": { "type": "string", "enum": ["canvas", "selection"], "description": "Scope." }
+                "command": {
+                  "type": "string",
+                  "description": "The action or command identifier (e.g. 'get_system_status')"
+                },
+                "output_format": {
+                  "type": "string",
+                  "description": "Optional format selection."
+                }
+              },
+              "required": ["command"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "get_board_state",
+            "description": "Read the current Boarderless board as a flat JSON spatial ledger.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "mutate_object",
+            "description": "Patch one Boarderless Object by id and route the mutation to its owning Zustand store.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The BoardSnapshot Object id to mutate."
+                },
+                "x": { "type": "number", "description": "X coordinate." },
+                "y": { "type": "number", "description": "Y coordinate." },
+                "width": { "type": "number", "description": "Width." },
+                "height": { "type": "number", "description": "Height." },
+                "rotation": { "type": "number", "description": "Rotation in degrees." },
+                "opacity": { "type": "number", "description": "Opacity (0-1)." },
+                "fill": { "type": "string", "description": "Fill color hex." },
+                "stroke": { "type": "string", "description": "Stroke color hex." },
+                "strokeWidth": { "type": "number", "description": "Stroke width." },
+                "text": { "type": "string", "description": "Text content." },
+                "fontSize": { "type": "number", "description": "Font size." },
+                "fontFamily": { "type": "string", "description": "Font family." },
+                "align": { "type": "string", "enum": ["left", "center", "right", "justify"], "description": "Text alignment." },
+                "cornerRadius": { "type": "number", "description": "Corner radius for shapes." },
+                "edgeFeather": { "type": "number", "description": "Feather value." }
+              },
+              "required": ["id"],
+              "additionalProperties": true
+            }
+          },
+          {
+            "name": "calculate_export_bounds",
+            "description": "Calculate the absolute mathematical export bounding box for the current composition.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "create_object",
+            "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["text", "rect", "ellipse", "triangle", "arrow"],
+                  "description": "The kind of object to create."
+                },
+                "x": { "type": "number", "description": "X coordinate." },
+                "y": { "type": "number", "description": "Y coordinate." },
+                "width": { "type": "number", "description": "Width of rectangle/text (or bounds)." },
+                "height": { "type": "number", "description": "Height of rectangle/text (or bounds)." },
+                "text": { "type": "string", "description": "The text value (required for type=\"text\")." },
+                "fill": { "type": "string", "description": "Fill color (e.g. hex #ffffff)." },
+                "stroke": { "type": "string", "description": "Stroke color (e.g. hex #000000)." },
+                "strokeWidth": { "type": "number", "description": "Stroke width." }
+              },
+              "required": ["type"],
+              "additionalProperties": true
+            }
+          },
+          {
+            "name": "delete_objects",
+            "description": "Delete one or more objects by their IDs from the canvas.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "ids": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Array of object IDs to delete."
+                }
+              },
+              "required": ["ids"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "history_undo",
+            "description": "Undo the last action on the canvas.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "history_redo",
+            "description": "Redo the next action in the history queue on the canvas.",
+            "parameters": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "group_objects",
+            "description": "Group multiple canvas objects under a unique groupId.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "ids": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Array of object IDs to group."
+                }
+              },
+              "required": ["ids"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "ungroup_objects",
+            "description": "Ungroup objects belonging to a specific groupId.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "groupId": {
+                  "type": "string",
+                  "description": "The groupId to ungroup."
+                }
+              },
+              "required": ["groupId"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "reorder_object",
+            "description": "Reorder z-index layering of an object (bring to front, send to back, etc.).",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The object ID to reorder."
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["front", "back", "forward", "backward"],
+                  "description": "The reorder layering action."
+                }
+              },
+              "required": ["id", "action"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "export_board",
+            "description": "Export the current Boarderless canvas to PNG, PDF, or SVG. Requires the user to be authenticated. SVG and PDF require a Pro plan.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["png", "pdf", "svg"],
+                  "description": "Export file format."
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": ["canvas", "selection"],
+                  "description": "Export scope. Defaults to 'canvas'."
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "Optional output filename override."
+                }
               },
               "required": ["format"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "graduation_rename_photos",
+            "description": "Rename and number photo files inside a directory to a sequential format (e.g. seniorname_01.jpg). Operates on local filesystem.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "seniorsDir": {
+                  "type": "string",
+                  "description": "Absolute path to the folder containing photos."
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": ["sequential", "gap_fill"],
+                  "description": "'sequential' numbers files 01-XX strictly. 'gap_fill' preserves existing numbers and fills gaps."
+                }
+              },
+              "required": ["seniorsDir", "mode"],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "graduation_standardize_images",
+            "description": "Scan and convert progressive JPEGs and HEIC files inside subdirectories into standard baseline RGB JPEGs. Operates on local filesystem.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "seniorsDir": {
+                  "type": "string",
+                  "description": "Absolute path to the folder containing photos."
+                }
+              },
+              "required": ["seniorsDir"],
               "additionalProperties": false
             }
           }

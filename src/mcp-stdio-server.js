@@ -35,7 +35,7 @@ const __dirname  = path.dirname(__filename);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_NAME    = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.18";
+const SERVER_VERSION = "0.1.19";
 const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
