@@ -1,5 +1,11 @@
 # What and How Log
 
+## 2026-07-02 01:20:00 — policy: Keep MCP assets honest about Local First (v0.1.22)
+
+- **Decision point:** The MCP board asset now presents Local First interaction rather than turning the capture machine's frame rate into a universal product promise.
+- **Regression coverage:** `E:\boarderless\scripts\verify-commercial-policy.mjs` scans the MCP repository and rejects quantified frame-rate and hardware-performance promises.
+- **Versioning:** Aligned the package, server, desktop, Cargo, README examples, and UI to v0.1.22.
+
 ## 2026-06-30 21:38:00 — feat: Always-save canonical board files in agent workspaces (v0.1.21)
 
 - **Decision point**: The MCP server now owns durable workspace artifact policy, while the browser persistence layer remains the canonical serializer/importer for IndexedDB and image Blob fidelity.

@@ -155,8 +155,8 @@
     {
       "id": "c3_c_t1",
       "type": "text",
-      "text": "KINETIC FLUIDITY: 120FPS VELOCITY DRAG",
-      "richTextHtml": "KINETIC FLUIDITY: 120FPS VELOCITY DRAG",
+      "text": "KINETIC FLUIDITY: LOCAL-FIRST DRAG",
+      "richTextHtml": "KINETIC FLUIDITY: LOCAL-FIRST DRAG",
       "richTextRuns": [
         {
           "fxFontSize": 14,
@@ -170,7 +170,7 @@
           "fxStrokeWidth": 0,
           "fxOpacity": 1,
           "fxStrokeOpacity": 1,
-          "text": "KINETIC FLUIDITY: 120FPS VELOCITY DRAG"
+          "text": "KINETIC FLUIDITY: LOCAL-FIRST DRAG"
         }
       ],
       "x": -250,

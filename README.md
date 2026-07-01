@@ -150,7 +150,7 @@ It returns a structured JSON report with four health checks and actionable resol
   "runtime": {
     "platform": "win32",
     "node_version": "v22.3.0",
-    "server_version": "0.1.21",
+    "server_version": "0.1.22",
     "app_url": "https://boarderless.app/canvas",
     "browser_url": "http://127.0.0.1:9222",
     "started_at": "2026-06-16T19:07:00.000Z",
@@ -196,7 +196,7 @@ Error shape:
   "message": "You must be signed in to Boarderless to use canvas tools.",
   "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
   "server": "boarderless-mcp-bridge",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "timestamp": "2026-06-16T19:07:00.000Z"
 }
 ```

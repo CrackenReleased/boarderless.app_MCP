@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.22 — 2026-07-02 — POLICY: Remove quantified performance claim (v0.1.22)
+
+**Date:** 2026-07-02 01:20:00
+
+- Replaced the quantified frame-rate claim in the canonical tactile-fluidity board with honest Local First language.
+- The Boarderless repository's commercial-policy regression guard now scans MCP documentation and board assets to prevent recurrence.
+- Aligned MCP server, desktop, UI, and package versions to v0.1.22.
+
 ## v0.1.21 — 2026-06-30 — FEAT: Always-save canonical board files in agent workspaces (v0.1.21)
 
 **Date:** 2026-06-30 21:38:00
