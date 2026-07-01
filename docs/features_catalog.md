@@ -73,5 +73,13 @@ AI agents can connect directly to the running canvas using the following Stdio M
 11. `ungroup_objects`: Dissolves grouping for a specified groupId.
 12. `reorder_object`: Shifts the z-index layer stack position of an object.
 13. `export_board`: Requests file creation in PNG, SVG, or PDF formats.
+14. `get_board_workspace`: Reports the local project directory receiving automatic board snapshots.
+15. `set_board_workspace`: Points durable board artifacts at an explicit absolute project directory.
+16. `export_board_file`: Atomically flushes the complete schema-v2 canvas to `.bdrl.json`.
+17. `import_board_file`: Validates, imports, and opens a workspace-contained `.bdrl.json` board.
+
+### Durable agent artifacts
+
+Every successful MCP canvas mutation (create, mutate, delete, group, ungroup, reorder, undo, or redo) triggers a backend-side canonical snapshot write named `<board-name>--<board-id>.bdrl.json`. Agents should verify `get_board_workspace` before composing and call `export_board_file` before handoff. Board file access is confined to that workspace; path traversal and non-`.bdrl.json` files are rejected.
 14. `graduation_rename_photos`: Formats local folders sequentially.
 15. `graduation_standardize_images`: Batch converts progressive JPEGs and HEIC files to standard RGB JPEGs.

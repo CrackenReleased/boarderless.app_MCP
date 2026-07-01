@@ -185,6 +185,46 @@
     }
   },
   {
+    "name": "get_board_workspace",
+    "description": "Return the local workspace directory used for automatic schema-v2 .bdrl.json snapshots after canvas mutations.",
+    "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+  },
+  {
+    "name": "set_board_workspace",
+    "description": "Set the absolute local project directory used for automatic and explicit .bdrl.json board files.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "directory": { "type": "string", "description": "Absolute project/workspace directory." }
+      },
+      "required": ["directory"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "export_board_file",
+    "description": "Atomically save the current canonical Boarderless board inside the configured workspace as .bdrl.json.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filename": { "type": "string", "description": "Optional single filename ending in .bdrl.json." }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "import_board_file",
+    "description": "Import and open a schema-v2 .bdrl.json file from the configured local workspace.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filename": { "type": "string", "description": "Single .bdrl.json filename inside the configured workspace." }
+      },
+      "required": ["filename"],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "export_board",
     "description": "Export the current Boarderless canvas to PNG, PDF, or SVG. Requires the user to be authenticated. SVG and PDF require a Pro plan.",
     "parameters": {

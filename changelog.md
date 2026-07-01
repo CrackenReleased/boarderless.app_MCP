@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.21 — 2026-06-30 — FEAT: Always-save canonical board files in agent workspaces (v0.1.21)
+
+**Date:** 2026-06-30 21:38:00
+
+- Added workspace-contained, atomic `.bdrl.json` autosaves after every successful canvas mutation tool.
+- Added `get_board_workspace`, `set_board_workspace`, `export_board_file`, and `import_board_file` backend tools.
+- Added schema/path validation, stable board identity filenames, stale-name cleanup, and explicit autosave failure metadata.
+- Documented the required agent import/export/handoff workflow and synchronized all static tool catalogs.
+- Added executable board-file regression coverage and aligned MCP/Tauri/UI versions to v0.1.21.
+
 ## v0.1.20 — 2026-06-30 — CONTENT: Add canonical Boarderless showcase boards (v0.1.20)
 
 **Date:** 2026-06-30 20:27:00

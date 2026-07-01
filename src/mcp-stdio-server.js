@@ -28,6 +28,11 @@ import { fileURLToPath } from "url";
 import net from "net";
 import fs from "fs";
 import os from "os";
+import {
+  readBoardSnapshot,
+  resolveWorkspaceDirectory,
+  writeBoardSnapshot,
+} from "./board-files.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -35,12 +40,41 @@ const __dirname  = path.dirname(__filename);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_NAME    = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.20";
+const SERVER_VERSION = "0.1.21";
 const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
 /** Resolved at runtime — never hardcoded. */
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
+let _workspaceDir = resolveWorkspaceDirectory();
+
+const MUTATING_CANVAS_TOOLS = new Set([
+  "mutate_object",
+  "create_object",
+  "delete_objects",
+  "history_undo",
+  "history_redo",
+  "group_objects",
+  "ungroup_objects",
+  "reorder_object",
+]);
+
+async function exportCurrentBoardSnapshot(page) {
+  const result = await page.evaluate(async () => {
+    if (typeof window.reactPersistence?.exportCurrent !== "function") {
+      return { ok: false, error: "The canvas persistence export bridge is unavailable. Refresh Boarderless and retry." };
+    }
+    const snapshot = await window.reactPersistence.exportCurrent();
+    return snapshot ? { ok: true, snapshot } : { ok: false, error: "No active board is available to export." };
+  });
+  if (!result.ok) throw new Error(result.error);
+  return result.snapshot;
+}
+
+async function autosaveCurrentBoard(page) {
+  const snapshot = await exportCurrentBoardSnapshot(page);
+  return writeBoardSnapshot(snapshot, { workspaceDir: _workspaceDir, cleanupAutosave: true });
+}
 
 // ─── Structured error helpers ─────────────────────────────────────────────────
 
@@ -472,6 +506,52 @@ async function run() {
         // ── Canvas tools (dynamic from bridge) ───────────────────────────────
         ...canvasTools,
 
+        // ── Durable board files ─────────────────────────────────────────────
+        {
+          name: "get_board_workspace",
+          description:
+            "Return the local workspace directory where Boarderless MCP automatically saves canonical .bdrl.json files after every successful canvas mutation.",
+          inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        },
+        {
+          name: "set_board_workspace",
+          description:
+            "Set the absolute local workspace directory used for automatic and explicit .bdrl.json board files. Call this once at the beginning of work when the MCP process was not launched from the intended project directory.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              directory: { type: "string", description: "Absolute path to the agent's current project/workspace directory." },
+            },
+            required: ["directory"],
+            additionalProperties: false,
+          },
+        },
+        {
+          name: "export_board_file",
+          description:
+            "Atomically save the current canonical schema-v2 Boarderless board as a .bdrl.json file inside the configured workspace. Without filename, uses a stable board-name-and-id autosave filename.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              filename: { type: "string", description: "Optional single filename ending in .bdrl.json. Subdirectories and path traversal are rejected." },
+            },
+            additionalProperties: false,
+          },
+        },
+        {
+          name: "import_board_file",
+          description:
+            "Read a canonical schema-v2 .bdrl.json file from the configured workspace, import it into Boarderless, switch the live canvas to it, and refresh its automatic local snapshot.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              filename: { type: "string", description: "Single .bdrl.json filename inside the configured workspace." },
+            },
+            required: ["filename"],
+            additionalProperties: false,
+          },
+        },
+
         // ── Export ────────────────────────────────────────────────────────────
         {
           name: "export_board",
@@ -617,13 +697,14 @@ async function run() {
             server_version: SERVER_VERSION,
             app_url:        _APP_URL,
             browser_url:    BROWSER_URL,
+            board_workspace: _workspaceDir,
             started_at:     _status.startedAt,
             tool_calls:     _status.toolCallCount,
             tool_errors:    _status.toolErrors,
             last_error:     _status.lastError,
           },
           next_steps: allPassed
-            ? ["Call get_board_state to inspect the current canvas.", "Call mutate_object to modify elements."]
+            ? ["Call get_board_workspace and confirm it matches your project directory.", "Call get_board_state to inspect the current canvas.", "Canvas mutations are automatically saved as .bdrl.json files."]
             : checks.filter(c => !c.passed).map(c => c.resolution).filter(Boolean),
         });
       });
@@ -706,6 +787,26 @@ async function run() {
           `Command '${cmd}' is not supported by this server.`,
           "Valid commands are: 'get_system_status'. Or call individual MCP tools directly."
         );
+      });
+    }
+
+    // ── Board workspace configuration ───────────────────────────────────────
+    if (name === "get_board_workspace") {
+      return runTool(name, async () => makeSuccess({
+        workspace: _workspaceDir,
+        source: process.env.BOARDERLESS_WORKSPACE_DIR ? "env:BOARDERLESS_WORKSPACE_DIR" : "runtime",
+        autosave: true,
+        file_pattern: "<board-name>--<board-id>.bdrl.json",
+      }));
+    }
+
+    if (name === "set_board_workspace") {
+      return runTool(name, async () => {
+        if (!args.directory || !path.isAbsolute(args.directory)) {
+          return makeError("WORKSPACE_PATH_INVALID", "directory must be an absolute path.", "Provide the absolute path of the local project directory where board files should live.");
+        }
+        _workspaceDir = resolveWorkspaceDirectory(args.directory);
+        return makeSuccess({ workspace: _workspaceDir, autosave: true });
       });
     }
 
@@ -794,6 +895,53 @@ async function run() {
       }
 
       // Step 4: export_board (special handling)
+      if (name === "export_board_file") {
+        try {
+          const snapshot = await exportCurrentBoardSnapshot(page);
+          const saved = writeBoardSnapshot(snapshot, {
+            workspaceDir: _workspaceDir,
+            filename: args.filename,
+            cleanupAutosave: !args.filename,
+          });
+          return makeSuccess({
+            message: "Canonical Boarderless board file saved.",
+            workspace: _workspaceDir,
+            file: saved.path,
+            filename: saved.filename,
+            bytes: saved.bytes,
+            board_id: snapshot.id,
+            board_name: snapshot.name,
+          });
+        } catch (e) {
+          return makeError("BOARD_FILE_EXPORT_FAILED", e.message, "Confirm the workspace with get_board_workspace, keep the filename inside that directory, and refresh the canvas if its persistence bridge is unavailable.");
+        }
+      }
+
+      if (name === "import_board_file") {
+        try {
+          const loaded = readBoardSnapshot(_workspaceDir, args.filename);
+          const imported = await page.evaluate(async (snapshot) => {
+            if (typeof window.reactPersistence?.importSnapshot !== "function") {
+              return { ok: false, error: "The canvas persistence import bridge is unavailable. Refresh Boarderless and retry." };
+            }
+            const changed = await window.reactPersistence.importSnapshot(snapshot);
+            return { ok: changed, error: changed ? null : "Board import did not change the local canvas." };
+          }, loaded.snapshot);
+          if (!imported.ok) throw new Error(imported.error);
+          const saved = await autosaveCurrentBoard(page);
+          return makeSuccess({
+            message: "Board file imported and opened on the live canvas.",
+            workspace: _workspaceDir,
+            source_file: loaded.path,
+            autosave_file: saved.path,
+            board_id: loaded.snapshot.id,
+            board_name: loaded.snapshot.name,
+          });
+        } catch (e) {
+          return makeError("BOARD_FILE_IMPORT_FAILED", e.message, "Use a valid schema-v2 .bdrl.json filename inside the configured workspace and refresh the canvas if its persistence bridge is unavailable.");
+        }
+      }
+
       if (name === "export_board") {
         const format   = args.format;
         const mode     = args.mode || "canvas";
@@ -847,6 +995,32 @@ async function run() {
         },
         { toolName: name, toolArgs: args }
       );
+
+      if (MUTATING_CANVAS_TOOLS.has(name) && !result?.isError) {
+        try {
+          const saved = await autosaveCurrentBoard(page);
+          result.content = [
+            ...(Array.isArray(result.content) ? result.content : []),
+            { type: "text", text: JSON.stringify({
+              status: "autosaved",
+              file: saved.path,
+              filename: saved.filename,
+              bytes: saved.bytes,
+              workspace: _workspaceDir,
+            }, null, 2) },
+          ];
+        } catch (e) {
+          result.content = [
+            ...(Array.isArray(result.content) ? result.content : []),
+            { type: "text", text: JSON.stringify({
+              status: "autosave_failed",
+              message: e.message,
+              workspace: _workspaceDir,
+              resolution: "Call export_board_file before ending the task. Confirm get_board_workspace points to a writable project directory.",
+            }, null, 2) },
+          ];
+        }
+      }
 
       return result;
     });

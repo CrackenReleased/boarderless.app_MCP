@@ -1,5 +1,14 @@
 # What and How Log
 
+## 2026-06-30 21:38:00 — feat: Always-save canonical board files in agent workspaces (v0.1.21)
+
+- **Decision point**: The MCP server now owns durable workspace artifact policy, while the browser persistence layer remains the canonical serializer/importer for IndexedDB and image Blob fidelity.
+- **Automatic save**: Successful create, mutate, delete, group, ungroup, reorder, undo, and redo calls request a fresh schema-v2 snapshot and atomically replace `<board-name>--<board-id>.bdrl.json` in the configured workspace.
+- **Backend tools**: Added workspace inspection/configuration plus explicit board-file import/export. Filenames are basename-only, `.bdrl.json`-only, and path-contained.
+- **Failure semantics**: A completed canvas mutation is never retried blindly if filesystem persistence fails; the tool result includes an `autosave_failed` record directing the agent to perform an explicit final export.
+- **Regression coverage**: `src/verify_board_files.js` verifies validation, containment, atomic output, stable identity cleanup, explicit exports, and server integration anchors.
+- **Documentation**: README, feature catalog, functions registry, and desktop tool reference now teach agents to confirm the workspace before work and report the final board-file path at handoff.
+
 ## 2026-06-30 20:27:00 — content: Add canonical Boarderless showcase boards (v0.1.20)
 
 - **Context**: The reusable campaign boards created through the live Boarderless MCP surface needed canonical, importable packages alongside the MCP project.

@@ -54,6 +54,19 @@ The interactive installer will:
 1. **Boarderless Web App**: Exposes `window.boarderlessMcp` containing typed tool execution methods over Zustand state.
 2. **MCP Server (`mcp-stdio-server.js`)**: Connects to the browser via Chrome DevTools Protocol (CDP), maps incoming stdio messages to the browser runtime, and checks authentication. If the remote debugging port (9222) is closed, the server automatically scans and launches Chrome or Edge in remote-debugging mode.
 3. **AI Agent**: Connects as a client to the MCP server's stdio transport.
+4. **Workspace Board File**: After every successful canvas mutation, the MCP server asks the browser persistence layer for the canonical schema-v2 snapshot and atomically writes `<board-name>--<board-id>.bdrl.json` into the configured local workspace.
+
+### Always-saved `.bdrl.json` workflow
+
+Agents must treat the board file as part of the task artifact, not as an optional final export:
+
+1. Call `get_board_workspace` before canvas work.
+2. If it is not the user's current project directory, call `set_board_workspace` with that absolute directory (or set `BOARDERLESS_WORKSPACE_DIR` in MCP configuration).
+3. Use the normal mutation tools. Every successful create, mutate, delete, group, reorder, undo, or redo automatically refreshes the canonical `.bdrl.json` file.
+4. Before handoff, call `export_board_file` and report its returned path. This explicit final flush makes the artifact requirement visible even if an earlier autosave warning occurred.
+5. To resume work, place a schema-v2 `.bdrl.json` file in the workspace and call `import_board_file` with its filename. The backend validates containment and schema, imports it through Boarderless persistence, switches the live canvas to it, and refreshes autosave.
+
+Board file reads and writes are restricted to the configured workspace. Filenames cannot contain directories or traversal segments. Writes use a same-directory temporary file followed by an atomic rename so interrupted writes do not leave half-valid JSON.
 
 ---
 
@@ -137,7 +150,7 @@ It returns a structured JSON report with four health checks and actionable resol
   "runtime": {
     "platform": "win32",
     "node_version": "v22.3.0",
-    "server_version": "0.1.18",
+    "server_version": "0.1.21",
     "app_url": "https://boarderless.app/canvas",
     "browser_url": "http://127.0.0.1:9222",
     "started_at": "2026-06-16T19:07:00.000Z",
@@ -168,6 +181,9 @@ Every tool returns a structured JSON error object — never a raw exception stri
 | `BRIDGE_MISSING` | Bridge removed mid-session | Refresh the browser tab |
 | `EXPORT_FN_MISSING` | Export function not bound on page | Ensure a board is open and you're on `/canvas` |
 | `EXPORT_RUNTIME_ERROR` | Export threw a runtime exception | Check plan tier — SVG/PDF require Pro |
+| `WORKSPACE_PATH_INVALID` | Workspace configuration was not an absolute path | Pass the agent's absolute project directory to `set_board_workspace` |
+| `BOARD_FILE_EXPORT_FAILED` | Canonical snapshot could not be written | Confirm workspace permissions and refresh the canvas persistence bridge |
+| `BOARD_FILE_IMPORT_FAILED` | Workspace board file failed containment, schema, or browser import | Use a schema-v2 `.bdrl.json` basename inside the configured workspace |
 | `PATH_NOT_FOUND` | Filesystem path argument doesn't exist | Use an absolute path to an existing directory |
 | `MISSING_ARGUMENT` | Required tool argument was omitted | Check the tool's input schema |
 | `TOOL_UNEXPECTED_ERROR` | Unhandled error in the tool silo | Check server stderr; open a GitHub issue |
@@ -180,7 +196,7 @@ Error shape:
   "message": "You must be signed in to Boarderless to use canvas tools.",
   "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
   "server": "boarderless-mcp-bridge",
-  "version": "0.1.18",
+  "version": "0.1.21",
   "timestamp": "2026-06-16T19:07:00.000Z"
 }
 ```
@@ -198,6 +214,7 @@ All configuration uses environment variables — no hardcoded paths, no user-spe
 | `BOARDERLESS_MCP_BROWSER_EXE` | *(auto-detected)* | Full path to browser executable. Set if auto-detection misses your browser. |
 | `BOARDERLESS_MCP_PROFILE_DIR` | *(OS-standard, see below)* | Override the persistent browser profile directory. |
 | `BOARDERLESS_MCP_HEADLESS` | `false` | Set to `"true"` for headless browser mode (CI/testing). |
+| `BOARDERLESS_WORKSPACE_DIR` | MCP process working directory | Absolute directory where canonical `.bdrl.json` files are always saved. Agents can change it at runtime with `set_board_workspace`. |
 
 **Default profile directories** (resolved from OS env vars, never hardcoded):
 - **Windows**: `%LOCALAPPDATA%\boarderless-mcp-profile`
@@ -305,6 +322,32 @@ Reorder z-index layering of an object (bring to front, send to back, forward, ba
 
 ---
 
+### `get_board_workspace`
+Returns the active filesystem directory, autosave state, and filename pattern. Agents should call this before their first canvas mutation.
+
+---
+
+### `set_board_workspace`
+Sets the absolute project directory used for board artifacts. The directory is created when necessary.
+
+- **Required**: `directory` (absolute path)
+
+---
+
+### `export_board_file`
+Flushes the browser's current board and atomically writes its complete schema-v2 snapshot, including JSON-safe image assets.
+
+- **Optional**: `filename` — a single filename ending in `.bdrl.json`; omitting it uses the stable autosave name.
+
+---
+
+### `import_board_file`
+Reads, validates, imports, and opens a board from the configured workspace.
+
+- **Required**: `filename` — a single `.bdrl.json` filename in the workspace
+
+---
+
 ### `export_board`
 Exports the current canvas to PNG, PDF, or SVG.
 
@@ -341,7 +384,8 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/App
       "args": ["/absolute/path/to/boarderless.app_MCP/src/mcp-stdio-server.js"],
       "env": {
         "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
-        "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
+        "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222",
+        "BOARDERLESS_WORKSPACE_DIR": "C:\\absolute\\path\\to\\your\\project"
       }
     }
   }
@@ -361,7 +405,8 @@ Add to your `openclaw.json` under `mcp.servers`:
       "args": ["/absolute/path/to/boarderless.app_MCP/src/mcp-stdio-server.js"],
       "env": {
         "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
-        "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
+        "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222",
+        "BOARDERLESS_WORKSPACE_DIR": "/absolute/path/to/your/project"
       }
     }
   }
@@ -386,4 +431,3 @@ This MCP server is open source under the Apache 2.0 license. Contributions are w
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
-
