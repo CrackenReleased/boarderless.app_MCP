@@ -1,0 +1,176 @@
+{
+  "id": "board_1782279155079_sbhkn",
+  "schemaVersion": 2,
+  "name": "Infinite Canvas",
+  "createdAt": 1782279155079,
+  "lastSaved": 1782279155079,
+  "backgroundColor": "#090a0f",
+  "shapes": [
+    {
+      "id": "c1_b_r1",
+      "type": "rect",
+      "x": -170,
+      "y": -130,
+      "width": 340,
+      "height": 260,
+      "stroke": "#0D9488",
+      "fill": "rgba(13, 148, 136, 0.85)",
+      "strokeWidth": 2,
+      "borderRadius": 12,
+      "zIndex": 1,
+      "opacity": 1,
+      "edgeFeather": 0,
+      "fillAlpha": 1,
+      "fillFuzziness": 0,
+      "sync": {
+        "version": 1,
+        "updatedAt": "2026-06-24T05:32:33.905Z",
+        "deletedAt": null,
+        "clientMutationId": null
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "c1_b_e1",
+      "type": "ellipse",
+      "x": 200,
+      "y": -50,
+      "radiusX": 110,
+      "radiusY": 110,
+      "stroke": "#EC4899",
+      "fill": "rgba(236, 72, 153, 0.15)",
+      "strokeWidth": 3,
+      "zIndex": 2,
+      "opacity": 1,
+      "edgeFeather": 0,
+      "fillAlpha": 1,
+      "fillFuzziness": 0,
+      "sync": {
+        "version": 1,
+        "updatedAt": "2026-06-24T05:32:33.906Z",
+        "deletedAt": null,
+        "clientMutationId": null
+      }
+    },
+    {
+      "id": "c1_b_r2",
+      "type": "rect",
+      "x": 60,
+      "y": 30,
+      "width": 280,
+      "height": 200,
+      "stroke": "#06B6D4",
+      "fill": "rgba(6, 182, 212, 0.9)",
+      "strokeWidth": 1.5,
+      "borderRadius": 12,
+      "zIndex": 3,
+      "opacity": 1,
+      "edgeFeather": 0,
+      "fillAlpha": 1,
+      "fillFuzziness": 0,
+      "sync": {
+        "version": 1,
+        "updatedAt": "2026-06-24T05:32:33.916Z",
+        "deletedAt": null,
+        "clientMutationId": null
+      },
+      "cornerRadius": 0
+    }
+  ],
+  "text": [
+    {
+      "id": "c1_b_t1",
+      "type": "text",
+      "text": "CREATIVE FREEDOM",
+      "richTextHtml": "CREATIVE FREEDOM",
+      "richTextRuns": [
+        {
+          "fxFontSize": 24,
+          "fxFontFamily": "Outfit",
+          "fxFontStyle": "bold",
+          "fxTextDecoration": "",
+          "fxFill": "#ffffff",
+          "fxLineHeight": 1.2,
+          "fxAlign": "left",
+          "fxStroke": "#000000",
+          "fxStrokeWidth": 0,
+          "fxOpacity": 1,
+          "fxStrokeOpacity": 1,
+          "text": "CREATIVE FREEDOM"
+        }
+      ],
+      "x": -140,
+      "y": -100,
+      "width": 280,
+      "height": 28.799999999999997,
+      "rotation": 0,
+      "zIndex": 10,
+      "sync": {
+        "version": 0,
+        "updatedAt": "2026-06-24T05:32:33.907Z",
+        "deletedAt": null,
+        "clientMutationId": null
+      },
+      "fxFontSize": 24,
+      "fxFontFamily": "Outfit",
+      "fxFontStyle": "bold",
+      "fxTextDecoration": "",
+      "fxFill": "#ffffff",
+      "fxLineHeight": 1.2,
+      "fxAlign": "left",
+      "fxStroke": "#000000",
+      "fxStrokeWidth": 0,
+      "fxOpacity": 1,
+      "fxStrokeOpacity": 1
+    },
+    {
+      "id": "c1_b_t2",
+      "type": "text",
+      "text": "COLLAGE COMPOSITE",
+      "richTextHtml": "COLLAGE COMPOSITE",
+      "richTextRuns": [
+        {
+          "fxFontSize": 14,
+          "fxFontFamily": "Outfit",
+          "fxFontStyle": "bold",
+          "fxTextDecoration": "",
+          "fxFill": "#06B6D4",
+          "fxLineHeight": 1.2,
+          "fxAlign": "left",
+          "fxStroke": "#000000",
+          "fxStrokeWidth": 0,
+          "fxOpacity": 1,
+          "fxStrokeOpacity": 1,
+          "text": "COLLAGE COMPOSITE"
+        }
+      ],
+      "x": 90,
+      "y": 70,
+      "width": 220,
+      "height": 18,
+      "rotation": 0,
+      "zIndex": 11,
+      "sync": {
+        "version": 0,
+        "updatedAt": "2026-06-24T05:32:33.908Z",
+        "deletedAt": null,
+        "clientMutationId": null
+      },
+      "fxFontSize": 14,
+      "fxFontFamily": "Outfit",
+      "fxFontStyle": "bold",
+      "fxTextDecoration": "",
+      "fxFill": "#06B6D4",
+      "fxLineHeight": 1.2,
+      "fxAlign": "left",
+      "fxStroke": "#000000",
+      "fxStrokeWidth": 0,
+      "fxOpacity": 1,
+      "fxStrokeOpacity": 1
+    }
+  ],
+  "gallery": [],
+  "galleryAssets": [],
+  "galleryAssetOrder": [],
+  "slides": []
+}

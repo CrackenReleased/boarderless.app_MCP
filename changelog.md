@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.20 — 2026-06-30 — CONTENT: Add canonical Boarderless showcase boards (v0.1.20)
+
+**Date:** 2026-06-30 20:27:00
+
+- Added five schema-v2 canonical Boarderless board packages: Infinite Canvas, Lossless Studio, Mom's Scrapbook, Nerds MCP, and Tactile Fluidity.
+- Validated every package as parseable JSON with unique object IDs and required shape/text synchronization metadata.
+- Corrected the stale package-lock version and aligned all MCP/Tauri/UI version surfaces to v0.1.20.
+
 ## v0.1.19 — 2026-06-30 — FEAT: Register missing canvas tools and align version globally (v0.1.19)
 
 **Date:** 2026-06-30 17:18:00
