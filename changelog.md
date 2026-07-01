@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.23 — 2026-07-02 — DOCS: Align the complete app and MCP capability maps
+
+**Date:** 2026-07-02 02:24:00
+
+- Replaced the stale abbreviated RAG catalog with a complete, human-readable map of the shipped Boarderless product.
+- Corrected plan limits, export formats, Local First/Drive boundaries, and the distinction between Ai Partner and external MCP agents.
+- Documented the complete MCP canvas, history, grouping, export, and durable `.bdrl.json` tool surfaces without implying unsupported image upload or inherited Google access.
+- Aligned package, server, desktop, Cargo, README examples, and UI versions to v0.1.23.
+
 ## v0.1.22 — 2026-07-02 — POLICY: Remove quantified performance claim (v0.1.22)
 
 **Date:** 2026-07-02 01:20:00

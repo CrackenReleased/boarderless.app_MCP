@@ -1,5 +1,12 @@
 # What and How Log
 
+## 2026-07-02 02:24:00 — docs: Make MCP documentation congruent with the complete app (v0.1.23)
+
+- **Decision point:** The MCP catalog now explains both the full application and the narrower external-agent control surface, preventing agents from confusing an app feature with an MCP permission.
+- **Product truth:** Corrected Local First, optional Drive sync, plan limits, SVG and Slides-compatible JSON export, Ai Partner, image editing, presentation, grouping, minimap, and durable board-file descriptions.
+- **Boundaries:** Explicitly states that MCP does not inherit Google identity, upload arbitrary image nodes, bypass plan rules, or perform the Ai Partner's local background-removal action.
+- **Regression coverage:** Boarderless `verify:feature-map` checks required product capabilities and every canonical MCP tool across the public page, README, and RAG catalog.
+
 ## 2026-07-02 01:20:00 — policy: Keep MCP assets honest about Local First (v0.1.22)
 
 - **Decision point:** The MCP board asset now presents Local First interaction rather than turning the capture machine's frame rate into a universal product promise.

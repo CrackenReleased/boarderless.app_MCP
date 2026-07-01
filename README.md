@@ -5,9 +5,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A Model Context Protocol (MCP) server for **Boarderless**, allowing AI agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly.
+A Model Context Protocol (MCP) server for **Boarderless**, allowing AI agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
 
-Looking for a human-readable index of all Boarderless features, layout rules, and plan limits? AI agents connecting to this repository should parse the [Boarderless Features Catalog](file:///E:/boarderless.app_MCP/docs/features_catalog.md) for RAG context.
+Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? AI agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work.
 
 Rather than scraping pixels or guessing layouts from DOM selectors, agents communicate with a clean, typed spatial ledger.
 
@@ -28,7 +28,7 @@ Run the installer to configure your environment and client settings:
 
 **Step 2: Choose Option 1 (Standard Auto-Setup)**
 The interactive installer will:
-1. Explains permissions (browser connection, file access).
+1. Explain permissions (browser connection, file access).
 2. Install pure JavaScript dependencies automatically.
 3. Register the MCP server in your Claude Desktop configuration.
 4. Provide immediate copy-paste instructions for Cursor or Windsurf.
@@ -56,6 +56,14 @@ The interactive installer will:
 3. **AI Agent**: Connects as a client to the MCP server's stdio transport.
 4. **Workspace Board File**: After every successful canvas mutation, the MCP server asks the browser persistence layer for the canonical schema-v2 snapshot and atomically writes `<board-name>--<board-id>.bdrl.json` into the configured local workspace.
 
+### One product, two different agent surfaces
+
+- **Ai Partner** lives inside the Boarderless app. It interprets supported natural-language canvas requests and performs local per-image background removal.
+- **Boarderless MCP** connects external agent clients to the running, human-visible canvas. It can inspect, measure, create supported text/shapes, mutate, delete, group, ungroup, reorder, undo, redo, export, and maintain durable `.bdrl.json` artifacts.
+- MCP does not inherit the user's Google identity, grant itself Drive access, upload arbitrary local images into the canvas, or bypass plan restrictions. Those boundaries stay with the human and the app.
+
+The complete app feature surface—including image editing, presentations, minimap, typography, exports, persistence, plan boundaries, Ai Partner, and MCP—is indexed in [docs/features_catalog.md](docs/features_catalog.md).
+
 ### Always-saved `.bdrl.json` workflow
 
 Agents must treat the board file as part of the task artifact, not as an optional final export:
@@ -73,7 +81,7 @@ Board file reads and writes are restricted to the configured workspace. Filename
 ## Prerequisites
 
 1. **Node.js** (v18 or higher)
-2. **Supported OS & Browser**: Windows 10/11 with a Chromium-based browser — Google Chrome, Brave Browser, Opera, or Microsoft Edge (all fully detected and supported). macOS and Linux are supported as community fallbacks.
+2. **Supported OS & Browser**: Windows 10/11 with a Chromium-based browser—Google Chrome, Brave Browser, Opera, or Microsoft Edge—uses the primary tested path. macOS and Linux use community fallback paths.
 3. **Boarderless Web App**: Access via production at `https://boarderless.app/canvas` (default) or your local dev server if running one.
 
 *Note: This Model Context Protocol server is optimized specifically for Windows. Google Chrome, Brave Browser, Opera, and Microsoft Edge are all fully supported. macOS and Linux are supported as community fallbacks.*
@@ -150,7 +158,7 @@ It returns a structured JSON report with four health checks and actionable resol
   "runtime": {
     "platform": "win32",
     "node_version": "v22.3.0",
-    "server_version": "0.1.22",
+    "server_version": "0.1.23",
     "app_url": "https://boarderless.app/canvas",
     "browser_url": "http://127.0.0.1:9222",
     "started_at": "2026-06-16T19:07:00.000Z",
@@ -196,7 +204,7 @@ Error shape:
   "message": "You must be signed in to Boarderless to use canvas tools.",
   "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
   "server": "boarderless-mcp-bridge",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "timestamp": "2026-06-16T19:07:00.000Z"
 }
 ```
