@@ -50,3 +50,8 @@
 - **Global Version Alignment**: Bumped and aligned project version references to `v0.1.19` across `package.json`, `src/mcp-stdio-server.js`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, `src-tauri/tauri.conf.json`, and `ui/index.html`.
 - **Tauri Application Compile**: Successfully compiled the updated Tauri application executable into `setup.exe` and `Boarderless MCP.exe` in the project root directory.
 - **Regression Verification**: Confirmed that all local regression test suites (`verify_shortcut.js` and `verify_nonblocking_auth.js`) pass successfully.
+# v0.1.24 — 2026-07-02 — Align Ai Partner provider documentation
+
+- Documented Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local-model, and custom OpenAI-compatible Ai Partner connectivity.
+- Clarified that Ai Partner provider traffic is direct from the browser and remains separate from the MCP server transport.
+- Standardized touched references to “Ai.”

@@ -38,3 +38,8 @@
   3. **Compiled Tauri binaries**: Executed the Tauri release build and successfully updated `setup.exe` and `Boarderless MCP.exe` in the root folder with the new build.
   4. **Ran Tests**: Verified functionality using `npm test`, executing all local validation gates.
 - **Why**: Ensures that offline LLM harnesses connecting to the MCP bridge have complete schema specifications for all spatial mutations, matching the web canvas.
+## 2026-07-02 12:58:00 — Ai Partner provider-connectivity alignment (v0.1.24)
+
+- **What:** Updated the MCP product catalog, README, package metadata, and setup UI wording to reflect Boarderless Ai Partner support for Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local models, and custom OpenAI-compatible endpoints.
+- **Why:** The MCP server and the in-app Ai Partner are separate agent surfaces. Campaign documentation must explain the expanded in-app provider choices without implying that cloud-model API keys pass through MCP.
+- **Verification:** MCP test suite and Boarderless feature-map congruence run as release gates.

@@ -99,7 +99,8 @@ Local First is the selling point. It is not a frame-rate or hardware guarantee. 
 
 - The **Ai Partner** panel is an app feature distinct from MCP.
 - It translates supported natural-language requests into structural canvas actions and lets the user inspect/apply them.
-- It supports a user-provided Gemini key and a local interpreter path.
+- It supports direct, user-authorized connections to Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local models, and custom OpenAI-compatible endpoints.
+- Provider API keys are tab-session-only; structural board context goes directly to the provider selected by the user and is not relayed through the MCP server.
 - It performs local per-image background removal.
 - Its actions use the same visible canvas, persistence, and history stores as manual edits.
 

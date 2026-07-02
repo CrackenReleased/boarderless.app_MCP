@@ -5,9 +5,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A Model Context Protocol (MCP) server for **Boarderless**, allowing AI agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
+A Model Context Protocol (MCP) server for **Boarderless**, allowing Ai agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
 
-Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? AI agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work.
+Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? Ai agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work.
 
 Rather than scraping pixels or guessing layouts from DOM selectors, agents communicate with a clean, typed spatial ledger.
 
@@ -39,7 +39,7 @@ The interactive installer will:
 
 ```
 +------------------+                   +--------------------+
-|  AI Agent Client |                   | Boarderless App    |
+|  Ai Agent Client |                   | Boarderless App    |
 |  (Claude/Cursor) |                   | (Zustand + React)  |
 +--------+---------+                   +---------+----------+
          |                                       ^
@@ -53,12 +53,12 @@ The interactive installer will:
 
 1. **Boarderless Web App**: Exposes `window.boarderlessMcp` containing typed tool execution methods over Zustand state.
 2. **MCP Server (`mcp-stdio-server.js`)**: Connects to the browser via Chrome DevTools Protocol (CDP), maps incoming stdio messages to the browser runtime, and checks authentication. If the remote debugging port (9222) is closed, the server automatically scans and launches Chrome or Edge in remote-debugging mode.
-3. **AI Agent**: Connects as a client to the MCP server's stdio transport.
+3. **Ai Agent**: Connects as a client to the MCP server's stdio transport.
 4. **Workspace Board File**: After every successful canvas mutation, the MCP server asks the browser persistence layer for the canonical schema-v2 snapshot and atomically writes `<board-name>--<board-id>.bdrl.json` into the configured local workspace.
 
 ### One product, two different agent surfaces
 
-- **Ai Partner** lives inside the Boarderless app. It interprets supported natural-language canvas requests and performs local per-image background removal.
+- **Ai Partner** lives inside the Boarderless app. It interprets supported natural-language canvas requests through Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local models, or a custom OpenAI-compatible endpoint, and performs local per-image background removal.
 - **Boarderless MCP** connects external agent clients to the running, human-visible canvas. It can inspect, measure, create supported text/shapes, mutate, delete, group, ungroup, reorder, undo, redo, export, and maintain durable `.bdrl.json` artifacts.
 - MCP does not inherit the user's Google identity, grant itself Drive access, upload arbitrary local images into the canvas, or bypass plan restrictions. Those boundaries stay with the human and the app.
 
