@@ -272,6 +272,14 @@ Modifies coordinates or style properties of a canvas object. Writes to the undo 
 
 ---
 
+### `remix_style`
+Applies one canonical Boarderless palette to selected shape/text Objects—or explicitly to the whole board—as one undoable history step. Images remain unchanged.
+
+- **Required**: `paletteId` — `"boarderless"` | `"midnight"` | `"sunroom"` | `"editorial"` | `"earthbound"`
+- **Optional**: `scope` — `"selection"` (default) | `"board"`; `ids` — explicit selection-scope Object IDs
+
+---
+
 ### `calculate_export_bounds`
 Returns the collective bounding box of all active objects.
 

@@ -43,3 +43,8 @@
 - **What:** Updated the MCP product catalog, README, package metadata, and setup UI wording to reflect Boarderless Ai Partner support for Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local models, and custom OpenAI-compatible endpoints.
 - **Why:** The MCP server and the in-app Ai Partner are separate agent surfaces. Campaign documentation must explain the expanded in-app provider choices without implying that cloud-model API keys pass through MCP.
 - **Verification:** MCP test suite and Boarderless feature-map congruence run as release gates.
+## 2026-07-02 13:40:00 — Canonical Style Remix MCP parity (v0.1.25)
+
+- **What:** Added `remix_style` to the MCP mutation allowlist, function manifest, README, and feature catalog.
+- **Why:** External agents must invoke the same palette catalog, scope rules, and atomic undo behavior as humans using Canvas or Play; reconstructing bulk style changes through repeated `mutate_object` calls would fragment undo and drift from the product.
+- **Verification:** Boarderless live bridge regression applies a remix and proves one Undo restores the original style; MCP server tests cover tool discovery and non-blocking startup.

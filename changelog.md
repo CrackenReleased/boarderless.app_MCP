@@ -55,3 +55,8 @@
 - Documented Gemini, OpenAI, Anthropic Claude, Z.AI/GLM, local-model, and custom OpenAI-compatible Ai Partner connectivity.
 - Clarified that Ai Partner provider traffic is direct from the browser and remains separate from the MCP server transport.
 - Standardized touched references to “Ai.”
+# v0.1.25 — 2026-07-02 — Add canonical `remix_style`
+
+- Exposed Boarderless Style Remix through MCP with the same palette IDs and selection-first scope as Canvas, Play, and Ai Partner.
+- Treats an entire remix as one undoable mutation and refreshes the configured `.bdrl.json` artifact after success.
+- Updated the canonical function manifest and product catalog.

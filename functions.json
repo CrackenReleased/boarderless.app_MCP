@@ -67,6 +67,32 @@
     }
   },
   {
+    "name": "remix_style",
+    "description": "Apply a canonical Boarderless palette to selected shape/text Objects or the whole board as one undoable Style Remix.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "paletteId": {
+          "type": "string",
+          "enum": ["boarderless", "midnight", "sunroom", "editorial", "earthbound"],
+          "description": "Canonical Style Remix palette id."
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["selection", "board"],
+          "description": "Defaults to selection; whole-board remix must be explicit."
+        },
+        "ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Optional explicit Object ids for selection scope."
+        }
+      },
+      "required": ["paletteId"],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "calculate_export_bounds",
     "description": "Calculate the absolute mathematical export bounding box for the current composition.",
     "parameters": {
