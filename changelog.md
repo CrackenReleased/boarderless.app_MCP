@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.26 — 2026-07-02 — SECURITY: Restrict the public npm package boundary
+
+**Date:** 2026-07-02 17:55:00
+
+- Reduced the npm package preview from 106 files / 3.88 MB unpacked to 12 intentional files / approximately 131 KB unpacked.
+- Excluded all canonical `.bdrl.json` boards, Tauri desktop sources and icons, UI assets, workflows, test/debug scripts, and unrelated development utilities from publication.
+- Added package metadata for the Boarderless organization, public access, repository, homepage, and issue tracker.
+- Added an executable regression guard that fails if internal artifacts re-enter the npm tarball.
+- Aligned public status examples and the runtime server version to v0.1.26.
+
 ## v0.1.23 — 2026-07-02 — DOCS: Align the complete app and MCP capability maps
 
 **Date:** 2026-07-02 02:24:00

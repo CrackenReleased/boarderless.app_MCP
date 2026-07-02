@@ -1,5 +1,13 @@
 # What and How Log
 
+## 2026-07-02 17:55:00 — security: Define a least-publication npm boundary (v0.1.26)
+
+- **Decision point:** npm now receives an explicit allowlist instead of inheriting almost the entire Git working tree through `.gitignore` fallback behavior.
+- **Privacy boundary:** Public installation contains only the MCP entry point, board-file runtime, two runtime photo helpers, function manifest, required public documentation, README, license, changelog, and package metadata. Boards, desktop application sources, UI assets, workflows, and internal diagnostics stay local.
+- **Brand boundary:** npm metadata identifies the publisher as Boarderless while retaining the existing public source repository and Boarderless homepage.
+- **Regression coverage:** `src/verify_package_contents.js` runs `npm pack --dry-run --json`, requires every runtime file, rejects internal artifact classes, and caps both file count and unpacked size. The test failed against the original 106-file preview and passes against the 12-file allowlist.
+- **Sibling scan:** Reviewed every local file category emitted by npm's preview and every filesystem/import dependency of `src/mcp-stdio-server.js`; the two lazy-loaded helper modules and `src/board-files.js` are included, with no other runtime-relative dependencies found.
+
 ## 2026-07-02 02:24:00 — docs: Make MCP documentation congruent with the complete app (v0.1.23)
 
 - **Decision point:** The MCP catalog now explains both the full application and the narrower external-agent control surface, preventing agents from confusing an app feature with an MCP permission.

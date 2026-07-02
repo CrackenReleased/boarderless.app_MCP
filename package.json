@@ -1,21 +1,46 @@
 {
   "name": "@boarderless/mcp-server",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "Model Context Protocol (MCP) server for Boarderless, allowing Ai agents to read the canvas state, mutate Objects, and calculate export bounds.",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "main": "src/mcp-stdio-server.js",
   "bin": {
-    "boarderless-mcp-server": "./src/mcp-stdio-server.js"
+    "boarderless-mcp-server": "src/mcp-stdio-server.js"
+  },
+  "files": [
+    "src/mcp-stdio-server.js",
+    "src/board-files.js",
+    "helpers/rename_photos.js",
+    "helpers/standardize_images.js",
+    "functions.json",
+    "docs/features_catalog.md",
+    "docs/connector_distribution_plan.md",
+    "docs/connector_operator_runbook.md",
+    "changelog.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CrackenReleased/boarderless.app_MCP.git"
+  },
+  "homepage": "https://boarderless.app/",
+  "bugs": {
+    "url": "https://github.com/CrackenReleased/boarderless.app_MCP/issues"
   },
   "scripts": {
     "start": "node src/mcp-stdio-server.js",
     "example": "node src/index.js",
     "setup": "node src/setup.js",
     "tauri": "tauri",
-    "test": "node src/verify_shortcut.js && node src/verify_nonblocking_auth.js && node src/verify_board_files.js",
+    "test": "node src/verify_shortcut.js && node src/verify_nonblocking_auth.js && node src/verify_board_files.js && node src/verify_package_contents.js",
     "verify:status": "node src/verify_nonblocking_auth.js",
-    "verify:board-files": "node src/verify_board_files.js"
+    "verify:board-files": "node src/verify_board_files.js",
+    "verify:package": "node src/verify_package_contents.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
@@ -31,7 +56,7 @@
     "puppeteer",
     "agentic-ui"
   ],
-  "author": "CrackenReleased",
+  "author": "Boarderless",
   "license": "Apache-2.0",
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2"
