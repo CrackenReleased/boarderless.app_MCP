@@ -4,7 +4,8 @@ This is the operator path for getting Boarderless MCP into connector ecosystems 
 
 ## Operating rules
 
-- Do not publish packages, submit directory listings, buy services, create paid accounts, or start hosted infrastructure without Joel's explicit approval.
+- Do not perform the first npm publication, change package ownership, submit directory listings, buy services, create paid accounts, or start hosted infrastructure without Joel's explicit approval.
+- After Joel approves the first public npm release, publishing the matching npm version is a required delivery step for every subsequent production MCP version pushed to GitHub. Do not declare the release complete while GitHub and npm versions differ.
 - Treat Boarderless MCP today as a local stdio server that controls a human-visible authenticated Boarderless canvas tab.
 - Keep OpenAI ChatGPT connectors and Microsoft Copilot Studio in the future-hosted-adapter bucket until an HTTPS/auth adapter exists and has been reviewed.
 - Prefer evidence over copy. If a claim is not backed by a local command, a submitted listing, or a reviewed adapter design, do not say it is done.
@@ -40,12 +41,26 @@ What agents can do without Joel:
 
 What Joel must decide or provide:
 
-- Whether the npm package should be published, and under which account/org.
-- The package version, release notes, and final public wording.
+- Whether the first npm package should be published and final approval of the `boarderless` organization ownership.
+- Final public wording for the first release. After that approval, matching npm publication is part of the normal production release workflow unless Joel explicitly places a release on hold.
 - Which local client examples matter most for first users.
 - Any screenshots or videos that should represent the product publicly.
 
 Phase A done means: local stdio install and client config instructions are accurate, `get_server_status` is the first-run diagnostic, and validation output is recorded. It does not mean OpenAI or Microsoft hosted connector support exists.
+
+### Required GitHub ↔ npm production release gate
+
+For every versioned production change to this MCP project after the first npm publication:
+
+1. Use one identical version in `package.json`, the runtime server constant, GitHub release/commit wording, and npm.
+2. Run `npm test`.
+3. Run `npm publish --dry-run --access public` and inspect the complete tarball list.
+4. Push the tested production commit to GitHub.
+5. Publish that same version with `npm publish --access public`.
+6. Verify delivery with `npm view @boarderless/mcp-server version`.
+7. Record the Git commit, npm version, validation output, and public package URL in the handoff.
+
+If npm publication fails, the GitHub change may remain pushed for diagnosis, but the production release must be reported as incomplete until the registries match. Never reuse an npm version; fix forward with the next patch version if a published tarball is wrong. Documentation-only commits that leave the package version unchanged do not trigger this gate.
 
 ## Phase B: registry and directory submissions later
 
@@ -124,7 +139,7 @@ Safe current wording:
 
 Agents should stop and ask Joel before any of these actions:
 
-1. Publishing to npm or changing package ownership.
+1. The first npm publication, changing package ownership, or intentionally withholding npm from a versioned production release. Routine matching-version publications after first-release approval are required delivery work.
 2. Submitting to a registry, directory, marketplace, or platform review.
 3. Creating accounts, tokens, paid services, or hosted infrastructure.
 4. Claiming OpenAI or Microsoft support publicly.

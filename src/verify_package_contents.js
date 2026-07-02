@@ -5,11 +5,20 @@ import { fileURLToPath } from 'node:url';
 
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+const readProjectFile = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 assert.equal(
   manifest.bin?.['boarderless-mcp-server'],
   'src/mcp-stdio-server.js',
   'npm must retain the boarderless-mcp-server executable during publication',
 );
+
+for (const [path, requiredPolicy] of [
+  ['README.md', /every production MCP version must be delivered to both GitHub and npm/i],
+  ['docs/connector_operator_runbook.md', /Required GitHub ↔ npm production release gate/],
+  ['docs/connector_distribution_plan.md', /Permanent npm release synchronization/],
+]) {
+  assert.match(readProjectFile(path), requiredPolicy, `${path} must preserve the GitHub/npm release synchronization policy`);
+}
 
 const output = execFileSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', 'npm pack --dry-run --json'], {
   cwd: packageRoot,

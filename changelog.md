@@ -9,6 +9,7 @@
 - Added package metadata for the Boarderless organization, public access, repository, homepage, and issue tracker.
 - Added an executable regression guard that fails if internal artifacts re-enter the npm tarball.
 - Aligned public status examples and the runtime server version to v0.1.26.
+- Established npm as a mandatory synchronized delivery target for every future versioned production MCP release after the first publication is approved; documentation-only commits are exempt.
 
 ## v0.1.23 — 2026-07-02 — DOCS: Align the complete app and MCP capability maps
 

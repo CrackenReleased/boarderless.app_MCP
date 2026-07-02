@@ -106,6 +106,10 @@ Use this checklist before any external submission. Submitting is explicitly outs
 7. Add screenshots or short demo recordings only after the local examples have been tested.
 8. For OpenAI or Microsoft, do not submit local stdio as if it were a hosted connector. Build and review a remote adapter first.
 
+## Permanent npm release synchronization
+
+Once the first public npm release is approved, npm is a production delivery target—not an optional directory listing. Every versioned MCP production release pushed to GitHub must publish the identical version of `@boarderless/mcp-server` to npm and verify it through the public registry. Documentation-only commits with no package-version change do not require republishing. A GitHub/npm version mismatch means the release is incomplete and must be fixed forward rather than described as shipped.
+
 ## Future hosted adapter requirements
 
 A hosted adapter for OpenAI or Microsoft should be planned as a separate engineering slice with security review. Minimum open questions:

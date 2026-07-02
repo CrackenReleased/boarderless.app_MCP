@@ -7,6 +7,7 @@
 - **Brand boundary:** npm metadata identifies the publisher as Boarderless while retaining the existing public source repository and Boarderless homepage.
 - **Regression coverage:** `src/verify_package_contents.js` runs `npm pack --dry-run --json`, requires every runtime file, rejects internal artifact classes, and caps both file count and unpacked size. The test failed against the original 106-file preview and passes against the 12-file allowlist.
 - **Sibling scan:** Reviewed every local file category emitted by npm's preview and every filesystem/import dependency of `src/mcp-stdio-server.js`; the two lazy-loaded helper modules and `src/board-files.js` are included, with no other runtime-relative dependencies found.
+- **Release continuity:** After first-publication approval, a versioned MCP production release is complete only when the identical version is pushed to GitHub, published to npm, verified through `npm view`, and recorded in handoff. The package regression pins this policy across README, operator runbook, and distribution documentation.
 
 ## 2026-07-02 02:24:00 — docs: Make MCP documentation congruent with the complete app (v0.1.23)
 

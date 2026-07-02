@@ -445,6 +445,10 @@ This MCP server is open source under the Apache 2.0 license. Contributions are w
 - **New tools**: Tools should be added as siloed handlers in `mcp-stdio-server.js` with structured `makeError` / `makeSuccess` responses. Every new tool must have a corresponding regression test.
 - **Platform support**: If your browser or OS isn't detected, open a PR adding its path to `getBrowserCandidates()` — all paths must use OS env vars, never hardcoded usernames.
 
+### Production release synchronization
+
+After the initial npm publication is approved, every production MCP version must be delivered to both GitHub and npm under the same version number. A production release is not complete until `npm test` and `npm publish --dry-run --access public` pass, the Git commit is pushed, `npm publish --access public` succeeds, and `npm view @boarderless/mcp-server version` returns that exact version. Documentation-only commits that do not change the MCP package version do not require an npm publication.
+
 ---
 
 ## License
