@@ -1,12 +1,13 @@
 # Changelog
 
-## v0.1.26 — 2026-07-03 — DEPLOY: Restrict npm boundary & publish VS Code Extension
+## v0.1.26 — 2026-07-03 — DEPLOY: Restrict npm, publish VS Code Extension & Add Smithery
 
-**Date:** 2026-07-03 16:55:00
+**Date:** 2026-07-03 17:35:00
 
 - Scaffolded the dedicated `boarderless-vscode` extension project workspace, integrating programmatic MCP server registration.
 - Successfully published `boarderless.boarderless-vscode` v0.1.26 to the official VS Code Extension Marketplace.
 - Added detailed token renewal (July 2, 2027 expiration) and update synchronization runbooks to `docs/connector_operator_runbook.md`.
+- Added `smithery.yaml` to the repository root to enable automated registry publication and simple CLI installation.
 
 - Reduced the npm package preview from 106 files / 3.88 MB unpacked to 12 intentional files / approximately 131 KB unpacked.
 - Excluded all canonical `.bdrl.json` boards, Tauri desktop sources and icons, UI assets, workflows, test/debug scripts, and unrelated development utilities from publication.

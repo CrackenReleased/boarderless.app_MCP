@@ -1,5 +1,11 @@
 # What and How Log
 
+## 2026-07-03 17:35:00 — deploy: Add Smithery configuration file (v0.1.26)
+
+- **What:** Created the configuration file `smithery.yaml` in the root of the MCP server repository.
+- **Why:** To enable automated registration, schema verification, and one-command CLI installation via Smithery.ai.
+- **Verification:** Verified syntax and structure against Smithery schema requirements.
+
 ## 2026-07-03 16:55:00 — docs: Add VS Code Marketplace Extension Scaffolding and Publishing Runbook (v0.1.26)
 
 - **What:** Scaffolded the new `boarderless-vscode` extension project workspace, integrated programmatic MCP server registration via `vscode.lm.registerMcpServerDefinitionProvider`, created custom configurations, copied server scripts and tight square "B" logo assets into the project tree, verified compilation and tests, built `boarderless-vscode-0.1.26.vsix`, and successfully published it to the marketplace. Documented the token renewal and release instructions in the operator runbook.

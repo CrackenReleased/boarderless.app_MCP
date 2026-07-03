@@ -1,0 +1,35 @@
+startCommand:
+  type: stdio
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: ['src/mcp-stdio-server.js'],
+      env: {
+        BOARDERLESS_WORKSPACE_DIR: config.workspaceDir,
+        BOARDERLESS_MCP_BROWSER_URL: config.browserUrl || 'http://127.0.0.1:9222',
+        BOARDERLESS_MCP_APP_URL: config.appUrl || 'https://boarderless.app/canvas'
+      }
+    })
+configSchema:
+  type: object
+  required:
+    - workspaceDir
+  properties:
+    workspaceDir:
+      type: string
+      title: "Workspace Directory"
+      description: "Absolute path on your machine where Boarderless should save and read .bdrl.json board files."
+    browserUrl:
+      type: string
+      title: "Browser Remote Debugging URL"
+      description: "The remote debugging endpoint of the Chromium-based browser (defaults to http://127.0.0.1:9222)."
+      default: "http://127.0.0.1:9222"
+    appUrl:
+      type: string
+      title: "Boarderless App Canvas URL"
+      description: "The URL of the Boarderless application tab (defaults to https://boarderless.app/canvas)."
+      default: "https://boarderless.app/canvas"
+exampleConfig:
+  workspaceDir: "/Users/joel/projects/my-boarderless-workspace"
+  browserUrl: "http://127.0.0.1:9222"
+  appUrl: "https://boarderless.app/canvas"
