@@ -15,7 +15,7 @@ This shape is ready for local developer clients:
 - VS Code with GitHub Copilot MCP support
 - Other stdio-compatible MCP hosts that can run a local Node command
 
-It is **not yet** a hosted connector for OpenAI ChatGPT Apps or Microsoft Copilot Studio. The npm package is a local `stdio` process and does not expose a remotely reachable Streamable HTTP endpoint, OAuth authorization server, or cloud-to-browser session relay. Treat those as future adapter work, not as completed distribution. Publishing this package to npm does not complete either hosted integration.
+It is **not yet** a hosted connector for OpenAI ChatGPT Apps or Microsoft Copilot Studio. The npm package is a local `stdio` process and does not expose a remotely reachable Streamable HTTP endpoint, OAuth authorization server, or cloud-to-browser session relay. Treat those as future adapter work, not as completed distribution. Publishing this package to npm does not complete either hosted integration. The docs-only architecture plan for that future work is [OAuth 2.1 Remote Adapter Plan for Boarderless MCP](oauth21_remote_adapter_plan.md), and Joel's selected Option A bridge is specified in [Browser-Mediated Remote Session Bridge Spec](remote_session_bridge_spec.md).
 
 ## Readiness principles
 
@@ -25,6 +25,7 @@ Boarderless distribution should keep the production pillars intact:
 - **Responsive**: local stdio remains the primary fast path for canvas work; remote adapters should not slow the local flow.
 - **Siloed**: the MCP server only controls the visible Boarderless browser session and the configured local workspace.
 - **Secure**: remote connector adapters must not imply Drive access, hidden cloud canvas control, broad filesystem access, or unauthenticated write APIs.
+- **User-controlled**: Boarderless will not host user data or server-side boards; future remote access must use the user-approved browser-mediated visible-session bridge.
 
 ## Local client config examples
 
@@ -82,8 +83,8 @@ Use this only after the package version you want is published and installable in
 | Hermes / OpenClaw | Documented local gateway config in `README.md` | Keep OpenClaw JSON example aligned with current env vars |
 | VS Code / GitHub Copilot | Ready as local stdio using `.vscode/mcp.json` | Test locally before adding screenshots or marketplace copy |
 | Smithery, glama.ai, MCP lists | Not submitted | Prepare listing metadata and verify package install path first |
-| OpenAI ChatGPT Apps / Apps SDK | **Outstanding:** no remote HTTPS MCP resource server, OAuth 2.1 authorization flow, or safe remote session bridge | Complete the OpenAI checklist below before connecting or submitting an app |
-| Microsoft Copilot Studio | **Outstanding:** no Streamable HTTP MCP endpoint, OAuth 2.0/DCR configuration, or safe remote session bridge | Complete the Microsoft checklist below before adding it as a Copilot tool |
+| OpenAI ChatGPT Apps / Apps SDK | **Outstanding:** no remote HTTPS MCP resource server, OAuth 2.1 authorization flow, or implemented Option A browser bridge | Complete the OpenAI checklist below before connecting or submitting an app |
+| Microsoft Copilot Studio | **Outstanding:** no Streamable HTTP MCP endpoint, OAuth 2.0/DCR configuration, or implemented Option A browser bridge | Complete the Microsoft checklist below before adding it as a Copilot tool |
 
 ## Registry submission checklist
 
@@ -120,7 +121,7 @@ OpenAI's Apps SDK authentication guidance expects authenticated MCP servers that
 4. Choose and implement a supported ChatGPT client-registration path: Client ID Metadata Documents (CIMD), Dynamic Client Registration (DCR), or a predefined OAuth client.
 5. Allowlist the production ChatGPT callback shown in app management (`https://chatgpt.com/connector/oauth/{callback_id}`), then test initial authorization and reauthorization.
 6. Preserve the OAuth `resource` value through authorization and token exchange; validate token issuer, audience/resource, expiry, and scopes on every MCP request; return a standards-compliant `WWW-Authenticate` challenge on `401`.
-7. Design the missing **remote-to-visible-canvas session bridge**. OAuth proves who the user is; it does not by itself let a cloud-hosted MCP endpoint reach the user's local browser tab or CDP port.
+7. Design and review the selected **Option A browser-mediated remote session bridge**. OAuth proves who the user is; it does not by itself let a cloud-hosted MCP endpoint reach the user's local browser tab or CDP port. Boarderless will not host user data or server-side boards as a workaround.
 8. Define remote-safe tool scopes, explicit confirmation for destructive/write actions, rate limits, audit logs, privacy/retention behavior, abuse controls, and app-submission metadata.
 9. Complete end-to-end security, authorization, tool-policy, reconnect, and revocation tests before submitting through the Apps SDK flow.
 
@@ -138,7 +139,7 @@ Copilot Studio currently accepts remote MCP servers through its onboarding wizar
    - manual client ID/client secret plus authorization and token endpoints.
 4. Add the callback URL produced by Copilot Studio to the identity-provider app registration.
 5. Define least-privilege scopes and validate access tokens, refresh behavior, expiry, revocation, issuer, audience, and tenant/user binding at the hosted MCP boundary.
-6. Design the same missing **remote-to-visible-canvas session bridge**; a Copilot token cannot directly attach to a user's localhost CDP session.
+6. Design and review the same selected **Option A browser-mediated remote session bridge**; a Copilot token cannot directly attach to a user's localhost CDP session, and Boarderless will not host server-side boards.
 7. Add rate limits, audit logs, secret rotation/monitoring, data-loss-prevention review, admin/tenant policy checks, privacy/retention rules, and explicit write-action controls.
 8. Validate tool discovery and authorization in Copilot Studio, publish the agent after auth changes, and complete any connector review before claiming availability.
 
@@ -150,10 +151,10 @@ A hosted adapter for OpenAI or Microsoft should be planned as a separate enginee
 
 - Transport: Streamable HTTP or platform-specific connector protocol rather than stdio.
 - Auth: OAuth or platform-approved auth that maps to a real Boarderless user session.
-- Session bridge: how a remote connector reaches the user's human-visible canvas without creating an uncontrolled cloud copy.
+- Session bridge: use the selected browser-mediated outbound bridge so a remote connector reaches only the user's paired human-visible canvas, without creating a cloud board copy.
 - Tool policy: which tools are safe remotely, and which remain local-only.
-- Workspace policy: whether `.bdrl.json` artifacts are downloaded, synced by the user, or stored through an approved Boarderless path.
+- Workspace policy: whether `.bdrl.json` artifacts are downloaded, synced by the user locally, or not written remotely; they must not become server-side board storage.
 - Rate limits and audit logging for remote mutation calls.
 - Review copy that clearly states what is and is not supported.
 
-Until every relevant checklist item is implemented and verified, public messaging must say: **Boarderless MCP supports local stdio clients today. The npm package is not a hosted ChatGPT App or Microsoft Copilot Studio connector; both require a future remote transport, OAuth, and secure browser-session bridge.**
+Until every relevant checklist item is implemented and verified, public messaging must say: **Boarderless MCP supports local stdio clients today. The npm package is not a hosted ChatGPT App or Microsoft Copilot Studio connector; both require a future remote transport, OAuth, and the selected secure browser-mediated session bridge. Boarderless will not host user data or server-side boards.**

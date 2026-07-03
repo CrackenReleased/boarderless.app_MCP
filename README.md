@@ -7,7 +7,7 @@
 
 A Model Context Protocol (MCP) server for **Boarderless**, allowing Ai agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
 
-Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? Ai agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work. Connector distribution and OpenAI/Microsoft readiness are tracked in [docs/connector_distribution_plan.md](docs/connector_distribution_plan.md); Joel's operator path is in [docs/connector_operator_runbook.md](docs/connector_operator_runbook.md).
+Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? Ai agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work. Connector distribution and OpenAI/Microsoft readiness are tracked in [docs/connector_distribution_plan.md](docs/connector_distribution_plan.md); the future OAuth 2.1/Streamable HTTP adapter design is in [docs/oauth21_remote_adapter_plan.md](docs/oauth21_remote_adapter_plan.md); Joel's selected Option A browser bridge is specified in [docs/remote_session_bridge_spec.md](docs/remote_session_bridge_spec.md); Joel's operator path is in [docs/connector_operator_runbook.md](docs/connector_operator_runbook.md).
 
 Rather than scraping pixels or guessing layouts from DOM selectors, agents communicate with a clean, typed spatial ledger.
 
@@ -437,13 +437,15 @@ VS Code / GitHub Copilot can use Boarderless as a local stdio MCP server through
 
 ### Hosted OpenAI and Microsoft status
 
+Joel selected **Option A: browser-mediated visible-session bridge** for future remote readiness. Boarderless will not host user data or server-side boards; user data stays user-managed, user-owned, and user-controlled. See [docs/remote_session_bridge_spec.md](docs/remote_session_bridge_spec.md).
+
 `@boarderless/mcp-server` v0.1.26 is **not** a hosted ChatGPT App or Microsoft Copilot Studio connector. npm distributes the local `stdio` connector only.
 
 - **OpenAI outstanding:** public HTTPS MCP resource server, OAuth 2.1 authorization-code flow with PKCE, protected-resource and authorization-server discovery metadata, ChatGPT client registration/callback, scoped token validation, and a secure relay from the hosted service to the user's visible Boarderless browser session.
 - **Microsoft outstanding:** public Streamable HTTP MCP endpoint, OAuth 2.0 through DCR/discovery or manual client registration, Copilot callback registration, scoped token validation/refresh/revocation, and the same secure remote-to-visible-canvas relay.
 - **Shared outstanding:** remote-safe tool policy, explicit controls for writes, rate limits, audit logging, privacy/retention rules, secret management, security review, end-to-end tests, and platform submission/review.
 
-OAuth identifies and authorizes a user; it does not make a cloud service capable of reaching that user's localhost browser or Chrome DevTools port. That session bridge is a separate unresolved architectural requirement. See [the complete hosted-connector checklists](docs/connector_distribution_plan.md#outstanding-hosted-openai-work--not-included-in-v0126) and [the operator gates](docs/connector_operator_runbook.md#phase-c-hosted-openai-and-microsoft-adapters-later).
+OAuth identifies and authorizes a user; it does not make a cloud service capable of reaching that user's localhost browser or Chrome DevTools port. The selected path is a user-approved outbound browser bridge bound to the visible tab/canvas, not a hidden cloud board. See [the complete hosted-connector checklists](docs/connector_distribution_plan.md#outstanding-hosted-openai-work--not-included-in-v0126), [the docs-only remote adapter plan](docs/oauth21_remote_adapter_plan.md), [the browser bridge spec](docs/remote_session_bridge_spec.md), and [the operator gates](docs/connector_operator_runbook.md#phase-c-hosted-openai-and-microsoft-adapters-later).
 
 ---
 

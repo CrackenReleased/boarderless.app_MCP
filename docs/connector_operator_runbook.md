@@ -8,6 +8,7 @@ This is the operator path for getting Boarderless MCP into connector ecosystems 
 - After Joel approves the first public npm release, publishing the matching npm version is a required delivery step for every subsequent production MCP version pushed to GitHub. Do not declare the release complete while GitHub and npm versions differ.
 - Treat Boarderless MCP today as a local stdio server that controls a human-visible authenticated Boarderless canvas tab.
 - Keep OpenAI ChatGPT connectors and Microsoft Copilot Studio in the future-hosted-adapter bucket until an HTTPS/auth adapter exists and has been reviewed.
+- Record Joel's hard decision: Boarderless will not host user data or server-side boards. Future remote readiness uses Option A, the browser-mediated visible-session bridge in [remote_session_bridge_spec.md](remote_session_bridge_spec.md).
 - Prefer evidence over copy. If a claim is not backed by a local command, a submitted listing, or a reviewed adapter design, do not say it is done.
 
 ## Phase A: local stdio distribution now
@@ -97,7 +98,7 @@ This is not the current MCP server. It likely needs:
 
 - HTTPS transport or a platform-specific connector protocol.
 - OAuth or platform-approved auth mapped to a real Boarderless user.
-- A session model for reaching the user's visible canvas without creating a hidden cloud board.
+- The selected browser-mediated outbound session bridge for reaching the user's visible canvas without creating a hidden cloud board.
 - Tool policy for which actions are safe remotely.
 - Workspace and `.bdrl.json` artifact policy.
 - Rate limits, logging, abuse controls, and security review.
@@ -111,23 +112,25 @@ Do not claim ChatGPT App/connector readiness until the production system has: a 
 
 Do not claim Copilot Studio readiness until the production system has: a public Streamable HTTP MCP endpoint; OAuth 2.0 using DCR/discovery, DCR with explicit endpoints, or manual client registration; the Copilot-provided callback registered at the identity provider; scoped access/refresh/revocation validation; secure remote-to-visible-canvas session routing; tenant/admin, DLP, secret-rotation, and audit controls; and completed Copilot connection/publish testing.
 
-For both platforms, OAuth is necessary authorization infrastructure but does not solve the remote session bridge. The local npm package connects to a browser on the same computer through CDP; a hosted service needs a separately reviewed, user-controlled way to reach the correct visible canvas without exposing localhost, browser debugging, or arbitrary workspace access.
+For both platforms, OAuth is necessary authorization infrastructure but does not solve the remote session bridge. The local npm package connects to a browser on the same computer through CDP; a hosted service needs the selected browser-mediated, user-controlled way to reach the correct visible canvas without exposing localhost, browser debugging, arbitrary workspace access, or a server-side board.
 
 What agents can do without Joel:
 
-1. Draft an adapter design doc with risks and trade-offs.
-2. Compare OpenAI and Microsoft connector requirements from public docs.
-3. Identify which current tools are safe candidates for remote use.
-4. Create a cost and maintenance estimate before any infrastructure is started.
+1. Draft and maintain the docs-only OAuth 2.1/Streamable HTTP adapter design in [oauth21_remote_adapter_plan.md](oauth21_remote_adapter_plan.md), including risks and trade-offs.
+2. Maintain the selected Option A browser bridge spec in [remote_session_bridge_spec.md](remote_session_bridge_spec.md): pairing UX, tab/canvas binding, expiry, revocation, read-only-first rollout, write confirmations, audit metadata without board contents, failure modes, security gates, and tests.
+3. Compare OpenAI and Microsoft connector requirements from public docs.
+4. Identify which current tools are safe candidates for remote use.
+5. Create a cost and maintenance estimate before any infrastructure is started.
 
 What Joel must decide or provide:
 
 - Whether hosted connector support is a product priority.
 - Budget for hosting, auth, review, monitoring, and maintenance.
+- Final implementation details for the selected browser-mediated bridge.
 - Security posture for remote mutation of a user's canvas.
 - Product wording for what remote agents may and may not do.
 
-Phase C done means: a reviewed hosted adapter is live, authenticated, tested, and accepted by the relevant platform. Until then, say this is planned adapter work.
+Phase C done means: a reviewed hosted adapter is live, authenticated, tested, and accepted by the relevant platform. Until then, say this is planned adapter work. The current architecture plan is docs-only and does not change support for the local stdio connector.
 
 ## Claims we must not make yet
 
