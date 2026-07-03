@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+*.log
+
+# Build artifacts — generated locally, platform-specific
+setup.exe
+setup.lnk
+Boarderless MCP.exe
+Boarderless MCP.dmg
+
+# Remote adapter build artifacts
+remote-adapter/dist/
