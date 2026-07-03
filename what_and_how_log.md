@@ -1,5 +1,11 @@
 # What and How Log
 
+## 2026-07-03 13:31:30 — docs: Commit and push Option A session bridge and OAuth plans to GitHub (v0.1.26)
+
+- **What:** Staged, committed, and pushed the local-only documentation files and updates (`docs/remote_session_bridge_spec.md`, `docs/oauth21_remote_adapter_plan.md`, `README.md`, `docs/connector_distribution_plan.md`, and `docs/connector_operator_runbook.md`) detailing the browser-mediated remote session bridge and OAuth 2.1 adapter designs.
+- **Why:** The GitHub README was out of sync with these local design plans. Since this is a documentation-only update and does not change any codebase functionality, no package version bump or npm release was made.
+- **Verification:** Verified push successfully reached the remote origin main branch of the `boarderless.app_MCP` repository.
+
 ## 2026-07-02 22:50:00 — fix: Restore deterministic GitHub Actions release builds (v0.1.26)
 
 - **Decision point:** The release workflow explicitly enabled npm caching and ran `npm ci`, but `.gitignore` excluded the root `package-lock.json`. Every clean runner therefore failed during setup before tests or Tauri compilation.
