@@ -33,7 +33,7 @@
     "url": "https://github.com/CrackenReleased/boarderless.app_MCP/issues"
   },
   "scripts": {
-    "start": "node src/mcp-stdio-server.js",
+    "start": "node src/start-server.js",
     "example": "node src/index.js",
     "setup": "node src/setup.js",
     "tauri": "tauri",
