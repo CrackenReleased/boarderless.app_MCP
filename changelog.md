@@ -7,7 +7,7 @@
 - Scaffolded the dedicated `boarderless-vscode` extension project workspace, integrating programmatic MCP server registration.
 - Successfully published `boarderless.boarderless-vscode` v0.1.26 to the official VS Code Extension Marketplace.
 - Added detailed token renewal (July 2, 2027 expiration) and update synchronization runbooks to `docs/connector_operator_runbook.md`.
-- Scaffolded `remote-adapter` server subproject implementing SSE transport and WebSocket bridge to forward hosted MCP tool calls.
+- Scaffolded `remote-adapter` server subproject implementing SSE transport and WebSocket bridge to forward hosted MCP tool calls, and created Dockerfile/fly.toml configurations.
 
 - Reduced the npm package preview from 106 files / 3.88 MB unpacked to 12 intentional files / approximately 131 KB unpacked.
 - Excluded all canonical `.bdrl.json` boards, Tauri desktop sources and icons, UI assets, workflows, test/debug scripts, and unrelated development utilities from publication.

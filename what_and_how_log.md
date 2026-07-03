@@ -1,10 +1,10 @@
 # What and How Log
 
-## 2026-07-03 17:48:00 — feat: Implement remote adapter and browser-mediated WebSocket session bridge (v0.1.26)
+## 2026-07-03 17:48:00 — feat: Implement remote adapter, browser-mediated session bridge & Fly.io configs (v0.1.26)
 
-- **What:** Scaffolded the new `remote-adapter` server subproject, implemented a Node.js Express server with Server-Sent Events (SSE) MCP transport and WebSocket session bridge support, dynamically loaded tool schemas from `functions.json`, and added a verification testing framework.
+- **What:** Scaffolded the new `remote-adapter` server subproject, implemented a Node.js Express server with Server-Sent Events (SSE) MCP transport and WebSocket session bridge support, dynamically loaded tool schemas from `functions.json`, and added a verification testing framework. Created the Dockerfile and fly.toml deployment configurations for subfolder hosting.
 - **Why:** To fulfill the Option A architecture for hosted integrations (like OpenAI ChatGPT and Microsoft Copilot Studio) by routing remote MCP requests directly to a user's paired, visible local browser tab.
-- **Verification:** Verified successful bundle compilation using esbuild and executed `verify-adapter.js` asserting correct SSE and WebSocket connection states.
+- **Verification:** Verified successful bundle compilation using esbuild, executed `verify-adapter.js` successfully, and validated Docker configuration boundaries.
 
 ## 2026-07-03 16:55:00 — docs: Add VS Code Marketplace Extension Scaffolding and Publishing Runbook (v0.1.26)
 
