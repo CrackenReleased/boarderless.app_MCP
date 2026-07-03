@@ -186,3 +186,36 @@ Handoff should include:
 - Commands run and whether they passed.
 - Any commands intentionally not run and why.
 - Any Joel decision gates reached.
+
+## VS Code Marketplace Extension Maintenance & Token Renewal
+
+> [!WARNING]
+> **DevOps PAT Token Expiration**: The Azure DevOps Personal Access Token (`boarderless-token` used for VS Code Marketplace publishing) will expire on **July 2, 2027**. You must regenerate this token on or before this date to prevent automated publishes and CLI `vsce publish` commands from failing.
+
+### How to Regenerate/Renew the Publish Token
+1. Go directly to **Azure DevOps**: `https://dev.azure.com/boarderless`.
+2. Click the **User Settings** gear icon in the top-right profile header, then select **Personal Access Tokens**.
+3. Locate the existing `boarderless-token` and click **Regenerate** (or select **New Token** if creating a fresh one).
+4. **Mandatory Configuration Settings**:
+   - **Organization**: Set to **`All accessible organizations`** (leaving this on `boarderless` will cause authentication to fail in the `vsce` CLI).
+   - **Expiration**: Set to the maximum allowed (1 year, e.g., July 2, 2028).
+   - **Scopes**: Select **`Custom defined`**, scroll to the bottom, check the box for **`Marketplace > Publish`**.
+5. Click **Create / Regenerate** and immediately copy the token. Store it securely (or update the repository secret `VSCE_PAT` on GitHub if using CI/CD automation).
+
+### How to Sync and Publish Updates
+Because the VS Code extension codebase (`E:\boarderless-vscode`) copies server files directly to remain self-contained:
+1. Make your edits in the main MCP repository (`E:\boarderless.app_MCP`).
+2. Go to the extension folder `E:\boarderless-vscode` and run the sync script to pull the updated server code:
+   ```bash
+   node scripts/copy-server.mjs
+   ```
+3. Update the version key in `E:\boarderless-vscode\package.json` to match the exact version of the MCP server.
+4. Run validation tests:
+   ```bash
+   npm test
+   ```
+5. Publish the update using your token:
+   ```powershell
+   npx.cmd @vscode/vsce publish -p <YOUR_PAT>
+   ```
+

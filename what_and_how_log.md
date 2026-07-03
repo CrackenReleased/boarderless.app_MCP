@@ -1,5 +1,11 @@
 # What and How Log
 
+## 2026-07-03 16:55:00 — docs: Add VS Code Marketplace Extension Scaffolding and Publishing Runbook (v0.1.26)
+
+- **What:** Scaffolded the new `boarderless-vscode` extension project workspace, integrated programmatic MCP server registration via `vscode.lm.registerMcpServerDefinitionProvider`, created custom configurations, copied server scripts and tight square "B" logo assets into the project tree, verified compilation and tests, built `boarderless-vscode-0.1.26.vsix`, and successfully published it to the marketplace. Documented the token renewal and release instructions in the operator runbook.
+- **Why:** To enable zero-configuration, native MCP tool support in VS Code and Copilot Chat. Setting the PAT token expiration to 1 year requires a clear renewal guide to ensure future updates run smoothly.
+- **Verification:** Verified compilation using esbuild, ran mock regression tests under `npm test` successfully, and confirmed publishing upload to the Microsoft marketplace under `boarderless` publisher ID.
+
 ## 2026-07-03 13:31:30 — docs: Commit and push Option A session bridge and OAuth plans to GitHub (v0.1.26)
 
 - **What:** Staged, committed, and pushed the local-only documentation files and updates (`docs/remote_session_bridge_spec.md`, `docs/oauth21_remote_adapter_plan.md`, `README.md`, `docs/connector_distribution_plan.md`, and `docs/connector_operator_runbook.md`) detailing the browser-mediated remote session bridge and OAuth 2.1 adapter designs.
