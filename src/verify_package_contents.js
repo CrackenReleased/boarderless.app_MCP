@@ -20,6 +20,15 @@ for (const [path, requiredPolicy] of [
   assert.match(readProjectFile(path), requiredPolicy, `${path} must preserve the GitHub/npm release synchronization policy`);
 }
 
+for (const [path, requiredHostedBoundary] of [
+  ['README.md', /OAuth identifies and authorizes a user; it does not make a cloud service capable of reaching that user's localhost browser/i],
+  ['docs/connector_operator_runbook.md', /OAuth is necessary authorization infrastructure but does not solve the remote session bridge/i],
+  ['docs/connector_distribution_plan.md', /Outstanding hosted OpenAI work[\s\S]*OAuth 2\.1[\s\S]*Outstanding Microsoft work[\s\S]*Streamable HTTP/i],
+  ['docs/features_catalog.md', /published npm MCP is a local `stdio` connector/i],
+]) {
+  assert.match(readProjectFile(path), requiredHostedBoundary, `${path} must preserve the hosted OpenAI/Microsoft OAuth and session-bridge boundary`);
+}
+
 const output = execFileSync(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', 'npm pack --dry-run --json'], {
   cwd: packageRoot,
   encoding: 'utf8',

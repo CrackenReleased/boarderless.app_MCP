@@ -1,5 +1,14 @@
 # What and How Log
 
+## 2026-07-02 19:55:00 — docs: Pin hosted OpenAI and Microsoft OAuth boundaries before first npm publication (v0.1.26)
+
+- **Decision point:** The local npm package remains provider-neutral `stdio`; hosted ChatGPT Apps and Copilot Studio are separate future adapters and are not implied by npm publication.
+- **OpenAI boundary:** Documented the missing HTTPS MCP resource server, OAuth 2.1 authorization-code/PKCE flow, protected-resource and authorization-server discovery, client registration, ChatGPT callback, scoped resource/audience validation, and submission/security validation.
+- **Microsoft boundary:** Documented the missing Streamable HTTP endpoint, OAuth 2.0 DCR/discovery or manual registration, Copilot callback, token lifecycle/tenant controls, and Copilot publish validation.
+- **Shared architectural boundary:** OAuth authenticates a user but cannot reach that user's localhost browser/CDP session. Both hosted paths need a separately reviewed, user-controlled remote-to-visible-canvas bridge, tool policy, rate limits, audit logs, and privacy controls.
+- **Regression coverage:** `src/verify_package_contents.js` now requires these boundaries in every public documentation surface included in the npm tarball.
+- **Sources:** OpenAI Apps SDK authentication guidance and Microsoft Copilot Studio MCP onboarding/creation guidance, reviewed 2026-07-02.
+
 ## 2026-07-02 17:55:00 — security: Define a least-publication npm boundary (v0.1.26)
 
 - **Decision point:** npm now receives an explicit allowlist instead of inheriting almost the entire Git working tree through `.gitignore` fallback behavior.

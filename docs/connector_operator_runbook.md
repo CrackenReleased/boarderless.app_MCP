@@ -89,7 +89,7 @@ What Joel must decide or provide:
 
 Phase B done means: an approved listing or package is actually submitted/published and the URL is recorded. Draft copy or unchecked forms do not count.
 
-## Phase C: hosted OpenAI/Microsoft adapter later
+## Phase C: hosted OpenAI and Microsoft adapters later
 
 Goal: design and build a remote connector adapter only if Joel decides Boarderless should support hosted connector ecosystems.
 
@@ -102,6 +102,16 @@ This is not the current MCP server. It likely needs:
 - Workspace and `.bdrl.json` artifact policy.
 - Rate limits, logging, abuse controls, and security review.
 - Platform-specific review copy for OpenAI and Microsoft.
+
+### OpenAI completion gate
+
+Do not claim ChatGPT App/connector readiness until the production system has: a public HTTPS MCP resource server; OAuth 2.1 authorization-code + PKCE; protected-resource and authorization-server discovery metadata; CIMD, DCR, or predefined client registration; the registered ChatGPT callback; resource/audience/scope validation; `401` bearer challenges; secure remote-to-visible-canvas session routing; remote tool policy; and completed security/submission testing.
+
+### Microsoft completion gate
+
+Do not claim Copilot Studio readiness until the production system has: a public Streamable HTTP MCP endpoint; OAuth 2.0 using DCR/discovery, DCR with explicit endpoints, or manual client registration; the Copilot-provided callback registered at the identity provider; scoped access/refresh/revocation validation; secure remote-to-visible-canvas session routing; tenant/admin, DLP, secret-rotation, and audit controls; and completed Copilot connection/publish testing.
+
+For both platforms, OAuth is necessary authorization infrastructure but does not solve the remote session bridge. The local npm package connects to a browser on the same computer through CDP; a hosted service needs a separately reviewed, user-controlled way to reach the correct visible canvas without exposing localhost, browser debugging, or arbitrary workspace access.
 
 What agents can do without Joel:
 
@@ -126,6 +136,8 @@ Do not claim any of the following until there is direct evidence:
 - "Boarderless is available in ChatGPT connectors."
 - "Boarderless is available in Microsoft Copilot Studio."
 - "The OpenAI/Microsoft connector is ready."
+- "Installing the npm package enables ChatGPT Apps or Copilot Studio."
+- "OAuth alone connects a hosted agent to the user's local Boarderless canvas."
 - "MCP can access Google Drive for the user."
 - "MCP can control a hidden cloud canvas without the user's browser session."
 - "Registry submission is complete" unless the public URL exists.
@@ -133,7 +145,7 @@ Do not claim any of the following until there is direct evidence:
 
 Safe current wording:
 
-> Boarderless MCP supports local stdio clients today. OpenAI ChatGPT connectors and Microsoft Copilot Studio require future hosted HTTPS/auth adapter work before we can claim support.
+> Boarderless MCP supports local stdio clients today. The npm package is not a hosted ChatGPT App or Microsoft Copilot Studio connector. Both require a future remote transport, OAuth implementation, and secure browser-session bridge before we can claim support.
 
 ## Joel action gates
 

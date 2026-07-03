@@ -169,6 +169,9 @@ Successful MCP create, mutate, Style Remix, delete, group, ungroup, reorder, und
 - The human chooses local files for upload; MCP does not expose arbitrary file upload into image nodes.
 - The human grants browser permissions.
 - Ai Partner background removal is an in-app image action, not an MCP filesystem operation.
+- The published npm MCP is a local `stdio` connector. It is not a hosted ChatGPT App or Microsoft Copilot Studio connector.
+- OpenAI hosted readiness still requires HTTPS MCP transport, OAuth 2.1 discovery/PKCE/client registration and scoped-token validation; Microsoft hosted readiness still requires Streamable HTTP plus OAuth 2.0/DCR or manual client registration.
+- Both hosted paths additionally require a secure, user-controlled bridge from the remote service to the correct human-visible Boarderless canvas. OAuth authenticates the user but does not provide access to localhost CDP.
 - MCP can create supported text/shapes, but its current `create_object` schema does not create image nodes.
 
 ### Repository-specific helper tools
