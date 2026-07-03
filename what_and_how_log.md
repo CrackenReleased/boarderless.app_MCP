@@ -1,10 +1,10 @@
 # What and How Log
 
-## 2026-07-03 17:35:00 — deploy: Add Smithery configuration file (v0.1.26)
+## 2026-07-03 17:48:00 — feat: Implement remote adapter and browser-mediated WebSocket session bridge (v0.1.26)
 
-- **What:** Created the configuration file `smithery.yaml` in the root of the MCP server repository.
-- **Why:** To enable automated registration, schema verification, and one-command CLI installation via Smithery.ai.
-- **Verification:** Verified syntax and structure against Smithery schema requirements.
+- **What:** Scaffolded the new `remote-adapter` server subproject, implemented a Node.js Express server with Server-Sent Events (SSE) MCP transport and WebSocket session bridge support, dynamically loaded tool schemas from `functions.json`, and added a verification testing framework.
+- **Why:** To fulfill the Option A architecture for hosted integrations (like OpenAI ChatGPT and Microsoft Copilot Studio) by routing remote MCP requests directly to a user's paired, visible local browser tab.
+- **Verification:** Verified successful bundle compilation using esbuild and executed `verify-adapter.js` asserting correct SSE and WebSocket connection states.
 
 ## 2026-07-03 16:55:00 — docs: Add VS Code Marketplace Extension Scaffolding and Publishing Runbook (v0.1.26)
 

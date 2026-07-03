@@ -1,0 +1,26 @@
+{
+  "name": "@boarderless/mcp-remote-adapter",
+  "version": "0.1.26",
+  "description": "Model Context Protocol (MCP) remote HTTP/SSE adapter and browser-mediated session bridge for Boarderless.",
+  "type": "module",
+  "main": "dist/server.cjs",
+  "scripts": {
+    "build": "esbuild src/server.ts --bundle --outfile=dist/server.cjs --platform=node --format=cjs",
+    "start": "node dist/server.cjs",
+    "dev": "node --loader ts-node/esm src/server.ts",
+    "test": "node src/verify-adapter.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "express": "^4.21.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.17.6",
+    "@types/ws": "^8.5.13",
+    "esbuild": "^0.24.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

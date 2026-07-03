@@ -7,3 +7,6 @@ setup.exe
 setup.lnk
 Boarderless MCP.exe
 Boarderless MCP.dmg
+
+# Remote adapter build artifacts
+remote-adapter/dist/
