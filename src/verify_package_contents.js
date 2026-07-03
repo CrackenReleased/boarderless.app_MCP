@@ -25,6 +25,7 @@ assert.match(workflow, /actions\/setup-node@v6/, 'Release CI must use the curren
 assert.match(workflow, /node-version:\s*24/, 'Release CI must test the supported Node 24 runtime');
 assert.match(workflow, /cache:\s*['"]npm['"]/i, 'Release CI npm cache configuration must remain explicit');
 assert.match(workflow, /run:\s*npm ci/, 'Release CI must perform deterministic lockfile installation');
+assert.match(workflow, /permissions:\s*\r?\n\s+contents:\s*write/, 'Tauri draft-release creation requires least-privilege contents: write permission');
 assert.doesNotThrow(
   () => readProjectFile('package-lock.json'),
   'Release CI requires package-lock.json at the repository root',

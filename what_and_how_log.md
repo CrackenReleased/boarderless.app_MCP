@@ -8,6 +8,7 @@
 - **Regression coverage:** `src/verify_package_contents.js` now fails if the lockfile is ignored/missing, if `npm ci` or explicit npm caching drift away from the lockfile contract, or if the workflow returns to the deprecated action/runtime versions.
 - **Sibling scan:** Reviewed every GitHub workflow and every `npm ci`/setup-node cache site in the repository; `release.yml` is the only workflow and the only affected installation path.
 - **Release boundary:** This CI-only repair does not alter the already-published 12-file npm tarball for v0.1.26; the package version remains v0.1.26.
+- **Hosted-run follow-up:** Run #14 completed checkout, cache setup, `npm ci`, Rust setup, and the full Tauri compilation, then failed only when creating the draft release with `Resource not accessible by integration`. Added the minimum `contents: write` workflow permission and pinned it in regression coverage.
 
 ## 2026-07-02 19:55:00 — docs: Pin hosted OpenAI and Microsoft OAuth boundaries before first npm publication (v0.1.26)
 
