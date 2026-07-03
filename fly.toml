@@ -16,6 +16,9 @@ primary_region = 'iad'
   min_machines_running = 0
   processes = ['app']
 
+[processes]
+  app = "node /app/remote-adapter/dist/server.cjs"
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'
