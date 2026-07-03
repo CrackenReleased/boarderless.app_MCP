@@ -11,6 +11,7 @@
 - Aligned public status examples and the runtime server version to v0.1.26.
 - Established npm as a mandatory synchronized delivery target for every future versioned production MCP release after the first publication is approved; documentation-only commits are exempt.
 - Added explicit OpenAI and Microsoft hosted-connector gap checklists: remote transport, OAuth discovery/client registration/callbacks, scoped token validation, and the separate secure remote-to-visible-canvas session bridge are not part of the local npm package.
+- Restored deterministic GitHub Actions builds by tracking `package-lock.json`, upgrading checkout/setup-node to their Node 24 action runtimes, and pinning the workflow/lockfile contract with regression assertions.
 
 ## v0.1.23 — 2026-07-02 — DOCS: Align the complete app and MCP capability maps
 

@@ -6,6 +6,29 @@ import { fileURLToPath } from 'node:url';
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const readProjectFile = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const workflow = readProjectFile('.github/workflows/release.yml');
+const gitignore = readProjectFile('.gitignore');
+const packageVersion = manifest.version;
+const runtimeVersion = readProjectFile('src/mcp-stdio-server.js').match(/const SERVER_VERSION = "([^"]+)"/)?.[1];
+const tauriVersion = JSON.parse(readProjectFile('src-tauri/tauri.conf.json')).version;
+const cargoVersion = readProjectFile('src-tauri/Cargo.toml').match(/^version = "([^"]+)"/m)?.[1];
+const uiVersion = readProjectFile('ui/index.html').match(/Boarderless v([0-9.]+)/)?.[1];
+
+assert.equal(runtimeVersion, packageVersion, 'Runtime server version must match package.json');
+assert.equal(tauriVersion, packageVersion, 'Tauri application version must match package.json');
+assert.equal(cargoVersion, packageVersion, 'Cargo package version must match package.json');
+assert.equal(uiVersion, packageVersion, 'Desktop UI version must match package.json');
+
+assert.doesNotMatch(gitignore, /^package-lock\.json\s*$/m, 'CI uses npm ci/cache, so package-lock.json must not be ignored');
+assert.match(workflow, /actions\/checkout@v7/, 'Release CI must use the current Node 24 checkout action runtime');
+assert.match(workflow, /actions\/setup-node@v6/, 'Release CI must use the current Node 24 setup-node action runtime');
+assert.match(workflow, /node-version:\s*24/, 'Release CI must test the supported Node 24 runtime');
+assert.match(workflow, /cache:\s*['"]npm['"]/i, 'Release CI npm cache configuration must remain explicit');
+assert.match(workflow, /run:\s*npm ci/, 'Release CI must perform deterministic lockfile installation');
+assert.doesNotThrow(
+  () => readProjectFile('package-lock.json'),
+  'Release CI requires package-lock.json at the repository root',
+);
 assert.equal(
   manifest.bin?.['boarderless-mcp-server'],
   'src/mcp-stdio-server.js',

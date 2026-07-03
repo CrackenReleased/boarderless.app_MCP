@@ -1,5 +1,14 @@
 # What and How Log
 
+## 2026-07-02 22:50:00 — fix: Restore deterministic GitHub Actions release builds (v0.1.26)
+
+- **Decision point:** The release workflow explicitly enabled npm caching and ran `npm ci`, but `.gitignore` excluded the root `package-lock.json`. Every clean runner therefore failed during setup before tests or Tauri compilation.
+- **Fix:** Track the existing lockfile, retain deterministic `npm ci`, and move `actions/checkout` and `actions/setup-node` to their current Node 24 runtime majors with Node 24 as the build runtime.
+- **Hidden release mismatch caught by the look-back build:** Once dependency setup passed, Tauri revealed that desktop config, Cargo, and UI were still v0.1.23. Aligned all of them to the already-current v0.1.26 so `v__VERSION__` creates the correct release instead of targeting an old tag.
+- **Regression coverage:** `src/verify_package_contents.js` now fails if the lockfile is ignored/missing, if `npm ci` or explicit npm caching drift away from the lockfile contract, or if the workflow returns to the deprecated action/runtime versions.
+- **Sibling scan:** Reviewed every GitHub workflow and every `npm ci`/setup-node cache site in the repository; `release.yml` is the only workflow and the only affected installation path.
+- **Release boundary:** This CI-only repair does not alter the already-published 12-file npm tarball for v0.1.26; the package version remains v0.1.26.
+
 ## 2026-07-02 19:55:00 — docs: Pin hosted OpenAI and Microsoft OAuth boundaries before first npm publication (v0.1.26)
 
 - **Decision point:** The local npm package remains provider-neutral `stdio`; hosted ChatGPT Apps and Copilot Studio are separate future adapters and are not implied by npm publication.
