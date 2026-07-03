@@ -240,7 +240,7 @@ wss.on("connection", (ws, request) => {
 });
 
 // Start listening
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 httpServer.listen(PORT, () => {
   console.log(`Remote adapter server listening on port ${PORT}`);
   console.log(`SSE endpoint: http://localhost:${PORT}/sse`);

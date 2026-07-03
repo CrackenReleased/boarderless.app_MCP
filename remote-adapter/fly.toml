@@ -2,7 +2,7 @@ app = "boarderless-mcp"
 primary_region = "iad"
 
 [http_service]
-  internal_port = 4000
+  internal_port = 8080
   force_https = true
   auto_stop_machines = "suspend"
   auto_start_machines = true
