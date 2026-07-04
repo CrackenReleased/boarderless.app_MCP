@@ -10,3 +10,11 @@ Boarderless MCP.dmg
 
 # Remote adapter build artifacts
 remote-adapter/dist/
+
+# Non-MCP artifacts: sales/showcase boards live in E:\Boarderless_Media
+*.bdrl.json
+# Internal build log stays local-only
+what_and_how_log.md
+# Local build artifacts
+*.exe
+dist/
