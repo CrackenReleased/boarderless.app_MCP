@@ -79,18 +79,20 @@ try {
   console.error("Error reading functions.json, fallback to empty tools:", error);
 }
 
-// Instantiate the MCP Server
-const mcpServer = new Server(
-  {
-    name: "boarderless-remote-adapter",
-    version: "0.1.27",
-  },
-  {
-    capabilities: {
-      tools: {},
+// Build a fresh MCP Server per SSE connection. The SDK requires one Protocol
+// instance per transport ("Already connected to a transport" otherwise).
+function buildMcpServer(): Server {
+  const mcpServer = new Server(
+    {
+      name: "boarderless-remote-adapter",
+      version: "0.1.27",
     },
-  }
-);
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
 // Register MCP Tool Listing Handler
 mcpServer.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsResult> => {
@@ -150,39 +152,48 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request): Promise<Call
   });
 });
 
-// SSE Transport Instance Registry (key: sessionID -> SSEServerTransport)
+  return mcpServer;
+}
+
+// SSE Transport Instance Registry (key: SDK transport.sessionId -> SSEServerTransport)
 const activeTransports = new Map<string, SSEServerTransport>();
 
-// SSE Endpoint for OpenAI / Microsoft Client Connection
-app.get("/sse", (req, res) => {
+// SSE Endpoint for MCP Client Connection
+app.get("/sse", async (req, res) => {
   console.log("New SSE connection requested.");
-  const sessionId = Math.random().toString(36).substring(2, 15);
-  
-  // SSE transport expects endpoints configured to handle message postbacks
-  const transport = new SSEServerTransport(`/messages?sessionId=${sessionId}`, res);
-  activeTransports.set(sessionId, transport);
 
-  mcpServer.connect(transport).catch((err) => {
-    console.error("Error connecting MCP server to transport:", err);
-  });
+  // The SDK generates the canonical UUID sessionId and advertises it in the
+  // endpoint event; key the registry on that, not a home-grown id.
+  const transport = new SSEServerTransport("/messages", res);
+  activeTransports.set(transport.sessionId, transport);
 
   req.on("close", () => {
-    console.log(`SSE connection closed for session: ${sessionId}`);
-    activeTransports.delete(sessionId);
+    console.log(`SSE connection closed for session: ${transport.sessionId}`);
+    activeTransports.delete(transport.sessionId);
   });
+
+  try {
+    // connect() starts the transport and sends the endpoint event.
+    await buildMcpServer().connect(transport);
+    console.log(`SSE session established: ${transport.sessionId}`);
+  } catch (err) {
+    console.error("Error connecting MCP server to transport:", err);
+    activeTransports.delete(transport.sessionId);
+  }
 });
 
 // Messages Endpoint for MCP Client Payload Postbacks
 app.post("/messages", async (req, res) => {
   const sessionId = req.query.sessionId as string;
   const transport = activeTransports.get(sessionId);
-  
+
   if (!transport) {
     res.status(400).send("Invalid or expired session ID.");
     return;
   }
 
-  await transport.handleMessage(req, res);
+  // express.json() has already parsed the body; hand it to the SDK explicitly.
+  await transport.handlePostMessage(req, res, req.body);
 });
 
 // HTTP Health Check Endpoint
