@@ -18,3 +18,7 @@ what_and_how_log.md
 # Local build artifacts
 *.exe
 dist/
+
+# Local attestation harness (not shipped)
+src/verify_all_tools_e2e.js
+docs/e2e_attestation_latest.json

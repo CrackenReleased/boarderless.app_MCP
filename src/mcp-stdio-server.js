@@ -24,7 +24,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import puppeteer from "puppeteer-core";
 import { spawn } from "child_process";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import net from "net";
 import fs from "fs";
 import os from "os";
@@ -193,8 +193,9 @@ async function getGraduationHelpers() {
       throw new Error(`Helper files not found in ${helperDir}. Run 'npm install' inside the boarderless.app_MCP directory.`);
     }
 
-    const renameModule = await import(renameFile);
-    const stdModule    = await import(stdFile);
+    // Windows requires file:// URLs for dynamic import of absolute paths.
+    const renameModule = await import(pathToFileURL(renameFile).href);
+    const stdModule    = await import(pathToFileURL(stdFile).href);
     _performRenaming = renameModule.performRenaming;
     _standardize     = stdModule.standardize;
     return { performRenaming: _performRenaming, standardize: _standardize };
@@ -992,91 +993,4 @@ async function run() {
         const result = await page.evaluate(async (fmt, md, fn) => {
           try {
             const exportMap = {
-              png: window.runReactExport,
-              pdf: window.runReactPdfExport,
-              svg: window.runReactSvgExport,
-            };
-            const fn_ref = exportMap[fmt];
-            if (typeof fn_ref !== "function") {
-              return { success: false, error_code: "EXPORT_FN_MISSING", error: `Export function for format '${fmt}' is not bound on the page. Ensure you are on boarderless.app/canvas with a loaded board.` };
-            }
-            await fn_ref(md, fn);
-            return { success: true };
-          } catch (e) {
-            return { success: false, error_code: "EXPORT_RUNTIME_ERROR", error: e.message };
-          }
-        }, format, mode, filename);
-
-        if (result.success) {
-          return makeSuccess({ message: `Board exported as ${format.toUpperCase()} (${mode} mode).`, format, mode });
-        }
-        return makeError(
-          result.error_code || "EXPORT_FAILED",
-          result.error,
-          "Ensure a board is open in the canvas before exporting. " +
-          "SVG and PDF export require a Pro plan. Check your account at boarderless.app.",
-          { format, mode }
-        );
-      }
-
-      // Step 5: All other canvas tools via the boarderlessMcp bridge
-      const result = await page.evaluate(
-        ({ toolName, toolArgs }) => {
-          if (!window.boarderlessMcp || typeof window.boarderlessMcp.callTool !== "function") {
-            return {
-              content: [{ type: "text", text: JSON.stringify({
-                status: "error",
-                error_code: "BRIDGE_MISSING",
-                message: "window.boarderlessMcp.callTool is not a function.",
-                resolution: "Refresh the Boarderless canvas tab and retry.",
-              }) }],
-              isError: true,
-            };
-          }
-          return window.boarderlessMcp.callTool(toolName, toolArgs || {});
-        },
-        { toolName: name, toolArgs: args }
-      );
-
-      if (MUTATING_CANVAS_TOOLS.has(name) && !result?.isError) {
-        try {
-          const saved = await autosaveCurrentBoard(page);
-          result.content = [
-            ...(Array.isArray(result.content) ? result.content : []),
-            { type: "text", text: JSON.stringify({
-              status: "autosaved",
-              file: saved.path,
-              filename: saved.filename,
-              bytes: saved.bytes,
-              workspace: _workspaceDir,
-            }, null, 2) },
-          ];
-        } catch (e) {
-          result.content = [
-            ...(Array.isArray(result.content) ? result.content : []),
-            { type: "text", text: JSON.stringify({
-              status: "autosave_failed",
-              message: e.message,
-              workspace: _workspaceDir,
-              resolution: "Call export_board_file before ending the task. Confirm get_board_workspace points to a writable project directory.",
-            }, null, 2) },
-          ];
-        }
-      }
-
-      return result;
-    });
-  });
-
-  // ─── Connect transport ───────────────────────────────────────────────────────
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error(`[Boarderless] MCP Server v${SERVER_VERSION} ready → ${_APP_URL}`);
-}
-
-run().catch(err => {
-  console.error("[Boarderless] Fatal startup error:", err.message);
-  console.error(err.stack);
-  process.exit(1);
-});
+              png: window.runReactExpo
