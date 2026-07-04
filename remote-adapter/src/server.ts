@@ -105,7 +105,8 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async (): Promise<ListToolsR
 mcpServer.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToolResult> => {
   // Simple extraction of mock user identity (Bearer Token)
   // In production, this token is validated against an OAuth 2.1 authorization server
-  const mockUserId = "joel-mccracken"; 
+  // Neutral operator identity until OAuth lands. Override via BRIDGE_OPERATOR_ID.
+  const mockUserId = process.env.BRIDGE_OPERATOR_ID || "bridge-operator";
 
   const ws = activeBridges.get(mockUserId);
   if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -222,7 +223,7 @@ httpServer.on("upgrade", (request, socket, head) => {
 // Handle WebSocket Bridge Connection and pairing
 wss.on("connection", (ws, request) => {
   const url = new URL(request.url || "", `http://${request.headers.host}`);
-  const userId = url.searchParams.get("userId") || "joel-mccracken";
+  const userId = url.searchParams.get("userId") || process.env.BRIDGE_OPERATOR_ID || "bridge-operator";
 
   console.log(`Browser bridge paired for user: ${userId}`);
   

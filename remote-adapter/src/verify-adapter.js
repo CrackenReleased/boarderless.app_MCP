@@ -45,7 +45,7 @@ setTimeout(() => {
         console.log("PASS: Health check verified successfully!");
 
         // Test WebSocket Bridge
-        const ws = new WebSocket("ws://localhost:5050/bridge?userId=test-joel");
+        const ws = new WebSocket("ws://localhost:5050/bridge?userId=test-operator");
         ws.on("open", () => {
           console.log("PASS: WebSocket bridge handshake verified successfully!");
           ws.close();
