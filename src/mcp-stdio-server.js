@@ -40,7 +40,7 @@ const __dirname  = path.dirname(__filename);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_NAME    = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.26";
+const SERVER_VERSION = "0.1.27";
 const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
@@ -59,6 +59,46 @@ const MUTATING_CANVAS_TOOLS = new Set([
   "ungroup_objects",
   "reorder_object",
 ]);
+
+/**
+ * Directory-required MCP tool annotations (title + readOnlyHint/destructiveHint).
+ * Applied to static tools below and merged onto dynamic canvas tools by name so
+ * every tool in tools/list carries the safety metadata Anthropic's Connectors
+ * Directory review requires. Keep in sync with functions.json.
+ */
+const TOOL_ANNOTATIONS = {
+  get_server_status:             { title: "Get Server Status",            annotations: { readOnlyHint: true } },
+  execute_mcp_command:           { title: "Execute MCP Command",          annotations: { readOnlyHint: false, destructiveHint: true } },
+  get_board_state:               { title: "Get Board State",              annotations: { readOnlyHint: true } },
+  calculate_export_bounds:       { title: "Calculate Export Bounds",      annotations: { readOnlyHint: true } },
+  get_board_workspace:           { title: "Get Board Workspace",          annotations: { readOnlyHint: true } },
+  mutate_object:                 { title: "Mutate Canvas Object",         annotations: { readOnlyHint: false, destructiveHint: true } },
+  remix_style:                   { title: "Remix Object Style",           annotations: { readOnlyHint: false, destructiveHint: true } },
+  create_object:                 { title: "Create Canvas Object",         annotations: { readOnlyHint: false, destructiveHint: true } },
+  delete_objects:                { title: "Delete Canvas Objects",        annotations: { readOnlyHint: false, destructiveHint: true } },
+  history_undo:                  { title: "Undo Last Action",             annotations: { readOnlyHint: false, destructiveHint: true } },
+  history_redo:                  { title: "Redo Last Action",             annotations: { readOnlyHint: false, destructiveHint: true } },
+  group_objects:                 { title: "Group Canvas Objects",         annotations: { readOnlyHint: false, destructiveHint: true } },
+  ungroup_objects:               { title: "Ungroup Canvas Objects",       annotations: { readOnlyHint: false, destructiveHint: true } },
+  reorder_object:                { title: "Reorder Canvas Object",        annotations: { readOnlyHint: false, destructiveHint: true } },
+  set_board_workspace:           { title: "Set Board Workspace",          annotations: { readOnlyHint: false, destructiveHint: true } },
+  export_board_file:             { title: "Export Board File (.bdrl.json)", annotations: { readOnlyHint: false, destructiveHint: true } },
+  import_board_file:             { title: "Import Board File (.bdrl.json)", annotations: { readOnlyHint: false, destructiveHint: true } },
+  export_board:                  { title: "Export Board (PNG/PDF/SVG)",   annotations: { readOnlyHint: false, destructiveHint: true } },
+  graduation_rename_photos:      { title: "Rename Photos in Folder",      annotations: { readOnlyHint: false, destructiveHint: true } },
+  graduation_standardize_images: { title: "Standardize Images in Folder", annotations: { readOnlyHint: false, destructiveHint: true } },
+};
+
+/** Merge title + safety annotations onto a tool definition by name. */
+function withToolAnnotations(tool) {
+  const meta = TOOL_ANNOTATIONS[tool.name];
+  if (!meta) return tool;
+  return {
+    ...tool,
+    title: tool.title || meta.title,
+    annotations: { ...(meta.annotations), ...(tool.annotations || {}) },
+  };
+}
 
 async function exportCurrentBoardSnapshot(page) {
   const result = await page.evaluate(async () => {
@@ -476,8 +516,7 @@ async function run() {
       console.error("[Boarderless] Could not fetch dynamic canvas tools:", e.message);
     }
 
-    return {
-      tools: [
+    const allTools = [
         // ── Diagnostic ────────────────────────────────────────────────────────
         {
           name: "get_server_status",
@@ -608,8 +647,10 @@ async function run() {
             additionalProperties: false,
           },
         },
-      ],
-    };
+      ];
+
+    // Directory requirement: every tool ships a title and readOnlyHint/destructiveHint.
+    return { tools: allTools.map(withToolAnnotations) };
   });
 
   // ── Tool dispatch ───────────────────────────────────────────────────────────

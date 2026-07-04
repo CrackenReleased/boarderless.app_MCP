@@ -1,0 +1,165 @@
+{
+  "manifest_version": "0.3",
+  "name": "boarderless-mcp",
+  "display_name": "Boarderless Canvas",
+  "version": "0.1.27",
+  "description": "Connect Claude to your live Boarderless spatial canvas: inspect, create, edit, group, undo, and export objects on the human-visible board.",
+  "long_description": "Boarderless is a local-first spatial canvas at https://boarderless.app. This extension runs the Boarderless MCP server on your machine and attaches to your own signed-in, human-visible canvas tab via the Chrome DevTools Protocol (port 9222). Claude can then read the board's typed spatial ledger, create and mutate text and shapes, group/ungroup, reorder, undo/redo, export PNG/PDF/SVG, and maintain durable `.bdrl.json` board files in a workspace folder you choose.\n\n**Local-first boundary:** the browser owns the working canvas. This server never uploads your board to a hidden cloud copy, never inherits your Google identity, and only writes board files inside the configured workspace directory.\n\n**Requirements:** Windows 10/11 (primary; macOS/Linux community fallback), a Chromium browser (Chrome, Edge, Brave, Opera) launched with remote debugging on port 9222, and a signed-in session at https://boarderless.app/canvas. The server can auto-launch the browser if the port is closed. Run the `get_server_status` tool first \u2014 it diagnoses browser, auth, and bridge state with step-by-step fixes.",
+  "author": {
+    "name": "Boarderless",
+    "url": "https://boarderless.app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CrackenReleased/boarderless.app_MCP.git"
+  },
+  "homepage": "https://boarderless.app/",
+  "documentation": "https://github.com/CrackenReleased/boarderless.app_MCP#readme",
+  "support": "https://github.com/CrackenReleased/boarderless.app_MCP/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "src/mcp-stdio-server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/src/mcp-stdio-server.js"
+      ],
+      "env": {
+        "BOARDERLESS_MCP_APP_URL": "${user_config.app_url}",
+        "BOARDERLESS_MCP_BROWSER_URL": "${user_config.browser_url}",
+        "BOARDERLESS_WORKSPACE_DIR": "${user_config.workspace_dir}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_server_status",
+      "description": "Returns a full diagnostic status report for the Boarderless MCP server. Use this first to verify connectivity, authentication, and tool availability before attempting canvas operations. Includes brows"
+    },
+    {
+      "name": "execute_mcp_command",
+      "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status')."
+    },
+    {
+      "name": "get_board_state",
+      "description": "Read the current Boarderless board as a flat JSON spatial ledger."
+    },
+    {
+      "name": "mutate_object",
+      "description": "Patch one Boarderless Object by id and route the mutation to its owning Zustand store."
+    },
+    {
+      "name": "remix_style",
+      "description": "Apply a canonical Boarderless palette to selected shape/text Objects or the whole board as one undoable Style Remix."
+    },
+    {
+      "name": "calculate_export_bounds",
+      "description": "Calculate the absolute mathematical export bounding box for the current composition."
+    },
+    {
+      "name": "create_object",
+      "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas."
+    },
+    {
+      "name": "delete_objects",
+      "description": "Delete one or more objects by their IDs from the canvas."
+    },
+    {
+      "name": "history_undo",
+      "description": "Undo the last action on the canvas."
+    },
+    {
+      "name": "history_redo",
+      "description": "Redo the next action in the history queue on the canvas."
+    },
+    {
+      "name": "group_objects",
+      "description": "Group multiple canvas objects under a unique groupId."
+    },
+    {
+      "name": "ungroup_objects",
+      "description": "Ungroup objects belonging to a specific groupId."
+    },
+    {
+      "name": "reorder_object",
+      "description": "Reorder z-index layering of an object (bring to front, send to back, etc.)."
+    },
+    {
+      "name": "get_board_workspace",
+      "description": "Return the local workspace directory used for automatic schema-v2 .bdrl.json snapshots after canvas mutations."
+    },
+    {
+      "name": "set_board_workspace",
+      "description": "Set the absolute local project directory used for automatic and explicit .bdrl.json board files."
+    },
+    {
+      "name": "export_board_file",
+      "description": "Atomically save the current canonical Boarderless board inside the configured workspace as .bdrl.json."
+    },
+    {
+      "name": "import_board_file",
+      "description": "Import and open a schema-v2 .bdrl.json file from the configured local workspace."
+    },
+    {
+      "name": "export_board",
+      "description": "Export the current Boarderless canvas to PNG, PDF, or SVG. Requires the user to be authenticated. SVG and PDF require a Pro plan."
+    },
+    {
+      "name": "graduation_rename_photos",
+      "description": "Rename and number photo files inside a directory to a sequential format (e.g. seniorname_01.jpg). Operates on local filesystem."
+    },
+    {
+      "name": "graduation_standardize_images",
+      "description": "Scan and convert progressive JPEGs and HEIC files inside subdirectories into standard baseline RGB JPEGs. Operates on local filesystem."
+    }
+  ],
+  "tools_generated": true,
+  "keywords": [
+    "boarderless",
+    "canvas",
+    "spatial",
+    "design",
+    "mcp",
+    "agentic-ui",
+    "whiteboard"
+  ],
+  "license": "Apache-2.0",
+  "privacy_policies": [
+    "https://boarderless.app/privacy"
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": [
+      "win32",
+      "darwin",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "user_config": {
+    "workspace_dir": {
+      "type": "directory",
+      "title": "Board workspace folder",
+      "description": "Folder where canonical .bdrl.json board files are saved after every successful canvas change.",
+      "required": true,
+      "default": "${DOCUMENTS}"
+    },
+    "app_url": {
+      "type": "string",
+      "title": "Boarderless canvas URL",
+      "description": "The Boarderless canvas page to attach to.",
+      "required": false,
+      "default": "https://boarderless.app/canvas"
+    },
+    "browser_url": {
+      "type": "string",
+      "title": "Browser debugging address",
+      "description": "Chromium remote-debugging endpoint the server attaches to.",
+      "required": false,
+      "default": "http://127.0.0.1:9222"
+    }
+  }
+}

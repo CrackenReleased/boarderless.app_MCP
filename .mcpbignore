@@ -1,0 +1,19 @@
+# Exclude from MCPB bundles when packing from the repo root.
+# The canonical bundle is built from a staged production install — see docs/mcpb_submission.md
+remote-adapter/
+src-tauri/
+ui/
+dist/
+*.exe
+*.bdrl.json
+what_and_how_log.md
+changelog.md
+docs/connector_distribution_plan.md
+docs/connector_operator_runbook.md
+docs/oauth21_remote_adapter_plan.md
+docs/remote_session_bridge_spec.md
+node_modules/@tauri-apps/
+src/setup.js
+src/start-server.js
+src/index.js
+src/verify_*.js

@@ -26,6 +26,18 @@ try {
 // Initialize Express and HTTP Server
 const app = express();
 app.use(express.json());
+
+// ─── Human-facing landing page ────────────────────────────────────────────────
+// Serves the "MCP all the things" hub at GET / for people who open
+// https://mcp.boarderless.app in a browser. Agent endpoints (/sse, /messages,
+// /bridge, /health) are unaffected.
+const publicDir = path.resolve(currentDirname, "..", "public");
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"), (err) => {
+    if (err) res.status(200).type("text/plain").send("Boarderless MCP remote adapter. Agent endpoint: /sse — health: /health");
+  });
+});
+app.use(express.static(publicDir, { index: false }));
 const httpServer = createServer(app);
 
 // Initialize WebSocket Server for Browser-Mediated Outbound Bridge
@@ -48,15 +60,19 @@ let toolDefinitions: any[] = [];
 try {
   const fileContent = fs.readFileSync(functionsPath, "utf-8");
   const parsed = JSON.parse(fileContent);
-  // Map our functions schema to MCP Tool format
-  toolDefinitions = parsed.functions.map((fn: any) => ({
+  // functions.json is a top-level array (legacy shape: { functions: [...] })
+  const fns: any[] = Array.isArray(parsed) ? parsed : parsed.functions || parsed.tools || [];
+  // Map our functions schema to MCP Tool format, carrying title + safety annotations
+  toolDefinitions = fns.map((fn: any) => ({
     name: fn.name,
+    ...(fn.title ? { title: fn.title } : {}),
     description: fn.description,
     inputSchema: {
       type: "object",
-      properties: fn.parameters.properties,
-      required: fn.parameters.required || [],
+      properties: fn.parameters?.properties || {},
+      required: fn.parameters?.required || [],
     },
+    ...(fn.annotations ? { annotations: fn.annotations } : {}),
   }));
   console.log(`Successfully loaded ${toolDefinitions.length} tools from functions.json`);
 } catch (error) {
@@ -67,7 +83,7 @@ try {
 const mcpServer = new Server(
   {
     name: "boarderless-remote-adapter",
-    version: "0.1.26",
+    version: "0.1.27",
   },
   {
     capabilities: {
@@ -171,11 +187,11 @@ app.post("/messages", async (req, res) => {
 
 // HTTP Health Check Endpoint
 app.get("/health", (req, res) => {
+  // Note: bridge/usage counts are intentionally not exposed publicly.
   res.json({
     status: "healthy",
     adapter: "boarderless-remote-adapter",
-    version: "0.1.26",
-    activeBridgesCount: activeBridges.size,
+    version: "0.1.27",
   });
 });
 

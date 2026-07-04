@@ -16,6 +16,7 @@ WORKDIR /app/remote-adapter
 COPY remote-adapter/package*.json ./
 RUN npm ci --only=production
 COPY --from=builder /app/remote-adapter/dist/server.cjs ./dist/
+COPY remote-adapter/public/ ./public/
 EXPOSE 8080
 CMD ["node", "dist/server.cjs"]
 

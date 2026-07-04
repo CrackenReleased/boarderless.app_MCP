@@ -449,6 +449,20 @@ OAuth identifies and authorizes a user; it does not make a cloud service capable
 
 ---
 
+## Privacy Policy
+
+Boarderless MCP is a **local** connector. The full Boarderless privacy policy is published at **<https://boarderless.app/privacy>** (also declared in `manifest.json` `privacy_policies`).
+
+Summary of how this MCP server handles data:
+
+- **Data collection**: The server itself collects no analytics and sends no telemetry. It reads canvas state from your own signed-in, human-visible Boarderless browser tab via the Chrome DevTools Protocol on `127.0.0.1:9222`.
+- **Usage and storage**: Board snapshots (`.bdrl.json`) and exports are written only to the local workspace directory you configure. Nothing is uploaded to Boarderless servers by this MCP server.
+- **Third-party sharing**: None. The server communicates only with your local browser and the Boarderless canvas page you are signed into. It never inherits your Google identity or Google Drive access.
+- **Data retention**: Local board files remain on your machine under your control; delete them at any time. The server keeps no databases, queues, or server-side copies.
+- **Contact**: Questions or concerns — open an issue at <https://github.com/CrackenReleased/boarderless.app_MCP/issues> or use the contact channel listed at <https://boarderless.app/privacy>.
+
+---
+
 ## Contributing
 
 This MCP server is open source under the Apache 2.0 license. Contributions are welcome!
