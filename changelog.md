@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.1.28 — 2026-07-08 — DEPLOY: Version alignment for npm & repository sync
+
+**Date:** 2026-07-08 18:02:00
+
+- Bumped package and server versions to `0.1.28` across `package.json`, `manifest.json`, `src/mcp-stdio-server.js`, `remote-adapter/package.json`, `remote-adapter/src/server.ts`, and Tauri workspace configuration files.
+- Re-synchronized the public npm package registry to align with repository changes.
+
+## v0.1.27 — 2026-07-05 — FEAT: Implement Blender Render & Remove Dispatcher
+
+**Date:** 2026-07-05 15:30:00
+
+- Implemented `render_board_in_blender` tool allowing agents to create 3D renders of the canvas using Blender.
+- Removed `execute_mcp_command` catch-all compatibility dispatcher tool per Anthropic directory review guidelines.
+- Swapped in 512×512 `icon.png` per Anthropic recommendations.
+- Reconstructed server logic with pathToFileURL ESM dynamic import fix on Windows.
+- Added tool attestation and submission verification documentation.
+
 ## v0.1.26 — 2026-07-03 — DEPLOY: Publish VS Code Extension & Implement Remote Adapter Bridge
 
 **Date:** 2026-07-03 17:48:00

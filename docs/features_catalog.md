@@ -140,26 +140,25 @@ MCP connects an external agent to the same running, visible canvas through local
 ### Canvas and diagnostic tools
 
 1. `get_server_status` — diagnose browser, tab, bridge, and authentication readiness.
-2. `execute_mcp_command` — compatibility dispatcher for supported command aliases.
-3. `get_board_state` — read the render-ordered board ledger.
-4. `calculate_export_bounds` — measure active board bounds.
-5. `mutate_object` — change supported position, geometry, text, and styling fields.
-6. `remix_style` — apply the same canonical Style Remix palettes offered by Canvas and Play to a selection or explicitly to the whole board as one undoable action.
-7. `create_object` — add text or supported shape objects.
-8. `delete_objects` — remove known object IDs.
-9. `history_undo` — undo through Boarderless history.
-10. `history_redo` — redo through Boarderless history.
-11. `group_objects` — create a logical group.
-12. `ungroup_objects` — dissolve a logical group.
-13. `reorder_object` — move an object through the z-order.
-14. `export_board` — request PNG, PDF, or SVG output; app tier rules apply.
+2. `get_board_state` — read the render-ordered board ledger.
+3. `calculate_export_bounds` — measure active board bounds.
+4. `mutate_object` — change supported position, geometry, text, and styling fields.
+5. `remix_style` — apply the same canonical Style Remix palettes offered by Canvas and Play to a selection or explicitly to the whole board as one undoable action.
+6. `create_object` — add text or supported shape objects.
+7. `delete_objects` — remove known object IDs.
+8. `history_undo` — undo through Boarderless history.
+9. `history_redo` — redo through Boarderless history.
+10. `group_objects` — create a logical group.
+11. `ungroup_objects` — dissolve a logical group.
+12. `reorder_object` — move an object through the z-order.
+13. `export_board` — request PNG, PDF, or SVG output; app tier rules apply.
 
 ### Durable board-file tools
 
-15. `get_board_workspace` — report the directory receiving board artifacts.
-16. `set_board_workspace` — point artifacts at an explicit absolute project directory.
-17. `export_board_file` — atomically flush the complete schema-v2 canvas to `.bdrl.json`.
-18. `import_board_file` — validate, import, open, and re-save a workspace-contained `.bdrl.json` board.
+14. `get_board_workspace` — report the directory receiving board artifacts.
+15. `set_board_workspace` — point artifacts at an explicit absolute project directory.
+16. `export_board_file` — atomically flush the complete schema-v2 canvas to `.bdrl.json`.
+17. `import_board_file` — validate, import, open, and re-save a workspace-contained `.bdrl.json` board.
 
 Successful MCP create, mutate, Style Remix, delete, group, ungroup, reorder, undo, and redo calls refresh `<board-name>--<board-id>.bdrl.json` in the configured workspace. Agents should confirm the workspace before composing and explicitly call `export_board_file` before handoff.
 

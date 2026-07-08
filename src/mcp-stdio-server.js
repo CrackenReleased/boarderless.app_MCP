@@ -40,7 +40,7 @@ const __dirname  = path.dirname(__filename);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_NAME    = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.1.27";
+const SERVER_VERSION = "0.1.28";
 const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
@@ -68,7 +68,6 @@ const MUTATING_CANVAS_TOOLS = new Set([
  */
 const TOOL_ANNOTATIONS = {
   get_server_status:             { title: "Get Server Status",            annotations: { readOnlyHint: true } },
-  execute_mcp_command:           { title: "Execute MCP Command",          annotations: { readOnlyHint: false, destructiveHint: true } },
   get_board_state:               { title: "Get Board State",              annotations: { readOnlyHint: true } },
   calculate_export_bounds:       { title: "Calculate Export Bounds",      annotations: { readOnlyHint: true } },
   get_board_workspace:           { title: "Get Board Workspace",          annotations: { readOnlyHint: true } },
@@ -87,6 +86,7 @@ const TOOL_ANNOTATIONS = {
   export_board:                  { title: "Export Board (PNG/PDF/SVG)",   annotations: { readOnlyHint: false, destructiveHint: true } },
   graduation_rename_photos:      { title: "Rename Photos in Folder",      annotations: { readOnlyHint: false, destructiveHint: true } },
   graduation_standardize_images: { title: "Standardize Images in Folder", annotations: { readOnlyHint: false, destructiveHint: true } },
+  render_board_in_blender:       { title: "Render Board in Blender",      annotations: { readOnlyHint: false, destructiveHint: false } },
 };
 
 /** Merge title + safety annotations onto a tool definition by name. */
@@ -528,21 +528,6 @@ async function run() {
             "authentication status, canvas bridge health, and per-tool error counts.",
           inputSchema: { type: "object", properties: {}, additionalProperties: false },
         },
-        {
-          name: "execute_mcp_command",
-          description:
-            "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard " +
-            "individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status').",
-          inputSchema: {
-            type: "object",
-            properties: {
-              command: { type: "string", description: "The action or command identifier (e.g. 'get_system_status')" },
-              output_format: { type: "string", description: "Optional format selection." }
-            },
-            required: ["command"],
-            additionalProperties: false
-          }
-        },
 
         // ── Canvas tools (dynamic from bridge) ───────────────────────────────
         ...canvasTools,
@@ -608,6 +593,29 @@ async function run() {
               filename: { type: "string", description: "Optional output filename override." },
             },
             required: ["format"],
+            additionalProperties: false,
+          },
+        },
+        {
+          name: "render_board_in_blender",
+          description:
+            "Generate a 3D studio render of the current canvas using Blender. " +
+            "Automatically captures the board snapshot, decodes base64 assets, " +
+            "builds a 3D scene with lighting/camera alignment, and exports a finished PNG image. " +
+            "Requires Blender to be installed and available on the system environment path.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              engine: {
+                type: "string",
+                enum: ["BLENDER_EEVEE", "CYCLES"],
+                description: "Blender render engine. BLENDER_EEVEE is fast; CYCLES is high-fidelity path tracing. Defaults to BLENDER_EEVEE.",
+              },
+              filename: {
+                type: "string",
+                description: "Optional output render filename (e.g. render.png). Saved to the active project workspace.",
+              },
+            },
             additionalProperties: false,
           },
         },
@@ -753,85 +761,6 @@ async function run() {
       });
     }
 
-    // ── execute_mcp_command ───────────────────────────────────────────────────
-    if (name === "execute_mcp_command") {
-      return runTool(name, async () => {
-        const cmd = args.command;
-        if (!cmd) {
-          return makeError("MISSING_ARGUMENT", "command is required.", "Provide a command name like 'get_system_status'.");
-        }
-
-        if (cmd === "get_system_status") {
-          // Inline diagnostic run identical to get_server_status
-          let browserOk  = false;
-          let authed     = false;
-          let bridgeOk   = false;
-          let pageUrl    = null;
-          try {
-            const urlObj = new URL(BROWSER_URL);
-            const port   = parseInt(urlObj.port || "9222", 10);
-            browserOk    = await isPortOpen(port, urlObj.hostname);
-            if (browserOk) {
-              const page = await getPage();
-              pageUrl    = page.url();
-              bridgeOk   = _status.mcpBridgeReady;
-              authed     = await checkAuth(page);
-            }
-          } catch (e) {
-            // non-fatal
-          }
-
-          const checks = [
-            {
-              check: "browser_port",
-              passed: browserOk,
-              detail: browserOk ? `Chromium DevTools listening on ${BROWSER_URL}` : `No browser found on ${BROWSER_URL}`
-            },
-            {
-              check: "canvas_tab",
-              passed: !!pageUrl,
-              detail: pageUrl ? `Active canvas tab: ${pageUrl}` : "No Boarderless canvas tab detected"
-            },
-            {
-              check: "mcp_bridge",
-              passed: bridgeOk,
-              detail: bridgeOk ? "window.boarderlessMcp bridge is mounted and ready" : "window.boarderlessMcp not found on page"
-            },
-            {
-              check: "authentication",
-              passed: authed,
-              detail: authed ? "User is authenticated — canvas tools are available" : "User is NOT authenticated — canvas tools will be blocked"
-            }
-          ];
-
-          const allPassed = checks.every(c => c.passed);
-          return makeSuccess({
-            ready: allPassed,
-            summary: allPassed
-              ? "All systems operational. Ready to control Boarderless."
-              : "One or more checks failed. See 'checks' array for resolution steps.",
-            checks,
-            runtime: {
-              platform:       _status.platform,
-              node_version:   _status.nodeVersion,
-              server_version: SERVER_VERSION,
-              app_url:        _APP_URL,
-              browser_url:    BROWSER_URL,
-              started_at:     _status.startedAt,
-              tool_calls:     _status.toolCallCount,
-              tool_errors:    _status.toolErrors,
-              last_error:     _status.lastError,
-            }
-          });
-        }
-
-        return makeError(
-          "COMMAND_UNSUPPORTED",
-          `Command '${cmd}' is not supported by this server.`,
-          "Valid commands are: 'get_system_status'. Or call individual MCP tools directly."
-        );
-      });
-    }
 
     // ── Board workspace configuration ───────────────────────────────────────
     if (name === "get_board_workspace") {
@@ -993,4 +922,196 @@ async function run() {
         const result = await page.evaluate(async (fmt, md, fn) => {
           try {
             const exportMap = {
-              png: window.runReactExpo
+              png: window.runReactExport,
+              pdf: window.runReactPdfExport,
+              svg: window.runReactSvgExport,
+            };
+            const fn_ref = exportMap[fmt];
+            if (typeof fn_ref !== "function") {
+              return { success: false, error_code: "EXPORT_FN_MISSING", error: `Export function for format '${fmt}' is not bound on the page. Ensure you are on boarderless.app/canvas with a loaded board.` };
+            }
+            await fn_ref(md, fn);
+            return { success: true };
+          } catch (e) {
+            return { success: false, error_code: "EXPORT_RUNTIME_ERROR", error: e.message };
+          }
+        }, format, mode, filename);
+
+        if (result.success) {
+          return makeSuccess({ message: `Board exported as ${format.toUpperCase()} (${mode} mode).`, format, mode });
+        }
+        return makeError(
+          result.error_code || "EXPORT_FAILED",
+          result.error,
+          "Ensure a board is open in the canvas before exporting. " +
+          "SVG and PDF export require a Pro plan. Check your account at boarderless.app.",
+          { format, mode }
+        );
+      }
+
+      if (name === "render_board_in_blender") {
+        const engine = args.engine || "BLENDER_EEVEE";
+        const filename = args.filename || "blender_render.png";
+        
+        try {
+          // 1. Export board snapshot from the page
+          const snapshot = await exportCurrentBoardSnapshot(page);
+          
+          // 2. Save it temporarily in the workspace as _mcp_blender_temp.bdrl.json
+          const tempFilename = "_mcp_blender_temp.bdrl.json";
+          const saved = writeBoardSnapshot(snapshot, {
+            workspaceDir: _workspaceDir,
+            filename: tempFilename,
+            cleanupAutosave: false
+          });
+          
+          // 3. Set up paths
+          let pythonScriptPath = path.join(_workspaceDir, "scratch", "import_to_blender.py");
+          if (!fs.existsSync(pythonScriptPath)) {
+            pythonScriptPath = "E:/boarderless/scratch/import_to_blender.py";
+          }
+          const outputRenderPath = path.join(_workspaceDir, filename);
+          
+          // 4. Run Blender subprocess in background mode
+          console.error(`[Boarderless][Blender] Starting render with engine ${engine}...`);
+          
+          const result = await new Promise((resolve) => {
+            const child = spawn("blender", [
+              "-b",
+              "-P",
+              pythonScriptPath,
+              "--",
+              "--json",
+              saved.path,
+              "--out",
+              outputRenderPath,
+              "--engine",
+              engine
+            ]);
+            
+            let stdout = "";
+            let stderr = "";
+            
+            child.stdout.on("data", (data) => {
+              stdout += data.toString();
+            });
+            
+            child.stderr.on("data", (data) => {
+              stderr += data.toString();
+            });
+            
+            child.on("close", (code) => {
+              // Clean up temporary JSON snapshot
+              try {
+                fs.unlinkSync(saved.path);
+              } catch (_) {}
+              
+              if (code === 0) {
+                resolve({ success: true, stdout });
+              } else {
+                resolve({ success: false, code, stderr, stdout });
+              }
+            });
+            
+            child.on("error", (err) => {
+              // Clean up temporary JSON snapshot
+              try {
+                fs.unlinkSync(saved.path);
+              } catch (_) {}
+              
+              resolve({ success: false, error: err });
+            });
+          });
+          
+          if (result.success) {
+            return makeSuccess({
+              message: `Board successfully rendered in Blender using ${engine}!`,
+              engine,
+              render_file: outputRenderPath,
+              filename,
+            });
+          } else if (result.error) {
+            if (result.error.code === "ENOENT") {
+              return makeError(
+                "BLENDER_NOT_FOUND",
+                "Blender executable could not be found on your system PATH.",
+                "Ensure Blender is installed and added to your system environment variables.\n" +
+                "  Windows: Add 'C:\\Program Files\\Blender Foundation\\Blender X.Y\\' to your Path.\n" +
+                "  macOS: Symlink blender command: ln -s /Applications/Blender.app/Contents/MacOS/Blender /usr/local/bin/blender"
+              );
+            }
+            return makeError("BLENDER_SPAWN_FAILED", `Failed to start Blender subprocess: ${result.error.message}`, "Check if your workspace directories are fully writable.");
+          } else {
+            return makeError(
+              "BLENDER_RENDER_FAILED",
+              `Blender process exited with code ${result.code}`,
+              "Check the error trace below. Ensure your board is valid and has no corrupted images.",
+              { stderr: result.stderr, stdout: result.stdout }
+            );
+          }
+        } catch (e) {
+          return makeError("BLENDER_BRIDGE_FAILED", e.message, "Refresh the Boarderless canvas tab and retry.");
+        }
+      }
+
+      // Step 5: All other canvas tools via the boarderlessMcp bridge
+      const result = await page.evaluate(
+        ({ toolName, toolArgs }) => {
+          if (!window.boarderlessMcp || typeof window.boarderlessMcp.callTool !== "function") {
+            return {
+              content: [{ type: "text", text: JSON.stringify({
+                status: "error",
+                error_code: "BRIDGE_MISSING",
+                message: "window.boarderlessMcp.callTool is not a function.",
+                resolution: "Refresh the Boarderless canvas tab and retry.",
+              }) }],
+              isError: true,
+            };
+          }
+          return window.boarderlessMcp.callTool(toolName, toolArgs || {});
+        },
+        { toolName: name, toolArgs: args }
+      );
+
+      if (MUTATING_CANVAS_TOOLS.has(name) && !result?.isError) {
+        try {
+          const saved = await autosaveCurrentBoard(page);
+          result.content = [
+            ...(Array.isArray(result.content) ? result.content : []),
+            { type: "text", text: JSON.stringify({
+              status: "autosaved",
+              file: saved.path,
+              filename: saved.filename,
+              bytes: saved.bytes,
+              workspace: _workspaceDir,
+            }, null, 2) },
+          ];
+        } catch (e) {
+          result.content = [
+            ...(Array.isArray(result.content) ? result.content : []),
+            { type: "text", text: JSON.stringify({
+              status: "autosave_failed",
+              message: e.message,
+              workspace: _workspaceDir,
+              resolution: "Call export_board_file before ending the task. Confirm get_board_workspace points to a writable project directory.",
+            }, null, 2) },
+          ];
+        }
+      }
+
+      return result;
+    });
+  });
+
+  // ─── Connect transport ───────────────────────────────────────────────────────
+
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error(`[Boarderless] MCP Server v${SERVER_VERSION} ready → ${_APP_URL}`);
+}
+
+run().catch(err => {
+  console.error("[Boarderless] Fatal startup error:", err.message);
+  console.error(err.stack);
+  process.exit(1);
+});

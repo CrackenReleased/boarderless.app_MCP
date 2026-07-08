@@ -1,7 +1,7 @@
 # Anthropic Connectors Directory — Submission Answers (Boarderless, v0.1.27)
 
 Form: Desktop extension submission — https://clau.de/desktop-extention-submission
-Bundle to upload: `dist/boarderless-mcp-0.1.27.mcpb` (sha1 7a57bd40316dc80a892a1d95eb695023c66e55be)
+Bundle to upload: `dist/boarderless-mcp-0.1.27.mcpb` (sha1 bef282da226d893b18d87b32fdec4830658a4f7c — final 2026-07-05 build: reconstructed server source, 512×512 icon, execute_mcp_command removed)
 Every field below is ready to paste. Fields only Joel can supply are marked **[JOEL]**.
 
 ---
@@ -48,7 +48,7 @@ Every field below is ready to paste. Fields only Joel can supply are marked **[J
 - **Category:** Design / Creativity / Productivity.
 - **Privacy policy URL:** https://boarderless.app/privacy
 
-## Tools (20) — all annotated
+## Tools (19) — all annotated
 
 Read-only (`readOnlyHint`): get_server_status, get_board_state,
 calculate_export_bounds, get_board_workspace.
@@ -56,13 +56,17 @@ calculate_export_bounds, get_board_workspace.
 Write (`destructiveHint`): create_object, mutate_object, remix_style,
 delete_objects, group_objects, ungroup_objects, reorder_object, history_undo,
 history_redo, set_board_workspace, export_board, export_board_file,
-import_board_file, execute_mcp_command, graduation_rename_photos,
-graduation_standardize_images.
+import_board_file, graduation_rename_photos, graduation_standardize_images.
+
+Note: the former `execute_mcp_command` compatibility dispatcher was removed
+2026-07-05 before submission — catch-all dispatcher tools are an explicit
+rejection reason in Anthropic's review criteria, and it duplicated the
+individual tools.
 
 Confirmation: every tool has a human-readable `title` and the applicable
 annotation (verified in `tools/list`). Self-test evidence:
-`docs/e2e_attestation.md` (17/20 confirmed via MCP; graduation import bug fixed in
-v0.1.27; export_board requires a focused canvas tab).
+`docs/e2e_attestation.md` (19/19 confirmed via MCP tools/call on a live
+signed-in canvas, 2026-07-05; export_board requires a focused canvas tab).
 
 ## Documentation & support
 
@@ -82,9 +86,10 @@ v0.1.27; export_board requires a focused canvas tab).
 > 2. Launch Chrome or Edge with remote debugging and open the canvas:
 >    `chrome --remote-debugging-port=9222 --user-data-dir=%LOCALAPPDATA%\boarderless-mcp-profile https://boarderless.app/canvas`
 >    (If no debug browser is running, the server auto-launches one on port 9222.)
-> 3. Sign in on the canvas page. **[JOEL: paste test-account email + password, OR
->    write: "Use the local Free Mode fallback — click 'Continue without Google' on
->    the canvas page; no credentials needed."]**
+> 3. Sign in on the canvas page with the reviewer test account:
+>    **[JOEL: create a dedicated Google test account with a pre-populated board
+>    and paste email + password here. Google sign-in is the only supported
+>    authentication path — a test account is required.]**
 > 4. Keep that canvas tab visible/focused. In Claude, run `get_server_status`
 >    first — it reports browser, auth, and bridge state with step-by-step fixes.
 > 5. Read-only to try: `get_board_state`, `calculate_export_bounds`,
@@ -100,14 +105,13 @@ v0.1.27; export_board requires a focused canvas tab).
 
 ## Launch readiness
 
-- **GA date:** **[JOEL — pick a date you're comfortable with; docs are already public.]**
+- **GA date:** Immediately upon approval.
 - **Surfaces tested:** Claude Desktop (local MCPB). **[JOEL: confirm you installed
   the .mcpb and ran the tools once before submitting.]**
 
 ## Branding
 
-- **Logo:** icon.png in the repo root (256×256). **[JOEL: a 512×512 is preferred —
-  optional but nicer in the listing.]**
+- **Logo:** icon.png in the repo root (512×512, swapped in 2026-07-04).
 - **Favicon / domain:** boarderless.app (verify domain ownership if prompted).
 - **Screenshots:** Not required for a non-MCP-Apps desktop extension. (Only MCP
   Apps require carousel screenshots.)
@@ -116,6 +120,6 @@ v0.1.27; export_board requires a focused canvas tab).
 
 - [ ] Install `dist/boarderless-mcp-0.1.27.mcpb` in Claude Desktop; run each tool
       once against a real canvas (satisfies the self-test confirmation).
-- [ ] Decide reviewer credential path (test account vs. Free Mode) and fill step 3.
+- [ ] Create the reviewer Google test account (with a pre-populated board) and fill step 3.
 - [ ] Pick a GA date.
 - [ ] Submit at https://clau.de/desktop-extention-submission and attach the .mcpb.

@@ -22,3 +22,7 @@ dist/
 # Local attestation harness (not shipped)
 src/verify_all_tools_e2e.js
 docs/e2e_attestation_latest.json
+
+# Local profiles and ads directories
+boarderless-profile/
+ads/

@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0}
+  .ad{position:relative;width:1200px;height:675px;background:#0D0B1E;overflow:hidden;
+      font-family:Poppins,'Segoe UI',sans-serif;color:#F4F2FF}
+  .content{position:absolute;left:72px;top:78px;width:640px;z-index:3}
+  .tick{width:96px;height:10px;border-radius:5px;background:#A78BFA;margin-bottom:22px}
+  .eyebrow{color:#A78BFA;font-size:20px;font-weight:600;letter-spacing:.12em;margin-bottom:20px}
+  h1{font-size:72px;line-height:1.08;font-weight:600;margin:0 0 26px}
+  .body{color:#B9B3D9;font-size:23px;line-height:1.55;margin:0 0 14px}
+  .punch{color:#F4F2FF;font-size:23px;font-weight:600;margin:0 0 34px}
+  .cta{display:inline-block;background:#A78BFA;color:#14102B;font-weight:600;font-size:24px;
+       letter-spacing:.06em;padding:20px 46px;border-radius:28px}
+  .url{margin-top:26px;font-weight:700;font-size:22px;letter-spacing:.02em}
+  .url span{color:#B9B3D9;font-weight:500}
+  .c1{position:absolute;right:40px;top:-140px;width:460px;height:460px;border-radius:50%;background:#2A2150;z-index:1}
+  .c2{position:absolute;right:120px;bottom:-160px;width:400px;height:400px;border-radius:50%;background:#22D3EE;z-index:1}
+  .card{position:absolute;right:130px;top:170px;width:330px;height:320px;z-index:2;
+        background:#161230;border:2px solid #A78BFA;border-radius:36px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+  .live{font-size:84px;font-weight:700;letter-spacing:.04em}
+  .ledger{color:#B9B3D9;font-size:21px}
+  .cta{transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+  a:hover .cta{transform:translateY(-2px);background:#B9A4FB;box-shadow:0 8px 28px rgba(167,139,250,.45)}
+  @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  .c1{animation:drift 9s ease-in-out infinite}
+  .c2{animation:drift 11s ease-in-out infinite reverse}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,.35)}50%{box-shadow:0 0 0 16px rgba(167,139,250,0)}}
+  .card{animation:pulse 3.2s ease-in-out infinite}
+</style></head><body>
+<a href="https://play.boarderless.app" target="_blank" style="text-decoration:none;color:inherit;display:block;width:1200px">
+<div class="ad">
+  <div class="c1"></div><div class="c2"></div>
+  <div class="card"><div class="live">LIVE</div><div class="ledger">typed spatial ledger</div></div>
+  <div class="content">
+    <div class="tick"></div>
+    <div class="eyebrow">MODEL CONTEXT PROTOCOL · LIVE CANVAS</div>
+    <h1>Don't just chat.<br>Build on the canvas.</h1>
+    <p class="body">Connect your coding agent to a real spatial workspace. Inspect, create, move, group, reorder, undo, and export.</p>
+    <p class="punch">No pixel scraping. No DOM guessing.</p>
+    <div class="cta">CONNECT YOUR AGENT</div>
+    <div class="url">BOARDERLESS<span>.app</span></div>
+  </div>
+</div>
+</a>
+</body></html>

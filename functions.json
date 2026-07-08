@@ -13,32 +13,6 @@
     }
   },
   {
-    "name": "execute_mcp_command",
-    "title": "Execute MCP Command",
-    "description": "Compatibility wrapper to dispatch commands. Maps 'command' argument to standard individual MCP tool names (e.g., mapping command='get_system_status' to tool 'get_server_status').",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "command": {
-          "type": "string",
-          "description": "The action or command identifier (e.g. 'get_system_status')"
-        },
-        "output_format": {
-          "type": "string",
-          "description": "Optional format selection."
-        }
-      },
-      "required": [
-        "command"
-      ],
-      "additionalProperties": false
-    },
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": true
-    }
-  },
-  {
     "name": "get_board_state",
     "title": "Get Board State",
     "description": "Read the current Boarderless board as a flat JSON spatial ledger.",
@@ -556,6 +530,33 @@
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": true
+    }
+  },
+  {
+    "name": "render_board_in_blender",
+    "title": "Render Board in Blender",
+    "description": "Generate a 3D studio render of the current canvas using Blender. Automatically captures the board snapshot, decodes base64 assets, builds a 3D scene with lighting/camera alignment, and exports a finished PNG image. Requires Blender to be installed on the system path.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "enum": [
+            "BLENDER_EEVEE",
+            "CYCLES"
+          ],
+          "description": "Blender render engine. BLENDER_EEVEE is fast; CYCLES is high-fidelity path tracing. Defaults to BLENDER_EEVEE."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Optional output render filename (e.g. my_render.png). Saved to the active project workspace."
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false
     }
   }
 ]

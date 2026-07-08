@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0}
+  .ad{position:relative;width:1080px;height:1080px;background:#0D0B1E;overflow:hidden;
+      font-family:Poppins,'Segoe UI',sans-serif;color:#F4F2FF}
+  .content{position:absolute;left:84px;top:110px;width:880px;z-index:3}
+  .tick{width:110px;height:12px;border-radius:6px;background:#A78BFA;margin-bottom:28px}
+  .eyebrow{color:#A78BFA;font-size:24px;font-weight:600;letter-spacing:.12em;margin-bottom:26px}
+  h1{font-size:92px;line-height:1.08;font-weight:600;margin:0 0 32px}
+  .body{color:#B9B3D9;font-size:29px;line-height:1.55;margin:0 0 46px;width:760px}
+  .cta{display:inline-block;background:#A78BFA;color:#14102B;font-weight:600;font-size:28px;
+       letter-spacing:.06em;padding:24px 56px;border-radius:32px}
+  .url{margin-top:34px;font-weight:700;font-size:26px}
+  .url span{color:#B9B3D9;font-weight:500}
+  .c1{position:absolute;right:-160px;bottom:60px;width:520px;height:520px;border-radius:50%;background:#2A2150;z-index:1}
+  .c2{position:absolute;right:60px;bottom:-200px;width:460px;height:460px;border-radius:50%;background:#22D3EE;z-index:1}
+  .card{position:absolute;right:120px;bottom:230px;width:300px;height:280px;z-index:2;
+        background:#161230;border:2px solid #A78BFA;border-radius:34px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  .live{font-size:74px;font-weight:700;letter-spacing:.04em}
+  .ledger{color:#B9B3D9;font-size:19px}
+  .cta{transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+  a:hover .cta{transform:translateY(-2px);background:#B9A4FB;box-shadow:0 8px 28px rgba(167,139,250,.45)}
+  @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  .c1{animation:drift 9s ease-in-out infinite}
+  .c2{animation:drift 11s ease-in-out infinite reverse}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(167,139,250,.35)}50%{box-shadow:0 0 0 16px rgba(167,139,250,0)}}
+  .card{animation:pulse 3.2s ease-in-out infinite}
+</style></head><body>
+<a href="https://play.boarderless.app" target="_blank" style="text-decoration:none;color:inherit;display:block;width:1080px">
+<div class="ad">
+  <div class="c1"></div><div class="c2"></div>
+  <div class="card"><div class="live">LIVE</div><div class="ledger">typed spatial ledger</div></div>
+  <div class="content">
+    <div class="tick"></div>
+    <div class="eyebrow">MODEL CONTEXT PROTOCOL · LIVE CANVAS</div>
+    <h1>Don't just chat.<br>Build on the canvas.</h1>
+    <p class="body">Connect your coding agent to a real spatial workspace. Inspect, create, move, group, undo, export.</p>
+    <div class="cta">CONNECT YOUR AGENT</div>
+    <div class="url">BOARDERLESS<span>.app</span></div>
+  </div>
+</div>
+</a>
+</body></html>
