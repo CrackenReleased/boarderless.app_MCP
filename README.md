@@ -5,7 +5,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A Model Context Protocol (MCP) server for **Boarderless**, allowing Ai agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
+A Model Context Protocol (MCP) server for **https://Boarderless.app/**, allowing Ai agents (like Claude Desktop, Cursor, and Claude Code) to inspect and edit the live browser-resident canvas directly. Boarderless remains Local First: the browser owns the working canvas, and this server connects an agent to that visible local session rather than inventing a hidden cloud copy.
 
 Looking for the app-wide map—canvas tools, image editing, slides, Ai Partner, persistence, plan boundaries, and the exact MCP subset? Ai agents connecting to this repository should parse the [Boarderless Product & MCP Feature Catalog](docs/features_catalog.md) before proposing work. Connector distribution and OpenAI/Microsoft readiness are tracked in [docs/connector_distribution_plan.md](docs/connector_distribution_plan.md); the future OAuth 2.1/Streamable HTTP adapter design is in [docs/oauth21_remote_adapter_plan.md](docs/oauth21_remote_adapter_plan.md); Joel's selected Option A browser bridge is specified in [docs/remote_session_bridge_spec.md](docs/remote_session_bridge_spec.md); Joel's operator path is in [docs/connector_operator_runbook.md](docs/connector_operator_runbook.md).
 
