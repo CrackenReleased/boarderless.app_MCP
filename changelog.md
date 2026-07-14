@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.541 — 2026-07-13 — RELEASE: Match the Boarderless production version
+
+**Date:** 2026-07-13 21:53:00
+
+- Aligned the public npm package, runtime server, MCP manifest, remote adapter, desktop configuration, UI label, README examples, and all project lockfiles with Boarderless production v0.2.541.
+- Preserved the existing local-stdio package surface; this release synchronizes delivery/version identity and includes the already-committed v0.1.28 runtime fixes that had not reached npm.
+- Upgraded `@modelcontextprotocol/sdk` to 1.29.x, clearing the high-severity ReDoS and DNS-rebinding advisories before publication; the remaining audit findings are moderate Jimp/file-parser advisories requiring a separate breaking API migration.
+- Verified tests, package allowlist contents, dry-run publication, GitHub delivery, and the public npm registry version before declaring the release complete.
+
 ## v0.1.28 — 2026-07-08 — DEPLOY: Version alignment for npm & repository sync
 
 **Date:** 2026-07-08 18:02:00

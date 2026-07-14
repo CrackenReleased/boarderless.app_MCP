@@ -1,6 +1,6 @@
 {
   "name": "@boarderless/mcp-remote-adapter",
-  "version": "0.1.28",
+  "version": "0.2.541",
   "description": "Model Context Protocol (MCP) remote HTTP/SSE adapter and browser-mediated session bridge for Boarderless.",
   "type": "module",
   "main": "dist/server.cjs",
