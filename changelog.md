@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.543 — 2026-07-14 — ARCHITECTURE: Refuse headless and invisible MCP operation
+
+- Removed the headless environment override from the Node and Tauri launchers.
+- Added runtime browser identity, viewport, and visibility checks; the MCP brings the canvas tab to the front and rejects hidden/headless connections.
+- Added a repository-wide visible-operation regression to the package test suite and included its runtime helper in the npm package allowlist.
+- Updated operator, submission, attestation, and governance documentation to make visible Ai navigation permanent.
+- Aligned the public npm package, Node server, remote adapter, Tauri application, manifest, UI, locks, and documentation with Boarderless production v0.2.543.
+
 ## v0.2.541 — 2026-07-13 — RELEASE: Match the Boarderless production version
 
 **Date:** 2026-07-13 21:53:00

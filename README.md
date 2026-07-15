@@ -52,7 +52,7 @@ The interactive installer will:
 ```
 
 1. **Boarderless Web App**: Exposes `window.boarderlessMcp` containing typed tool execution methods over Zustand state.
-2. **MCP Server (`mcp-stdio-server.js`)**: Connects to the browser via Chrome DevTools Protocol (CDP), maps incoming stdio messages to the browser runtime, and checks authentication. If the remote debugging port (9222) is closed, the server automatically scans and launches Chrome or Edge in remote-debugging mode.
+2. **MCP Server (`mcp-stdio-server.js`)**: Connects only to a visible browser via Chrome DevTools Protocol (CDP), brings the Boarderless canvas tab to the front, rejects headless or invisible browser identities, maps incoming stdio messages to the browser runtime, and checks authentication. If the remote debugging port (9222) is closed, the server automatically scans and launches a visible Chrome or Edge window in remote-debugging mode.
 3. **Ai Agent**: Connects as a client to the MCP server's stdio transport.
 4. **Workspace Board File**: After every successful canvas mutation, the MCP server asks the browser persistence layer for the canonical schema-v2 snapshot and atomically writes `<board-name>--<board-id>.bdrl.json` into the configured local workspace.
 
@@ -158,7 +158,7 @@ It returns a structured JSON report with four health checks and actionable resol
   "runtime": {
     "platform": "win32",
     "node_version": "v22.3.0",
-    "server_version": "0.2.541",
+    "server_version": "0.2.543",
     "app_url": "https://boarderless.app/canvas",
     "browser_url": "http://127.0.0.1:9222",
     "started_at": "2026-06-16T19:07:00.000Z",
@@ -204,7 +204,7 @@ Error shape:
   "message": "You must be signed in to Boarderless to use canvas tools.",
   "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
   "server": "boarderless-mcp-bridge",
-  "version": "0.2.541",
+  "version": "0.2.543",
   "timestamp": "2026-06-16T19:07:00.000Z"
 }
 ```
@@ -221,7 +221,6 @@ All configuration uses environment variables — no hardcoded paths, no user-spe
 | `BOARDERLESS_MCP_BROWSER_URL` | `http://127.0.0.1:9222` | Chrome DevTools URL. Change if you use a different debug port. |
 | `BOARDERLESS_MCP_BROWSER_EXE` | *(auto-detected)* | Full path to browser executable. Set if auto-detection misses your browser. |
 | `BOARDERLESS_MCP_PROFILE_DIR` | *(OS-standard, see below)* | Override the persistent browser profile directory. |
-| `BOARDERLESS_MCP_HEADLESS` | `false` | Set to `"true"` for headless browser mode (CI/testing). |
 | `BOARDERLESS_WORKSPACE_DIR` | MCP process working directory | Absolute directory where canonical `.bdrl.json` files are always saved. Agents can change it at runtime with `set_board_workspace`. |
 
 **Default profile directories** (resolved from OS env vars, never hardcoded):
@@ -439,7 +438,7 @@ VS Code / GitHub Copilot can use Boarderless as a local stdio MCP server through
 
 Joel selected **Option A: browser-mediated visible-session bridge** for future remote readiness. Boarderless will not host user data or server-side boards; user data stays user-managed, user-owned, and user-controlled. See [docs/remote_session_bridge_spec.md](docs/remote_session_bridge_spec.md).
 
-`@boarderless/mcp-server` v0.2.541 is **not** a hosted ChatGPT App or Microsoft Copilot Studio connector. npm distributes the local `stdio` connector only.
+`@boarderless/mcp-server` v0.2.543 is **not** a hosted ChatGPT App or Microsoft Copilot Studio connector. npm distributes the local `stdio` connector only.
 
 - **OpenAI outstanding:** public HTTPS MCP resource server, OAuth 2.1 authorization-code flow with PKCE, protected-resource and authorization-server discovery metadata, ChatGPT client registration/callback, scoped token validation, and a secure relay from the hosted service to the user's visible Boarderless browser session.
 - **Microsoft outstanding:** public Streamable HTTP MCP endpoint, OAuth 2.0 through DCR/discovery or manual client registration, Copilot callback registration, scoped token validation/refresh/revocation, and the same secure remote-to-visible-canvas relay.

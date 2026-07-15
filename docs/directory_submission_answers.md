@@ -33,7 +33,7 @@ Every field below is ready to paste. Fields only Joel can supply are marked **[J
   carry `readOnlyHint`.
 - **Connection requirements:** Windows 10/11 (primary; macOS/Linux community
   fallback), Node 18+, a Chromium browser (Chrome/Edge/Brave/Opera) reachable on
-  remote-debugging port 9222 (the server can auto-launch it), and a signed-in
+  remote-debugging port 9222 (the server can auto-launch a visible window), and a signed-in
   session at https://boarderless.app/canvas.
 
 ## Data & compliance

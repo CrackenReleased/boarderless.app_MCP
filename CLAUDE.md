@@ -3,6 +3,8 @@
 **Before doing anything in this repo, read `SOUL.md` and `AGENTS.md`.**
 They are binding, not aspirational.
 
+Boarderless visible-operation law: never run, attach to, enable, document, or tolerate a headless or otherwise invisible Boarderless browser. MCP work must bring the real canvas tab to the front so Joel can watch every Ai interaction. Run `npm run verify:visible-operation` before completion.
+
 ## The one rule that governs all others: ZERO APATHY
 
 Never do the minimum. Whatever lands in your lap gets finished, polished,

@@ -28,3 +28,7 @@ It ends here.
 - Perfect for what it is. Every stone. Every time.
 
 ZERO APATHY.
+
+## Visible operation is part of the product
+
+The beauty and magic of Boarderless includes watching an Ai navigate the actual interface. That visibility lets Joel QA another user's behavior, learn from friction, and mature the product. A hidden browser removes that value. Boarderless MCP therefore operates only through a real visible browser window and rejects headless or invisible sessions permanently.

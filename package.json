@@ -1,6 +1,6 @@
 {
   "name": "@boarderless/mcp-server",
-  "version": "0.2.541",
+  "version": "0.2.543",
   "description": "Model Context Protocol (MCP) server for Boarderless, allowing Ai agents to read the canvas state, mutate Objects, and calculate export bounds.",
   "engines": {
     "node": ">=18"
@@ -12,6 +12,7 @@
   },
   "files": [
     "src/mcp-stdio-server.js",
+    "src/visible-browser-policy.js",
     "src/board-files.js",
     "helpers/rename_photos.js",
     "helpers/standardize_images.js",
@@ -37,7 +38,8 @@
     "example": "node src/index.js",
     "setup": "node src/setup.js",
     "tauri": "tauri",
-    "test": "node src/verify_shortcut.js && node src/verify_nonblocking_auth.js && node src/verify_board_files.js && node src/verify_package_contents.js",
+    "test": "node src/verify_visible_operation.js && node src/verify_shortcut.js && node src/verify_nonblocking_auth.js && node src/verify_board_files.js && node src/verify_package_contents.js",
+    "verify:visible-operation": "node src/verify_visible_operation.js",
     "verify:status": "node src/verify_nonblocking_auth.js",
     "verify:board-files": "node src/verify_board_files.js",
     "verify:package": "node src/verify_package_contents.js"

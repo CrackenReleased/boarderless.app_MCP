@@ -1,12 +1,18 @@
 import puppeteer from 'puppeteer-core';
-import fs from 'fs';
 
 async function main() {
   try {
-    console.log('[Scratch] Connecting...');
+    console.log('[Scratch] Connecting to Puppeteer...');
     const browser = await puppeteer.connect({ browserURL: 'http://127.0.0.1:9222', defaultViewport: null });
     const pages = await browser.pages();
     
+    console.log(`[+] Found ${pages.length} pages open:`);
+    for (let i = 0; i < pages.length; i++) {
+      const p = pages[i];
+      const title = await p.title();
+      console.log(`  Page ${i}: ${p.url()} - Title: "${title}"`);
+    }
+
     let boarderlessPage = null;
     for (const page of pages) {
       const url = page.url();
@@ -16,42 +22,29 @@ async function main() {
     }
     
     if (!boarderlessPage) {
-      console.log('[-] No active page found.');
+      console.log('[-] No active boarderless.app page found in the browser.');
       await browser.disconnect();
       return;
     }
     
     console.log(`[+] Found active page: ${boarderlessPage.url()}`);
     
-    const pageDetails = await boarderlessPage.evaluate(() => {
-      const html = document.body.innerHTML;
-      const text = document.body.innerText;
-      const localStorageKeys = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        localStorageKeys[key] = localStorage.getItem(key);
-      }
-      return {
-        title: document.title,
-        url: window.location.href,
-        hasStageWrap: !!document.getElementById('stage-wrap'),
-        hasReactRoot: !!document.getElementById('react-root'),
-        bodyLength: html.length,
-        bodyTextSnippet: text.slice(0, 1000),
-        localStorageKeys
-      };
+    // Evaluate if window.boarderlessMcp is available
+    const mcpAvailable = await boarderlessPage.evaluate(() => {
+      return typeof window.boarderlessMcp !== 'undefined';
     });
+    console.log(`[+] window.boarderlessMcp available: ${mcpAvailable}`);
     
-    console.log('[Page Details]:', JSON.stringify(pageDetails, null, 2));
-    
-    // Save screenshot
-    const screenshotPath = 'C:/Users/Beast/.gemini/antigravity/brain/c3a1aa3a-daa6-48c4-8c9a-d4a3772e9447/current_page.png';
-    await boarderlessPage.screenshot({ path: screenshotPath });
-    console.log(`[+] Screenshot saved to ${screenshotPath}`);
-    
+    if (mcpAvailable) {
+      const state = await boarderlessPage.evaluate(() => {
+        return window.boarderlessMcp.callTool('get_board_state', {});
+      });
+      console.log('[+] Board State:', JSON.stringify(state, null, 2));
+    }
+
     await browser.disconnect();
   } catch (err) {
-    console.error('[-] Error:', err);
+    console.error('[-] Error:', err.message);
   }
 }
 

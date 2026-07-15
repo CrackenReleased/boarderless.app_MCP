@@ -27,7 +27,7 @@ async function main() {
     console.log('Launching browser...');
     const browser = await puppeteer.launch({
       executablePath: chromePath,
-      headless: 'new',
+      headless: false,
       defaultViewport: { width: 1920, height: 1080 }
     });
 

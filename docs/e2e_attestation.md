@@ -64,8 +64,8 @@ always be `get_server_status`, which diagnoses browser/auth/bridge state.
 ## To reproduce a clean 20/20 locally
 
 1. Close all extra `boarderless.app/canvas` tabs; keep exactly one, signed in.
-2. Launch Chrome with `--remote-debugging-port=9222` (or let the server do it).
-3. Keep that canvas tab focused/foreground.
+2. Launch a visible Chrome window with `--remote-debugging-port=9222` (or let the server visibly launch it).
+3. Keep that canvas tab focused/foreground so the complete Ai interaction remains observable.
 4. `node src/verify_all_tools_e2e.js` — report written to
    `docs/e2e_attestation_latest.json`.
 

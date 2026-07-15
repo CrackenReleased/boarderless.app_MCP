@@ -54,7 +54,7 @@ npx @anthropic-ai/mcpb pack . boarderless-mcp-<version>.mcpb
 > Boarderless MCP is a local desktop extension that controls a human-visible canvas at https://boarderless.app/canvas.
 >
 > 1. Install the .mcpb in Claude Desktop. In the extension settings, set "Board workspace folder" to any writable folder (defaults to Documents).
-> 2. Launch Google Chrome or Microsoft Edge with remote debugging: `chrome --remote-debugging-port=9222 --user-data-dir=%LOCALAPPDATA%\boarderless-mcp-profile https://boarderless.app/canvas` (the server will attempt to auto-launch a Chromium browser on port 9222 if none is running).
+> 2. Launch a visible Google Chrome or Microsoft Edge window with remote debugging: `chrome --remote-debugging-port=9222 --user-data-dir=%LOCALAPPDATA%\boarderless-mcp-profile https://boarderless.app/canvas` (the server will attempt to auto-launch a visible Chromium window on port 9222 if none is running; headless or invisible sessions are rejected).
 > 3. Sign in on the canvas page with Google using the test account: [TEST ACCOUNT EMAIL / CREDENTIALS HERE].
 > 4. In Claude, run the `get_server_status` tool first. It reports browser, authentication, and canvas-bridge state with step-by-step resolutions for any failing check.
 > 5. Read-only tools to try: `get_board_state`, `calculate_export_bounds`, `get_board_workspace`.

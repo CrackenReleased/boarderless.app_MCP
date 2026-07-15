@@ -2,6 +2,10 @@
 
 Read SOUL.md first. It is not decoration. It is the standard you are held to.
 
+## Permanent visible-operation law
+
+Boarderless and every Boarderless MCP server, connector, test, script, and agent must never run, attach to, enable, recommend, or tolerate a headless or otherwise invisible browser under any circumstance. Every Ai action must occur in a real visible window with the Boarderless canvas tab brought to the front so Joel can watch, QA, learn from, and mature the product. Runtime MCP guards must reject externally supplied headless browsers, and `npm run verify:visible-operation` must remain part of the test suite.
+
 ## The Prime Directive: ZERO APATHY
 
 Never do the minimum. The thing in your lap gets finished, polished, and made

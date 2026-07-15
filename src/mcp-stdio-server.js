@@ -33,6 +33,7 @@ import {
   resolveWorkspaceDirectory,
   writeBoardSnapshot,
 } from "./board-files.js";
+import { assertVisibleBoarderlessPage } from "./visible-browser-policy.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -40,7 +41,7 @@ const __dirname  = path.dirname(__filename);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_NAME    = "boarderless-mcp-bridge";
-const SERVER_VERSION = "0.2.541";
+const SERVER_VERSION = "0.2.543";
 const DEFAULT_APP_URL    = "https://boarderless.app/canvas";
 const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
@@ -332,8 +333,8 @@ async function ensureBrowserRunning(appUrl) {
     `--user-data-dir=${profileDir}`,
     "--no-first-run",
     "--no-default-browser-check",
+    "--start-maximized",
   ];
-  if (process.env.BOARDERLESS_MCP_HEADLESS === "true") args.push("--headless=new");
   args.push(appUrl);
 
   const child = spawn(browser.path, args, { detached: true, stdio: "ignore" });
@@ -404,6 +405,8 @@ async function getPage() {
     page = await _browser.newPage();
     await page.goto(_APP_URL, { waitUntil: "domcontentloaded" });
   }
+
+  await assertVisibleBoarderlessPage(_browser, page);
 
   // Wait for boarderlessMcp bridge to mount (up to 5 s)
   let mcpReady = false;

@@ -28,10 +28,7 @@ async function testNonBlockingStartup() {
 
   return new Promise((resolve, reject) => {
     const child = spawn("node", [serverPath], {
-      env: {
-        ...process.env,
-        BOARDERLESS_MCP_HEADLESS: "true",
-      },
+      env: { ...process.env },
     });
 
     let stderr = "";
@@ -110,7 +107,7 @@ async function testGetServerStatusToolListed() {
 
   return new Promise((resolve, reject) => {
     const child = spawn("node", [serverPath], {
-      env: { ...process.env, BOARDERLESS_MCP_HEADLESS: "true" },
+      env: { ...process.env },
     });
 
     let stderr = "";
