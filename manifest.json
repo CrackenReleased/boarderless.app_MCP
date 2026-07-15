@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "boarderless-mcp",
   "display_name": "Boarderless Canvas",
-  "version": "0.2.543",
+  "version": "0.1.28",
   "description": "Connect Claude to your live Boarderless spatial canvas: inspect, create, edit, group, undo, and export objects on the human-visible board.",
   "long_description": "Boarderless is a local-first spatial canvas at https://boarderless.app. This extension runs the Boarderless MCP server on your machine and attaches to your own signed-in, human-visible canvas tab via the Chrome DevTools Protocol (port 9222). Claude can then read the board's typed spatial ledger, create and mutate text and shapes, group/ungroup, reorder, undo/redo, export PNG/PDF/SVG, and maintain durable `.bdrl.json` board files in a workspace folder you choose.\n\n**Local-first boundary:** the browser owns the working canvas. This server never uploads your board to a hidden cloud copy, never inherits your Google identity, and only writes board files inside the configured workspace directory.\n\n**Requirements:** Windows 10/11 (primary; macOS/Linux community fallback), a Chromium browser (Chrome, Edge, Brave, Opera) launched with remote debugging on port 9222, and a signed-in session at https://boarderless.app/canvas. The server can auto-launch the browser if the port is closed. Run the `get_server_status` tool first \u2014 it diagnoses browser, auth, and bridge state with step-by-step fixes.",
   "author": {

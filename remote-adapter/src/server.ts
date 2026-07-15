@@ -85,7 +85,7 @@ function buildMcpServer(): Server {
   const mcpServer = new Server(
     {
       name: "boarderless-remote-adapter",
-      version: "0.2.543",
+      version: "0.1.28",
     },
     {
       capabilities: {
@@ -203,7 +203,7 @@ app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
     adapter: "boarderless-remote-adapter",
-    version: "0.2.543",
+    version: "0.1.28",
   });
 });
 

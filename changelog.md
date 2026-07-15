@@ -1,28 +1,20 @@
 # Changelog
 
-## v0.2.543 — 2026-07-14 — ARCHITECTURE: Refuse headless and invisible MCP operation
+## v0.1.28 — 2026-07-14 — RELEASE: Visible operation on the independent MCP sequence
 
 - Removed the headless environment override from the Node and Tauri launchers.
 - Added runtime browser identity, viewport, and visibility checks; the MCP brings the canvas tab to the front and rejects hidden/headless connections.
 - Added a repository-wide visible-operation regression to the package test suite and included its runtime helper in the npm package allowlist.
 - Updated operator, submission, attestation, and governance documentation to make visible Ai navigation permanent.
-- Aligned the public npm package, Node server, remote adapter, Tauri application, manifest, UI, locks, and documentation with Boarderless production v0.2.543.
-
-## v0.2.541 — 2026-07-13 — RELEASE: Match the Boarderless production version
-
-**Date:** 2026-07-13 21:53:00
-
-- Aligned the public npm package, runtime server, MCP manifest, remote adapter, desktop configuration, UI label, README examples, and all project lockfiles with Boarderless production v0.2.541.
-- Preserved the existing local-stdio package surface; this release synchronizes delivery/version identity and includes the already-committed v0.1.28 runtime fixes that had not reached npm.
+- Aligned the npm package, Node server, remote adapter, Tauri application, manifest, UI, locks, and documentation to the MCP product's own next public version after v0.1.27: v0.1.28.
+- Included the v0.1.28 runtime fixes prepared on 2026-07-08 that had not actually reached npm.
 - Upgraded `@modelcontextprotocol/sdk` to 1.29.x, clearing the high-severity ReDoS and DNS-rebinding advisories before publication; the remaining audit findings are moderate Jimp/file-parser advisories requiring a separate breaking API migration.
-- Verified tests, package allowlist contents, dry-run publication, GitHub delivery, and the public npm registry version before declaring the release complete.
+- Verified tests, package allowlist contents, dry-run publication, GitHub delivery, and the public npm registry version.
 
-## v0.1.28 — 2026-07-08 — DEPLOY: Version alignment for npm & repository sync
+## Corrected unpublished repository labels — 2026-07-14
 
-**Date:** 2026-07-08 18:02:00
-
-- Bumped package and server versions to `0.1.28` across `package.json`, `manifest.json`, `src/mcp-stdio-server.js`, `remote-adapter/package.json`, `remote-adapter/src/server.ts`, and Tauri workspace configuration files.
-- Re-synchronized the public npm package registry to align with repository changes.
+- Repository-only labels v0.2.541 and v0.2.543 incorrectly copied the Boarderless application version into this independently versioned MCP product.
+- Neither label belongs to the MCP npm sequence. The public package advanced correctly from v0.1.27 to v0.1.28, and governance now prohibits copying application versions into MCP releases.
 
 ## v0.1.27 — 2026-07-05 — FEAT: Implement Blender Render & Remove Dispatcher
 

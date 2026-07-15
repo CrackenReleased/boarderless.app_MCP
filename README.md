@@ -158,7 +158,7 @@ It returns a structured JSON report with four health checks and actionable resol
   "runtime": {
     "platform": "win32",
     "node_version": "v22.3.0",
-    "server_version": "0.2.543",
+    "server_version": "0.1.28",
     "app_url": "https://boarderless.app/canvas",
     "browser_url": "http://127.0.0.1:9222",
     "started_at": "2026-06-16T19:07:00.000Z",
@@ -204,7 +204,7 @@ Error shape:
   "message": "You must be signed in to Boarderless to use canvas tools.",
   "resolution": "1. Open https://boarderless.app/canvas ...\n2. Sign in...",
   "server": "boarderless-mcp-bridge",
-  "version": "0.2.543",
+  "version": "0.1.28",
   "timestamp": "2026-06-16T19:07:00.000Z"
 }
 ```
@@ -438,7 +438,7 @@ VS Code / GitHub Copilot can use Boarderless as a local stdio MCP server through
 
 Joel selected **Option A: browser-mediated visible-session bridge** for future remote readiness. Boarderless will not host user data or server-side boards; user data stays user-managed, user-owned, and user-controlled. See [docs/remote_session_bridge_spec.md](docs/remote_session_bridge_spec.md).
 
-`@boarderless/mcp-server` v0.2.543 is **not** a hosted ChatGPT App or Microsoft Copilot Studio connector. npm distributes the local `stdio` connector only.
+`@boarderless/mcp-server` v0.1.28 is **not** a hosted ChatGPT App or Microsoft Copilot Studio connector. npm distributes the local `stdio` connector only.
 
 - **OpenAI outstanding:** public HTTPS MCP resource server, OAuth 2.1 authorization-code flow with PKCE, protected-resource and authorization-server discovery metadata, ChatGPT client registration/callback, scoped token validation, and a secure relay from the hosted service to the user's visible Boarderless browser session.
 - **Microsoft outstanding:** public Streamable HTTP MCP endpoint, OAuth 2.0 through DCR/discovery or manual client registration, Copilot callback registration, scoped token validation/refresh/revocation, and the same secure remote-to-visible-canvas relay.
