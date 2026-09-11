@@ -2,7 +2,7 @@
 
 ## v0.1.29 — 2026-09-11 — BRANDING & SCHEMA: Update MCP logo across desktop assets & align tool parameters
 
-- Replaced application icons with official `boarderless_MCP_logo.png` across all desktop assets (`icon.png`, `src/logo.ico`, `src-tauri/icons/*` including Windows, macOS, iOS, and Android variations, and `ui/logo.png`).
+- Updated application icons to high-visibility `boarderless_MCP_square_logo.png` across all desktop assets (`icon.png`, `src/logo.ico`, `src-tauri/icons/*` including Windows, macOS, iOS, and Android variations, and `ui/logo.png`). The new square layout features significantly enlarged, high-contrast "MCP" typography to guarantee immediate legibility at small mipmaps (16×16 and 32×32) in Windows Explorer, taskbar, and system tray.
 - Recompiled and verified release binaries (`Boarderless MCP.exe` and `setup.exe`) embedding the updated icon.ico resource so the Windows taskbar, window title bar, and system tray clearly distinguish the Boarderless MCP application from standard Boarderless browser windows.
 - Synchronized `functions.json` tool schema to include `line` in `create_object` types, added `points` coordinate arrays, `pointerLength`, `pointerWidth`, `fontSize`, and `fontFamily` parameters for both `create_object` and `mutate_object`.
 - Added favicon link and refined brand logo display in `ui/index.html`.
