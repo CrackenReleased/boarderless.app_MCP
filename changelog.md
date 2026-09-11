@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.29 — 2026-09-11 — BRANDING & SCHEMA: Update MCP logo across desktop assets & align tool parameters
+
+- Replaced application icons with official `boarderless_MCP_logo.png` across all desktop assets (`icon.png`, `src/logo.ico`, `src-tauri/icons/*` including Windows, macOS, iOS, and Android variations, and `ui/logo.png`).
+- Recompiled and verified release binaries (`Boarderless MCP.exe` and `setup.exe`) embedding the updated icon.ico resource so the Windows taskbar, window title bar, and system tray clearly distinguish the Boarderless MCP application from standard Boarderless browser windows.
+- Synchronized `functions.json` tool schema to include `line` in `create_object` types, added `points` coordinate arrays, `pointerLength`, `pointerWidth`, `fontSize`, and `fontFamily` parameters for both `create_object` and `mutate_object`.
+- Added favicon link and refined brand logo display in `ui/index.html`.
+- Verified all regression checks pass (`npm test`).
+
 ## v0.1.28 — 2026-07-14 — RELEASE: Visible operation on the independent MCP sequence
 
 - Removed the headless environment override from the Node and Tauri launchers.

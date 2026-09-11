@@ -101,6 +101,21 @@
         "edgeFeather": {
           "type": "number",
           "description": "Feather value."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Coordinate points array [x1, y1, x2, y2, ...] for arrow or line shapes."
+        },
+        "pointerLength": {
+          "type": "number",
+          "description": "Arrowhead pointer length for arrow shapes."
+        },
+        "pointerWidth": {
+          "type": "number",
+          "description": "Arrowhead pointer width for arrow shapes."
         }
       },
       "required": [
@@ -173,7 +188,7 @@
   {
     "name": "create_object",
     "title": "Create Canvas Object",
-    "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow) on the canvas.",
+    "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow, line) on the canvas.",
     "parameters": {
       "type": "object",
       "properties": {
@@ -184,7 +199,8 @@
             "rect",
             "ellipse",
             "triangle",
-            "arrow"
+            "arrow",
+            "line"
           ],
           "description": "The kind of object to create."
         },
@@ -219,6 +235,29 @@
         "strokeWidth": {
           "type": "number",
           "description": "Stroke width."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Coordinate points array [x1, y1, x2, y2, ...] for arrow or line shapes."
+        },
+        "pointerLength": {
+          "type": "number",
+          "description": "Arrowhead pointer length for arrow shapes (defaults to 10)."
+        },
+        "pointerWidth": {
+          "type": "number",
+          "description": "Arrowhead pointer width for arrow shapes (defaults to 10)."
+        },
+        "fontSize": {
+          "type": "number",
+          "description": "Font size in pixels for text objects (defaults to 28)."
+        },
+        "fontFamily": {
+          "type": "string",
+          "description": "Font family name for text objects (defaults to Outfit)."
         }
       },
       "required": [
