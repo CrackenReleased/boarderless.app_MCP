@@ -47,6 +47,47 @@ const DEFAULT_BROWSER_URL = "http://127.0.0.1:9222";
 
 /** Resolved at runtime — never hardcoded. */
 const BROWSER_URL = process.env.BOARDERLESS_MCP_BROWSER_URL || DEFAULT_BROWSER_URL;
+// ─── Native Desktop MCP Fast Path ─────────────────────────────────────────────
+const NATIVE_MCP_PORT = parseInt(process.env.BOARDERLESS_DESKTOP_MCP_PORT || "9876", 10);
+const NATIVE_MCP_URL  = `http://127.0.0.1:${NATIVE_MCP_PORT}`;
+
+/** Probe whether Boarderless Desktop's native MCP server is running. */
+async function probeNativeDesktopServer() {
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 400);
+    const res  = await fetch(`${NATIVE_MCP_URL}/status`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      return data.status === "online" && data.app === "Boarderless";
+    }
+  } catch (_) {}
+  return false;
+}
+
+/** Dispatch JSON-RPC call directly to Boarderless Desktop native server. */
+async function callNativeDesktopRpc(method, params = null) {
+  const res = await fetch(`${NATIVE_MCP_URL}/mcp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method,
+      params,
+      id: Date.now(),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Native desktop MCP server HTTP ${res.status}: ${res.statusText}`);
+  }
+  const json = await res.json();
+  if (json.error) {
+    throw new Error(json.error.message || JSON.stringify(json.error));
+  }
+  return json.result;
+}
+
 let _workspaceDir = resolveWorkspaceDirectory();
 
 const MUTATING_CANVAS_TOOLS = new Set([
@@ -697,7 +738,17 @@ async function run() {
           browserErr = e.message;
         }
 
+        const isDesktopOnline = await probeNativeDesktopServer();
         const checks = [
+          {
+            check: "desktop_app_bridge",
+            passed: isDesktopOnline,
+            detail: isDesktopOnline
+              ? `Boarderless Desktop Native MCP Server active on ${NATIVE_MCP_URL} (Zero-Latency Fast Path)`
+              : `Desktop native server not active on port ${NATIVE_MCP_PORT} (using browser CDP fallback)`,
+            resolution: isDesktopOnline ? null :
+              "To enable instant zero-latency desktop control, launch Boarderless Desktop and toggle MCP in Ctrl+K menu.",
+          },
           {
             check: "browser_port",
             passed: browserOk,
@@ -822,6 +873,28 @@ async function run() {
         const { standardize } = await getGraduationHelpers();
         const result = await standardize(args.seniorsDir);
         return makeSuccess({ result, path: args.seniorsDir });
+      });
+    }
+
+    // ── Native Desktop Server Fast Path ─────────────────────────────────────
+    if (await probeNativeDesktopServer()) {
+      return runTool(name, async () => {
+        try {
+          const result = await callNativeDesktopRpc("tools/call", {
+            name,
+            arguments: args || {},
+          });
+          if (result && !result.isError) {
+            return result;
+          }
+          if (result && result.isError && result.content?.[0]?.text?.includes("Unknown tool")) {
+            // Not handled by native desktop server, fall through to browser execution below
+          } else if (result) {
+            return result;
+          }
+        } catch (err) {
+          console.error(`[Boarderless] Native desktop call failed for '${name}', falling back to browser:`, err.message);
+        }
       });
     }
 
