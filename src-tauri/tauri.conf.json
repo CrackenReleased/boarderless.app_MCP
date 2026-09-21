@@ -5,8 +5,8 @@
   "identifier": "app.boarderless.mcp",
   "build": {
     "frontendDist": "../ui",
-    "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "",
+    "devUrl": "http://localhost:1430",
+    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": ""
   },
   "app": {

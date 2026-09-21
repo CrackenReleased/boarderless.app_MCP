@@ -1,0 +1,601 @@
+[
+  {
+    "name": "get_server_status",
+    "title": "Get Server Status",
+    "description": "Returns a full diagnostic status report for the Boarderless MCP server. Use this first to verify connectivity, authentication, and tool availability before attempting canvas operations. Includes browser connection state, authentication status, canvas bridge health, and per-tool error counts.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "get_board_state",
+    "title": "Get Board State",
+    "description": "Read the current Boarderless board as a flat JSON spatial ledger.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "mutate_object",
+    "title": "Mutate Canvas Object",
+    "description": "Patch one Boarderless Object by id and route the mutation to its owning Zustand store.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The BoardSnapshot Object id to mutate."
+        },
+        "x": {
+          "type": "number",
+          "description": "X coordinate."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y coordinate."
+        },
+        "width": {
+          "type": "number",
+          "description": "Width."
+        },
+        "height": {
+          "type": "number",
+          "description": "Height."
+        },
+        "rotation": {
+          "type": "number",
+          "description": "Rotation in degrees."
+        },
+        "opacity": {
+          "type": "number",
+          "description": "Opacity (0-1)."
+        },
+        "fill": {
+          "type": "string",
+          "description": "Fill color hex."
+        },
+        "stroke": {
+          "type": "string",
+          "description": "Stroke color hex."
+        },
+        "strokeWidth": {
+          "type": "number",
+          "description": "Stroke width."
+        },
+        "text": {
+          "type": "string",
+          "description": "Text content."
+        },
+        "fontSize": {
+          "type": "number",
+          "description": "Font size."
+        },
+        "fontFamily": {
+          "type": "string",
+          "description": "Font family."
+        },
+        "align": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ],
+          "description": "Text alignment."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "description": "Corner radius for shapes."
+        },
+        "edgeFeather": {
+          "type": "number",
+          "description": "Feather value."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Coordinate points array [x1, y1, x2, y2, ...] for arrow or line shapes."
+        },
+        "pointerLength": {
+          "type": "number",
+          "description": "Arrowhead pointer length for arrow shapes."
+        },
+        "pointerWidth": {
+          "type": "number",
+          "description": "Arrowhead pointer width for arrow shapes."
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": true
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "remix_style",
+    "title": "Remix Object Style",
+    "description": "Apply a canonical Boarderless palette to selected shape/text Objects or the whole board as one undoable Style Remix.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "paletteId": {
+          "type": "string",
+          "enum": [
+            "boarderless",
+            "midnight",
+            "sunroom",
+            "editorial",
+            "earthbound"
+          ],
+          "description": "Canonical Style Remix palette id."
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "selection",
+            "board"
+          ],
+          "description": "Defaults to selection; whole-board remix must be explicit."
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional explicit Object ids for selection scope."
+        }
+      },
+      "required": [
+        "paletteId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "calculate_export_bounds",
+    "title": "Calculate Export Bounds",
+    "description": "Calculate the absolute mathematical export bounding box for the current composition.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "create_object",
+    "title": "Create Canvas Object",
+    "description": "Create a new object (text or shape: rect, ellipse, triangle, arrow, line) on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "rect",
+            "ellipse",
+            "triangle",
+            "arrow",
+            "line"
+          ],
+          "description": "The kind of object to create."
+        },
+        "x": {
+          "type": "number",
+          "description": "X coordinate."
+        },
+        "y": {
+          "type": "number",
+          "description": "Y coordinate."
+        },
+        "width": {
+          "type": "number",
+          "description": "Width of rectangle/text (or bounds)."
+        },
+        "height": {
+          "type": "number",
+          "description": "Height of rectangle/text (or bounds)."
+        },
+        "text": {
+          "type": "string",
+          "description": "The text value (required for type=\"text\")."
+        },
+        "fill": {
+          "type": "string",
+          "description": "Fill color (e.g. hex #ffffff)."
+        },
+        "stroke": {
+          "type": "string",
+          "description": "Stroke color (e.g. hex #000000)."
+        },
+        "strokeWidth": {
+          "type": "number",
+          "description": "Stroke width."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Coordinate points array [x1, y1, x2, y2, ...] for arrow or line shapes."
+        },
+        "pointerLength": {
+          "type": "number",
+          "description": "Arrowhead pointer length for arrow shapes (defaults to 10)."
+        },
+        "pointerWidth": {
+          "type": "number",
+          "description": "Arrowhead pointer width for arrow shapes (defaults to 10)."
+        },
+        "fontSize": {
+          "type": "number",
+          "description": "Font size in pixels for text objects (defaults to 28)."
+        },
+        "fontFamily": {
+          "type": "string",
+          "description": "Font family name for text objects (defaults to Outfit)."
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "delete_objects",
+    "title": "Delete Canvas Objects",
+    "description": "Delete one or more objects by their IDs from the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of object IDs to delete."
+        }
+      },
+      "required": [
+        "ids"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "history_undo",
+    "title": "Undo Last Action",
+    "description": "Undo the last action on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "history_redo",
+    "title": "Redo Last Action",
+    "description": "Redo the next action in the history queue on the canvas.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "group_objects",
+    "title": "Group Canvas Objects",
+    "description": "Group multiple canvas objects under a unique groupId.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of object IDs to group."
+        }
+      },
+      "required": [
+        "ids"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "ungroup_objects",
+    "title": "Ungroup Canvas Objects",
+    "description": "Ungroup objects belonging to a specific groupId.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "string",
+          "description": "The groupId to ungroup."
+        }
+      },
+      "required": [
+        "groupId"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "reorder_object",
+    "title": "Reorder Canvas Object",
+    "description": "Reorder z-index layering of an object (bring to front, send to back, etc.).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The object ID to reorder."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "front",
+            "back",
+            "forward",
+            "backward"
+          ],
+          "description": "The reorder layering action."
+        }
+      },
+      "required": [
+        "id",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "get_board_workspace",
+    "title": "Get Board Workspace",
+    "description": "Return the local workspace directory used for automatic schema-v2 .bdrl.json snapshots after canvas mutations.",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": true
+    }
+  },
+  {
+    "name": "set_board_workspace",
+    "title": "Set Board Workspace",
+    "description": "Set the absolute local project directory used for automatic and explicit .bdrl.json board files.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "directory": {
+          "type": "string",
+          "description": "Absolute project/workspace directory."
+        }
+      },
+      "required": [
+        "directory"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "export_board_file",
+    "title": "Export Board File (.bdrl.json)",
+    "description": "Atomically save the current canonical Boarderless board inside the configured workspace as .bdrl.json.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Optional single filename ending in .bdrl.json."
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "import_board_file",
+    "title": "Import Board File (.bdrl.json)",
+    "description": "Import and open a schema-v2 .bdrl.json file from the configured local workspace.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Single .bdrl.json filename inside the configured workspace."
+        }
+      },
+      "required": [
+        "filename"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "export_board",
+    "title": "Export Board (PNG/PDF/SVG)",
+    "description": "Export the current Boarderless canvas to PNG, PDF, or SVG. Requires the user to be authenticated. SVG and PDF require a Pro plan.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": [
+            "png",
+            "pdf",
+            "svg"
+          ],
+          "description": "Export file format."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "canvas",
+            "selection"
+          ],
+          "description": "Export scope. Defaults to 'canvas'."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Optional output filename override."
+        }
+      },
+      "required": [
+        "format"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "graduation_rename_photos",
+    "title": "Rename Photos in Folder",
+    "description": "Rename and number photo files inside a directory to a sequential format (e.g. seniorname_01.jpg). Operates on local filesystem.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "seniorsDir": {
+          "type": "string",
+          "description": "Absolute path to the folder containing photos."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "gap_fill"
+          ],
+          "description": "'sequential' numbers files 01-XX strictly. 'gap_fill' preserves existing numbers and fills gaps."
+        }
+      },
+      "required": [
+        "seniorsDir",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "graduation_standardize_images",
+    "title": "Standardize Images in Folder",
+    "description": "Scan and convert progressive JPEGs and HEIC files inside subdirectories into standard baseline RGB JPEGs. Operates on local filesystem.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "seniorsDir": {
+          "type": "string",
+          "description": "Absolute path to the folder containing photos."
+        }
+      },
+      "required": [
+        "seniorsDir"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true
+    }
+  },
+  {
+    "name": "render_board_in_blender",
+    "title": "Render Board in Blender",
+    "description": "Generate a 3D studio render of the current canvas using Blender. Automatically captures the board snapshot, decodes base64 assets, builds a 3D scene with lighting/camera alignment, and exports a finished PNG image. Requires Blender to be installed on the system path.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "enum": [
+            "BLENDER_EEVEE",
+            "CYCLES"
+          ],
+          "description": "Blender render engine. BLENDER_EEVEE is fast; CYCLES is high-fidelity path tracing. Defaults to BLENDER_EEVEE."
+        },
+        "filename": {
+          "type": "string",
+          "description": "Optional output render filename (e.g. my_render.png). Saved to the active project workspace."
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false
+    }
+  }
+]

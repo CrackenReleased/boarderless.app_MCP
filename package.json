@@ -42,7 +42,9 @@
     "verify:visible-operation": "node src/verify_visible_operation.js",
     "verify:status": "node src/verify_nonblocking_auth.js",
     "verify:board-files": "node src/verify_board_files.js",
-    "verify:package": "node src/verify_package_contents.js"
+    "verify:package": "node src/verify_package_contents.js",
+    "dev": "node src/dev-server.js",
+    "tauri:dev": "tauri dev"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

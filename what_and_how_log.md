@@ -1,5 +1,21 @@
 # What and How Log
 
+## 2026-09-21 00:55:00 — architecture: Launcher runtime port separation & VS Code extension integration (v0.1.29)
+
+- **What:**
+  - Separated development runtime port: assigned dedicated port 1430 to the Boarderless MCP Control Panel frontend (Vite dev server) and configured Tauri (`src-tauri/tauri.conf.json` and `src-tauri/src/lib.rs`) to connect strictly to `http://127.0.0.1:1430`.
+  - Added strict-port verification ensuring the launcher refuses to bind or reuse port 1420 (which is reserved for Boarderless Desktop Canvas).
+  - Relocated the VS Code extension source to `packages/mcp/vscode/` (`CrackenReleased/boarderless.app_MCP.git`).
+  - Added reproducible synchronization (`vscode/scripts/sync-server.mjs`) adapting `mcp-stdio-server.js` to preserve the extension's dedicated browser-canvas target.
+  - Added targeted drift detection (`vscode/scripts/check-server-drift.mjs`) wired into `npm test`.
+- **Why:**
+  - Prevented port collisions between Boarderless Desktop and Boarderless MCP Tauri development environments.
+  - Resolved official Git repository ownership for the VS Code extension by placing it under the MCP repository alongside the launcher and stdio server.
+- **Verification:**
+  - Ran both native Tauri applications concurrently with visual confirmation of distinct UIs (Desktop Canvas on 1420, MCP Control Panel on 1430).
+  - Verified drift check and extension test suite (`npm test` in `vscode/`).
+  - Packaged self-contained VSIX extension bundle (`boarderless-vscode-0.1.29.vsix`).
+
 ## 2026-09-11 11:45:00 — branding: Upgrade to boarderless_MCP_square_logo with enlarged typography for taskbar & tray clarity
 
 - **What:** Upgraded all icon assets across `icon.png`, `ui/logo.png`, `src/logo.ico`, and `src-tauri/icons/*` to the newly designed `boarderless_MCP_square_logo.png`. Re-cleaned and re-compiled Tauri application to embed the new multi-resolution icon resources (16x16, 24x24, 32x32, 48x48, 64x64, 128x128, 256x256). Repackaged Claude Desktop `.mcpb` bundle (23.64 MB) and VS Code extension `.vsix` (26.18 MB).

@@ -1,0 +1,75 @@
+{
+  "name": "boarderless-vscode",
+  "displayName": "Boarderless",
+  "description": "Model Context Protocol (MCP) server integration for Boarderless spatial canvas.",
+  "version": "0.1.29",
+  "publisher": "boarderless",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Ai",
+    "Programming Languages"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CrackenReleased/boarderless.app_MCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CrackenReleased/boarderless.app_MCP/issues"
+  },
+  "homepage": "https://boarderless.app/",
+  "contributes": {
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "boarderless.mcp-provider",
+        "label": "Boarderless Canvas"
+      }
+    ],
+    "configuration": {
+      "title": "Boarderless",
+      "properties": {
+        "boarderless.mcp.appUrl": {
+          "type": "string",
+          "default": "https://boarderless.app/canvas",
+          "description": "The URL of the Boarderless canvas page."
+        },
+        "boarderless.mcp.browserUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:9222",
+          "description": "The local Chrome debugging URL."
+        },
+        "boarderless.mcp.workspaceDir": {
+          "type": "string",
+          "default": "",
+          "description": "The absolute directory where canonical .bdrl.json board snapshots are saved. If left empty, the first opened workspace folder will be used."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build -- --minify",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "test": "node scripts/check-server-drift.mjs && node scripts/verify-extension.mjs",
+    "sync:server": "node scripts/sync-server.mjs",
+    "check:drift": "node scripts/check-server-drift.mjs",
+    "package": "npm run build && npx @vscode/vsce package --no-git-tag-version"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "heic-convert": "^2.1.0",
+    "jimp": "^0.22.12",
+    "puppeteer-core": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.95.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.3"
+  }
+}

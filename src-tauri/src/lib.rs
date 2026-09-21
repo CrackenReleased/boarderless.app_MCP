@@ -434,7 +434,7 @@ pub fn run() {
                 let _ = app_handle.notification()
                     .builder()
                     .title("Boarderless MCP Active")
-                    .body("Boarderless MCP is still running in the system tray to keep your AI canvas bridge active.")
+                    .body("Boarderless MCP is still running in the system tray to keep your Ai canvas bridge active.")
                     .show();
             }
         })
