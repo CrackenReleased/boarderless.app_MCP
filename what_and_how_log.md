@@ -1,3 +1,13 @@
+## 2026-09-30 03:04:18 — Codex — Installed MCP portability (v0.1.30 prepared)
+
+Fixed the copied client config to use npx -y @boarderless/mcp-server@latest instead of a missing development source path; Node.js LTS is required. Added a regression that failed the old config. Fixed pre-build CI tests requiring ignored setup.exe: normal tests verify source bundle settings, --installer verifies an actual compiled installer. Regression failed old source test; npm test now passes. Rebuilt signed NSIS/MSI v0.1.30 successfully and configured the existing signing key for CI. First WinGet PR #444012 converted to draft pending a corrected signed release. npm authentication is unavailable (E401), so neither npm nor production GitHub v0.1.30 was published; public npm remains 0.1.28.
+
+Sibling scan: get_server_path had one client-config consumer; copied config now uses the public package independent of install/source paths. Built-in desktop MCP updates with desktop; standalone control panel uses its own updater and WinGet identifier.
+
+## 2026-09-30 02:33:32 — Codex — MCP distribution readiness (v0.1.30 prepared)
+
+Latest Antigravity commits verified. GitHub build passed but WinGet job failed because winget-releaser only updates existing packages. Both public package identifiers were absent. Corrected v0.1.29 historical NSIS URL (dot in Boarderless.MCP) and SHA-256 against GitHub asset digest, validated manifests, and submitted initial package PR https://github.com/microsoft/winget-pkgs/pull/444012. Enabled signed updater artifacts, signing env and latest.json; release tag validation prevents main-branch runs and immutable release overwrites. Automation is gated by WINGET_REGISTERED until Microsoft merges the initial submission; WINGET_PAT remains an operator credential requirement. Added regressions in src/verify_updater_and_winget.js: old artifact configuration failed; updated suite passed. npm public starting version was 0.1.28; GitHub/local previous version 0.1.29. Preparing independent v0.1.30, not copying web or desktop versions. Existing untracked art scripts/assets preserved.
+
 # What and How Log
 
 ## 2026-09-30 01:28:00 — distribution: Add update awareness on open, Winget manifests, and automated CI publishing (v0.1.29)

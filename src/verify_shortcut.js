@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +31,16 @@ function testLogoIcoHeader() {
 }
 
 function testSetupExecutable() {
-  const exePath = path.join(rootDir, 'setup.exe');
+  // Source tests run before bundling in CI. Pass --installer <path> to verify a built installer.
+  const installerIndex = process.argv.indexOf('--installer');
+  if (installerIndex === -1) {
+    const config = JSON.parse(fs.readFileSync(path.join(rootDir, 'src-tauri/tauri.conf.json'), 'utf8'));
+    if (!config.bundle.active || !config.bundle.icon.length) throw new Error('Native bundle and icons must be configured');
+    console.log('[✓] Native bundle configuration verified (pre-build).');
+    return;
+  }
+  const exePath = process.argv[installerIndex + 1];
+  if (!exePath) throw new Error('--installer requires a file path');
   console.log(`[Test] Verifying setup.exe executable at: ${exePath}`);
   
   if (!fs.existsSync(exePath)) {
@@ -42,9 +50,11 @@ function testSetupExecutable() {
   const stats = fs.statSync(exePath);
   console.log(`[✓] setup.exe size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
   
-  if (stats.size < 5 * 1024 * 1024) {
-    throw new Error(`Regression test failed: setup.exe size is too small (${stats.size} bytes). It should be a fully compiled Tauri binary.`);
-  }
+  const binary = fs.readFileSync(exePath);
+  if (binary.length < 256 || binary.toString('ascii', 0, 2) !== 'MZ') throw new Error('Installer must be a Windows executable');
+  const peOffset = binary.readUInt32LE(0x3c);
+  if (peOffset + 4 > binary.length || binary.toString('ascii', peOffset, peOffset + 4) !== 'PE\0\0') throw new Error('Installer must have a valid PE header');
+  if (!fs.existsSync(exePath + '.sig') || !fs.readFileSync(exePath + '.sig', 'utf8').trim()) throw new Error('Signed update artifact must accompany installer');
 }
 
 function runAll() {

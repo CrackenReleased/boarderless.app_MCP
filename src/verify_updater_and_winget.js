@@ -71,7 +71,7 @@ assert(fs.existsSync(localeYaml), 'Locale manifest must exist');
 
 const installerContent = fs.readFileSync(installerYaml, 'utf8');
 assert(installerContent.includes('PackageIdentifier: CrackenReleased.BoarderlessMCP'), 'Installer manifest must have PackageIdentifier CrackenReleased.BoarderlessMCP');
-assert(installerContent.includes('InstallerSha256: 6EB559AF96A9D552E6BB0000613B1E6E61F4E49EF3AFFDAA6C740A48D789E09A'), 'Installer manifest must include valid setup.exe SHA-256');
+assert(installerContent.includes('InstallerSha256: 1C0A4E60D64ADA2600260B93EFE8E5EC87127130B5CB25015C024155A4B0DD1D'), 'Installer manifest must include valid setup.exe SHA-256');
 
 const localeContent = fs.readFileSync(localeYaml, 'utf8');
 assert(localeContent.includes('Publisher: Cracken Released, LLC.'), 'Locale manifest must have Publisher Cracken Released, LLC.');
@@ -88,3 +88,15 @@ console.log('✓ .github/workflows/release.yml automated winget publishing job v
 console.log('\n===============================================================');
 console.log('🎉 ALL MCP UPDATER & WINGET VERIFICATION TESTS PASSED (7/7)!');
 console.log('===============================================================\n');
+
+assert.strictEqual(tauriConf.bundle.createUpdaterArtifacts, true, 'signed MCP update artifacts must be emitted');
+assert(workflow.includes('TAURI_SIGNING_PRIVATE_KEY:') && workflow.includes('includeUpdaterJson: true'), 'release must sign and publish latest.json');
+assert(workflow.includes('release-tag:') && workflow.includes('WINGET_REGISTERED'), 'WinGet automation requires a registered package and exact release tag');
+assert(installerContent.includes('Boarderless.MCP_0.1.29_x64-setup.exe'), 'manifest URL must match actual published installer');
+assert(installerContent.includes('1C0A4E60D64ADA2600260B93EFE8E5EC87127130B5CB25015C024155A4B0DD1D'), 'manifest hash must match published GitHub asset digest');
+
+assert(uiIndex.includes('"command": "npx"') && uiIndex.includes('"args": ["-y", p]'), 'Installed client config must use the published npm connector, not an unbundled development path');
+assert(uiIndex.includes("const p = '@boarderless/mcp-server@latest'"), 'Copied client config must work without a source checkout');
+
+const shortcutTest = fs.readFileSync(path.join(MCP_ROOT, 'src/verify_shortcut.js'), 'utf8');
+assert(!shortcutTest.includes("path.join(rootDir, 'setup.exe')"), 'CI source tests must not require an ignored developer installer');

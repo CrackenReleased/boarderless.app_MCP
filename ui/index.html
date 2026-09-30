@@ -923,7 +923,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <span>Boarderless v0.1.29</span>
+        <span>Boarderless v0.1.30</span>
         <span>Online</span>
       </div>
     </aside>
@@ -1064,7 +1064,7 @@
             Ai Agent Integration Config Center
           </div>
           <p class="config-description">
-            Choose your integration target. Copy the configuration block into your system config or paste the schema directly to local models.
+            Install Node.js LTS, then copy this configuration into your MCP client. The published connector runs through npx and updates with npm.
           </p>
           <div class="browser-row" style="margin-bottom: 12px; gap: 8px;">
             <button class="btn btn-primary" id="btn-tab-mcp" onclick="switchConfigTab('mcp')" style="flex: 1; padding: 8px;">Standard MCP Client Config</button>
@@ -1385,7 +1385,7 @@
           ];
         }
         if (cmd === 'check_for_updates') {
-          return { available: false, current_version: '0.1.29', version: null, body: null };
+          return { available: false, current_version: '0.1.30', version: null, body: null };
         }
         return null;
       };
@@ -1598,15 +1598,15 @@
     // ── Fetch Server Path & Render Config JSON ──
     async function updatePaths() {
       try {
-        const p = await invoke('get_server_path');
+        const p = '@boarderless/mcp-server@latest';
         document.getElementById('server-path-holder-val').textContent = p;
         
         // Render JSON config
         const config = {
           "mcpServers": {
             "boarderless": {
-              "command": "node",
-              "args": [p],
+              "command": "npx",
+              "args": ["-y", p],
               "env": {
                 "BOARDERLESS_MCP_APP_URL": "https://boarderless.app/canvas",
                 "BOARDERLESS_MCP_BROWSER_URL": "http://127.0.0.1:9222"
