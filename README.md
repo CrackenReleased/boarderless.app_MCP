@@ -15,6 +15,18 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 
 ## ⚡ Quick Start (TL;DR)
 
+### 📥 Install Desktop Launcher via Windows Package Manager (`winget`)
+```powershell
+# Install Boarderless MCP Control Center
+winget install CrackenReleased.BoarderlessMCP
+
+# Upgrade all system software including Boarderless MCP
+winget upgrade --all
+```
+*The desktop launcher automatically checks for newer updates upon opening and alerts you if an upgrade is ready.*
+
+---
+
 **Step 1: Start the Interactive Configurator (Windows, Mac, or Linux)**
 Run the installer to configure your environment and client settings:
 *   **Windows (PowerShell)**:

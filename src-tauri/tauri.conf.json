@@ -27,6 +27,10 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "Cracken Released, LLC.",
+    "copyright": "Copyright © 2026 Cracken Released, LLC. All rights reserved.",
+    "shortDescription": "Boarderless MCP Desktop Control Panel",
+    "longDescription": "Desktop launcher and control panel for Boarderless Model Context Protocol (MCP) server.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -36,6 +40,14 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRDNTMwREE0QTFFNzM2MkQKUldRdE51ZWhwQTFUVEJYZGd0K1N2OTRPeUZwUnRnOGVYRnlYRzlUUEtscHk0Yk1VQU1VczB3SWYK",
+      "endpoints": [
+        "https://github.com/CrackenReleased/boarderless.app_MCP/releases/latest/download/latest.json"
+      ]
     }
   }
 }

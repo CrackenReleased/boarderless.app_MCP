@@ -351,6 +351,67 @@ fn copy_to_clipboard(text: String) -> Result<(), String> {
     Ok(())
 }
 
+#[derive(serde::Serialize)]
+struct UpdateStatus {
+    available: bool,
+    current_version: String,
+    version: Option<String>,
+    body: Option<String>,
+}
+
+#[tauri::command]
+async fn check_for_updates(app: tauri::AppHandle) -> Result<UpdateStatus, String> {
+    let current_version = app.package_info().version.to_string();
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = match app.updater() {
+        Ok(u) => u,
+        Err(e) => {
+            log::warn!("Updater setup failed: {}", e);
+            return Ok(UpdateStatus {
+                available: false,
+                current_version,
+                version: None,
+                body: None,
+            });
+        }
+    };
+
+    match updater.check().await {
+        Ok(Some(update)) => Ok(UpdateStatus {
+            available: true,
+            current_version,
+            version: Some(update.version),
+            body: update.body,
+        }),
+        Ok(None) => Ok(UpdateStatus {
+            available: false,
+            current_version,
+            version: None,
+            body: None,
+        }),
+        Err(e) => {
+            log::warn!("Update check error: {}", e);
+            Ok(UpdateStatus {
+                available: false,
+                current_version,
+                version: None,
+                body: None,
+            })
+        }
+    }
+}
+
+#[tauri::command]
+async fn install_update_and_relaunch(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    if let Some(update) = updater.check().await.map_err(|e| e.to_string())? {
+        update.download_and_install(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
+        app.restart();
+    }
+    Ok(())
+}
+
 #[tauri::command]
 fn kill_active_browser(state: State<'_, AppState>) {
     if let Some(mut old_child) = state.browser_child.lock().unwrap().take() {
@@ -363,7 +424,17 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![get_server_path, launch_browser, kill_active_browser, get_installed_browsers, copy_to_clipboard])
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
+        .invoke_handler(tauri::generate_handler![
+            get_server_path,
+            launch_browser,
+            kill_active_browser,
+            get_installed_browsers,
+            copy_to_clipboard,
+            check_for_updates,
+            install_update_and_relaunch
+        ])
         .setup(|app| {
             kill_duplicate_instances();
 
