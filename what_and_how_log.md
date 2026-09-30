@@ -1,5 +1,25 @@
 # What and How Log
 
+## 2026-09-30 01:28:00 — distribution: Add update awareness on open, Winget manifests, and automated CI publishing (v0.1.29)
+
+- **What:**
+  - Integrated `tauri-plugin-updater` and `tauri-plugin-process` into `src-tauri/Cargo.toml`, `capabilities/default.json`, `tauri.conf.json`, and `src-tauri/src/lib.rs`.
+  - Added native IPC commands `check_for_updates` and `install_update_and_relaunch` to query the GitHub release endpoint (`https://github.com/CrackenReleased/boarderless.app_MCP/releases/latest/download/latest.json`).
+  - Added update notification banner (`#mcp-update-banner`) to `ui/index.html` which automatically queries for updates upon launch inside `init()` and prompts the user with Winget upgrade instructions (`winget upgrade CrackenReleased.BoarderlessMCP`) or a 1-click install & relaunch.
+  - Generated complete Windows Package Manager manifest suite (version, installer, and locale) for package `CrackenReleased.BoarderlessMCP` (v0.1.29) under `distribution/winget/manifests/c/CrackenReleased/BoarderlessMCP/0.1.29/`.
+  - Added automated `publish-winget` job to `.github/workflows/release.yml` using `vedantmgoyal2009/winget-releaser@v2`.
+  - Added executable regression test suite `src/verify_updater_and_winget.js` covering updater wiring, capabilities, UI update banner, and Winget manifests; wired into `npm test`.
+- **Why:**
+  - Provide complete distribution parity between the Boarderless Desktop canvas and the Boarderless MCP offering.
+  - Allow users to install and upgrade the MCP Control Panel via `winget install CrackenReleased.BoarderlessMCP` and `winget upgrade --all`.
+  - Ensure the Control Panel is actively aware of available upgrades whenever opened.
+- **Verification:**
+  - `winget validate` passed on `distribution/winget/manifests/c/CrackenReleased/BoarderlessMCP/0.1.29/` with 0 errors.
+  - `cargo check` in `src-tauri/` passed with 0 errors.
+  - `node src/verify_updater_and_winget.js` passed (7/7 tests).
+  - Full test suite `npm test` in `packages/mcp` passed 100%.
+  - Pushed to `CrackenReleased/boarderless.app_MCP` branches `master` and `main`.
+
 ## 2026-09-21 00:55:00 — architecture: Launcher runtime port separation & VS Code extension integration (v0.1.29)
 
 - **What:**
