@@ -2,7 +2,7 @@
   "name": "boarderless-vscode",
   "displayName": "Boarderless",
   "description": "Model Context Protocol (MCP) server integration for Boarderless spatial canvas.",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "publisher": "boarderless",
   "icon": "icon.png",
   "engines": {

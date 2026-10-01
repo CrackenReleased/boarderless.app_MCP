@@ -15,13 +15,15 @@ Rather than scraping pixels or guessing layouts from DOM selectors, agents commu
 
 ## ⚡ Quick Start (TL;DR)
 
-### 📥 Install Desktop Launcher via Windows Package Manager (`winget`)
+### 📥 Windows distribution
+
+WinGet initial registration is pending Microsoft review in [winget-pkgs#444012](https://github.com/microsoft/winget-pkgs/pull/444012). The commands below become available after approval and catalog propagation. Current public installers are on the [GitHub release page](https://github.com/CrackenReleased/boarderless.app_MCP/releases).
 ```powershell
 # Install Boarderless MCP Control Center
-winget install CrackenReleased.BoarderlessMCP
+winget install --id CrackenReleased.BoarderlessMCP --exact
 
 # Upgrade all system software including Boarderless MCP
-winget upgrade --all
+winget upgrade --id CrackenReleased.BoarderlessMCP --exact
 ```
 *The desktop launcher automatically checks for newer updates upon opening and alerts you if an upgrade is ready.*
 
@@ -491,3 +493,7 @@ After the initial npm publication is approved, every production MCP version must
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+
+Signed native releases require TAURI_SIGNING_PRIVATE_KEY (matching the configured public key) and optional TAURI_SIGNING_PRIVATE_KEY_PASSWORD repository secrets. Set WINGET_REGISTERED=true only after Microsoft merges the initial package; configure WINGET_PAT for subsequent version submissions. Run releases on the matching v<package-version> tag.
+
+The installed control panel provides a portable client configuration using `npx -y @boarderless/mcp-server@latest`. Install Node.js LTS first (`winget install --id OpenJS.NodeJS.LTS --exact`). Control-panel updates use CrackenReleased.BoarderlessMCP; npm supplies the connector. v0.1.30 is prepared but awaits npm login before coordinated publication. Initial WinGet PR #444012 is a draft until the corrected release is available.

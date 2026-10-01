@@ -1,3 +1,16 @@
+### v0.1.30 distribution follow-through — 2026-09-30 03:04:18
+
+- Installed clients launch the public npm connector through npx; removed reliance on developer source paths.
+- Source tests run before bundling in CI; optional --installer validates compiled output.
+- Signed installers are built; production publication awaits npm account authentication.
+
+## v0.1.30 — 2026-09-30 02:33:32 — Signed update delivery and WinGet bootstrap
+
+- Enable signed updater artifacts and latest.json publication; version tags identify releases so source pushes do not overwrite published installers.
+- WinGet update publishing requires initial registration and pins the release tag.
+- Correct historical v0.1.29 manifest URL/hash against the actual public release; initial registration submitted in microsoft/winget-pkgs#444012.
+- Added failing-before/passing-after update delivery regressions.
+
 # Changelog
 
 ## v0.1.29 — 2026-09-11 — BRANDING & SCHEMA: Update MCP logo across desktop assets & align tool parameters
