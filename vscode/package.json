@@ -61,15 +61,18 @@
     "package": "npm run build && npx @vscode/vsce package --no-git-tag-version"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "heic-convert": "^2.1.0",
     "jimp": "^0.22.12",
-    "puppeteer-core": "^22.0.0"
+    "puppeteer-core": "^25.7.0"
+  },
+  "overrides": {
+    "fast-uri": "^3.1.6"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.95.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.25.0",
     "typescript": "^5.3.3"
   }
 }

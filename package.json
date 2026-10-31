@@ -51,7 +51,10 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "heic-convert": "^2.1.0",
     "jimp": "^0.22.12",
-    "puppeteer-core": "^22.0.0"
+    "puppeteer-core": "^25.7.0"
+  },
+  "overrides": {
+    "fast-uri": "^3.1.6"
   },
   "keywords": [
     "mcp",
