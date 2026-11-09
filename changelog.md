@@ -1,3 +1,8 @@
+### v0.1.30 VS Code extension OS command injection hardening — 2026-11-09 10:44:00
+
+- Replaced `child_process.exec(cmd)` in `vscode/src/extension.ts` (`boarderless.openCanvas`) with `child_process.spawn(..., { shell: false })` and added strict boundary validators `validateSafeAppUrl` (`http:`/`https:`, max 2048 chars, zero shell metacharacters) and `validateSafeDebugPort` (`1`–`65535`) to prevent `.vscode/settings.json` command injection.
+- Rebuilt `vscode/dist/extension.js` and added regression coverage in `vscode/scripts/verify-extension.mjs`.
+
 ### v0.1.30 security baseline & VS Code server sync — 2026-10-31 11:52:45
 
 - Upgraded `puppeteer-core` to `^25.7.0`, added `fast-uri` override (`^3.1.6`), and refreshed lockfiles in both `packages/mcp` and `packages/mcp/vscode` (plus `esbuild ^0.25.0` and `@modelcontextprotocol/sdk ^1.29.0` in `vscode`), clearing all 15 high/critical npm advisories (`0` high/critical remaining).

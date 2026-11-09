@@ -117,6 +117,30 @@ try {
         console.error("FAIL: Incorrect BOARDERLESS_MCP_APP_URL in env");
         process.exit(1);
     }
+
+    // Security Regression Check: Ensure extension does NOT use shell-concatenated child_process.exec
+    const bundleSource = fs.readFileSync(distPath, 'utf8');
+    if (/\bexec\s*\(\s*cmd\b/.test(bundleSource) || /start chrome --remote-debugging-port=/.test(bundleSource)) {
+        console.error("FAIL: Extension bundle contains vulnerable shell-concatenated exec(cmd) browser launch!");
+        process.exit(1);
+    }
+    if (typeof extension.validateSafeAppUrl !== 'function') {
+        console.error("FAIL: Extension must export validateSafeAppUrl for command-injection prevention");
+        process.exit(1);
+    }
+    if (extension.validateSafeAppUrl('https://boarderless.app/canvas & calc.exe') !== null) {
+        console.error("FAIL: validateSafeAppUrl allowed shell metacharacter injection!");
+        process.exit(1);
+    }
+    if (extension.validateSafeAppUrl('javascript:alert(1)') !== null) {
+        console.error("FAIL: validateSafeAppUrl allowed non-http/https protocol!");
+        process.exit(1);
+    }
+    if (extension.validateSafeAppUrl('https://boarderless.app/canvas') !== 'https://boarderless.app/canvas') {
+        console.error("FAIL: validateSafeAppUrl rejected valid https://boarderless.app/canvas URL!");
+        process.exit(1);
+    }
+    console.log("PASS: Command-injection and URL boundary guards verified!");
     
     console.log("PASS: MCP definition structure successfully validated!");
     console.log("ALL EXTENSION TESTS PASSED");
